@@ -187,7 +187,7 @@ export class CatalogueService {
           ...documents.map(d => this.mapDocument(d)),
           ...produits.map(p => this.mapProduit(p))
         ];
-        this.categories = categories;
+        this.categories = categories.map(c => ({ ...c, sousCategories: c.sousCategories || [] }));
         this.chargement = false;
         this.pretSubject.next(true);
       },
