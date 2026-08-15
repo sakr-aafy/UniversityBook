@@ -1,0 +1,208 @@
+<div class="p-4 p-lg-5">
+
+  <div class="d-flex justify-content-center py-5" *ngIf="chargement">
+    <i class="fa-solid fa-spinner fa-spin fa-2x" style="color:var(--accent)"></i>
+  </div>
+
+  <div class="alert alert-danger" *ngIf="erreur && !chargement">{{ erreur }}</div>
+
+  <ng-container *ngIf="donnees && !chargement">
+
+    <!-- Bienvenue -->
+    <div class="ub-welcome-card ub-anim-in">
+      <div class="ub-avatar-lg">
+        <img *ngIf="photoUrl" [src]="photoUrl" alt="Photo de profil">
+        <i *ngIf="!photoUrl" class="fa-solid fa-circle-user"></i>
+      </div>
+      <div class="flex-grow-1">
+        <h1 class="font-spectral fw-bold mb-1" style="font-size:24px;">
+          Bonjour, {{ donnees.user.prenom || donnees.user.nom }}
+        </h1>
+        <div class="d-flex flex-wrap gap-3 small text-secondary">
+          <span><i class="fa-regular fa-envelope me-1"></i>{{ donnees.user.email }}</span>
+          <span *ngIf="donnees.user.telephone"><i class="fa-solid fa-phone me-1"></i>{{ donnees.user.telephone }}</span>
+          <span><i class="fa-regular fa-calendar me-1"></i>Membre depuis {{ donnees.user.dateInscription | date:'dd/MM/yyyy' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-lg-4 col-xl-2">
+        <div class="ub-stat-card ub-anim-in" style="animation-delay:.03s">
+          <span class="ub-stat-icon" style="background:#FDF2F3;color:#8C2433;"><i class="fa-solid fa-box"></i></span>
+          <div>
+            <p class="ub-stat-value">{{ donnees.stats.totalCommandes }}</p>
+            <p class="ub-stat-label">Commandes</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-4 col-xl-2">
+        <div class="ub-stat-card ub-anim-in" style="animation-delay:.06s">
+          <span class="ub-stat-icon" style="background:#FDF2F8;color:#DB2777;"><i class="fa-solid fa-heart"></i></span>
+          <div>
+            <p class="ub-stat-value">{{ donnees.stats.favoris }}</p>
+            <p class="ub-stat-label">Favoris</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-4 col-xl-2">
+        <div class="ub-stat-card ub-anim-in" style="animation-delay:.09s">
+          <span class="ub-stat-icon" style="background:#EFF6FF;color:#2563EB;"><i class="fa-solid fa-book"></i></span>
+          <div>
+            <p class="ub-stat-value">{{ donnees.stats.documentsAchetes }}</p>
+            <p class="ub-stat-label">Documents achetés</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-4 col-xl-2">
+        <div class="ub-stat-card ub-anim-in" style="animation-delay:.12s">
+          <span class="ub-stat-icon" style="background:#ECFDF5;color:#16A34A;"><i class="fa-solid fa-wallet"></i></span>
+          <div>
+            <p class="ub-stat-value">{{ donnees.stats.totalAchats | number:'1.3-3' }}</p>
+            <p class="ub-stat-label">Total des achats (د.ت)</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-4 col-xl-2">
+        <div class="ub-stat-card ub-anim-in" style="animation-delay:.15s">
+          <span class="ub-stat-icon" style="background:#F5F3FF;color:#7C3AED;"><i class="fa-solid fa-download"></i></span>
+          <div>
+            <p class="ub-stat-value">{{ donnees.stats.totalTelechargements }}</p>
+            <p class="ub-stat-label">Téléchargements</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-4 col-xl-2">
+        <div class="ub-stat-card ub-anim-in" style="animation-delay:.18s">
+          <span class="ub-stat-icon" style="background:#FFFBEB;color:#D97706;"><i class="fa-solid fa-clock"></i></span>
+          <div>
+            <p class="ub-stat-value">{{ donnees.stats.commandesEnAttente }}</p>
+            <p class="ub-stat-label">En attente</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Graphique + Raccourcis rapides -->
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-lg-5">
+        <div class="ub-panel-card ub-anim-in h-100" style="animation-delay:.16s">
+          <h2 class="fw-bold mb-3" style="font-size:16px;">Répartition de votre activité</h2>
+          <div class="ub-chart-wrap" *ngIf="segmentsGraphique.length > 0">
+            <svg viewBox="0 0 100 100" class="ub-chart-svg">
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#F0F1F4" stroke-width="14"></circle>
+              <circle *ngFor="let s of segmentsGraphique" cx="50" cy="50" r="40" fill="none"
+                      [attr.stroke]="s.couleur" stroke-width="14"
+                      [attr.stroke-dasharray]="s.dashArray" [attr.stroke-dashoffset]="s.dashOffset"
+                      stroke-linecap="round" class="ub-chart-segment"></circle>
+            </svg>
+            <div class="ub-chart-legend">
+              <div class="ub-chart-legend-item" *ngFor="let s of segmentsGraphique">
+                <span class="ub-chart-dot" [style.background]="s.couleur"></span>
+                <span class="flex-grow-1">{{ s.label }}</span>
+                <strong>{{ s.valeur }}</strong>
+                <span class="text-secondary small">({{ s.pourcentage }}%)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-7">
+        <div class="ub-panel-card ub-anim-in h-100" style="animation-delay:.19s">
+          <h2 class="fw-bold mb-3" style="font-size:16px;">Raccourcis rapides</h2>
+          <div class="row g-2">
+            <div class="col-6" *ngFor="let r of raccourcis">
+              <a [routerLink]="r.lien" class="ub-shortcut-btn">
+                <i class="fa-solid {{ r.icone }}"></i>
+                <span>{{ r.label }}</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Derniers repères -->
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-md-4">
+        <div class="ub-recap-card ub-anim-in" style="animation-delay:.2s">
+          <div class="ub-recap-label"><i class="fa-solid fa-bag-shopping me-2"></i>Commande la plus récente</div>
+          <div *ngIf="donnees.dernieresCommandes.length > 0" class="ub-recap-value">
+            {{ donnees.dernieresCommandes[0].numero }}
+            <span class="ub-badge ms-1">{{ donnees.dernieresCommandes[0].statut }}</span>
+          </div>
+          <p *ngIf="donnees.dernieresCommandes.length === 0" class="text-secondary small mb-0">Aucune commande</p>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="ub-recap-card ub-anim-in" style="animation-delay:.23s">
+          <div class="ub-recap-label"><i class="fa-solid fa-book me-2"></i>Dernier document acheté</div>
+          <div *ngIf="dernierDocument" class="ub-recap-value text-truncate">{{ dernierDocument.titre }}</div>
+          <p *ngIf="!dernierDocument" class="text-secondary small mb-0">Aucun document</p>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="ub-recap-card ub-anim-in" style="animation-delay:.26s">
+          <div class="ub-recap-label"><i class="fa-solid fa-download me-2"></i>Dernier téléchargement</div>
+          <div *ngIf="dernierTelechargement" class="ub-recap-value text-truncate">{{ dernierTelechargement.titre }}</div>
+          <p *ngIf="!dernierTelechargement" class="text-secondary small mb-0">Aucun téléchargement</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <!-- Dernières commandes -->
+      <div class="col-12 col-lg-7">
+        <div class="ub-panel-card ub-anim-in" style="animation-delay:.3s">
+          <h2 class="fw-bold mb-3" style="font-size:18px;">Dernières commandes</h2>
+          <p class="text-secondary small mb-0" *ngIf="donnees.dernieresCommandes.length === 0">
+            Vous n'avez pas encore passé de commande.
+          </p>
+          <div class="table-responsive" *ngIf="donnees.dernieresCommandes.length > 0">
+            <table class="table align-middle">
+              <thead>
+                <tr class="text-secondary small">
+                  <th>N° Commande</th>
+                  <th>Date</th>
+                  <th>Total</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let commande of donnees.dernieresCommandes">
+                  <td class="fw-semibold">{{ commande.numero }}</td>
+                  <td>{{ commande.createdAt | date:'dd/MM/yyyy' }}</td>
+                  <td>{{ commande.total | number:'1.3-3' }} د.ت</td>
+                  <td><span class="ub-badge">{{ commande.statut }}</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activité récente -->
+      <div class="col-12 col-lg-5">
+        <div class="ub-panel-card ub-anim-in" style="animation-delay:.34s">
+          <h2 class="fw-bold mb-3" style="font-size:18px;">Activité récente</h2>
+          <p class="text-secondary small mb-0" *ngIf="activites.length === 0">
+            Aucune activité pour le moment.
+          </p>
+          <div class="ub-activite-list">
+            <div *ngFor="let a of activites" class="ub-activite-item">
+              <span class="ub-activite-icon" [style.background]="a.couleur + '1A'" [style.color]="a.couleur">
+                <i class="fa-solid {{ a.icone }}"></i>
+              </span>
+              <div class="flex-grow-1 min-w-0">
+                <p class="mb-0 fw-semibold small text-truncate">{{ a.texte }}</p>
+                <p class="mb-0 text-secondary small">{{ a.date | date:'dd/MM/yyyy HH:mm' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+</div>

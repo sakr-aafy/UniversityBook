@@ -1,0 +1,6 @@
+<div class="ub-lottie-wrap" [style.width.px]="size" [style.height.px]="size">
+  <div #conteneur class="ub-lottie-canvas" [class.d-none]="chargementEchoue"></div>
+  <div class="ub-lottie-fallback" *ngIf="chargementEchoue">
+    <i class="fa-solid {{ fallbackIcon }}"></i>
+  </div>
+</div>

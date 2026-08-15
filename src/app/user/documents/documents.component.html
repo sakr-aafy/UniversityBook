@@ -1,0 +1,137 @@
+<div class="p-4 p-lg-5">
+  <h1 class="font-spectral fw-bold mb-4" style="font-size:24px;">Mes documents</h1>
+
+  <div class="d-flex flex-wrap gap-2 mb-4">
+    <div class="input-group" style="max-width:320px;">
+      <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-magnifying-glass text-secondary"></i></span>
+      <input type="text" class="form-control border-start-0 ps-0" placeholder="Rechercher un document..."
+             [(ngModel)]="recherche" (keyup.enter)="rechercher()">
+    </div>
+    <button class="btn btn-outline-dark-ub btn-sm" (click)="rechercher()">Rechercher</button>
+  </div>
+
+  <div class="alert alert-info py-2 px-3" *ngIf="message">{{ message }}</div>
+
+  <!-- Bannière d'alerte : documents dont l'accès expire dans moins d'1h -->
+  <div class="ub-alert-expiration mb-4" *ngIf="documentsProchesExpiration.length > 0">
+    <i class="fa-solid fa-triangle-exclamation"></i>
+    <div>
+      <p class="fw-semibold mb-0" *ngFor="let d of documentsProchesExpiration">
+        Votre accès au document « {{ d.titre }} » expire dans moins d'une heure ({{ tempsRestant(d) }} restant).
+      </p>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-center py-5" *ngIf="chargement">
+    <i class="fa-solid fa-spinner fa-spin fa-2x" style="color:var(--accent)"></i>
+  </div>
+
+  <div class="alert alert-danger" *ngIf="erreur && !chargement">{{ erreur }}</div>
+
+  <ng-container *ngIf="!chargement && !erreur">
+    <p class="text-secondary" *ngIf="documents.length === 0">Vous n'avez encore acheté aucun document.</p>
+
+    <div class="row g-3" *ngIf="documents.length > 0">
+      <div class="col-12 col-sm-6 col-lg-4" *ngFor="let doc of documents; trackBy: trackById; let i = index">
+        <div class="ub-doc-card ub-anim-in" [style.animation-delay.ms]="i * 60">
+          <div class="ub-doc-card-visuel">
+            <img *ngIf="doc.image" [src]="doc.image" [alt]="doc.titre">
+            <i *ngIf="!doc.image" class="fa-solid fa-file-pdf"></i>
+            <span class="ub-badge-type-doc" [class.gratuit]="!doc.prix">
+              <i class="fa-solid" [class.fa-circle]="true"></i>{{ doc.prix ? 'Payant' : 'Gratuit' }}
+            </span>
+            <span class="ub-badge-expire ub-doc-card-statut" *ngIf="estExpire(doc)">
+              <i class="fa-solid fa-lock me-1"></i>Accès expiré
+            </span>
+            <span class="ub-badge-restant ub-doc-card-statut" *ngIf="!estExpire(doc)">
+              <i class="fa-regular fa-clock me-1"></i>{{ tempsRestant(doc) }}
+            </span>
+          </div>
+          <div class="p-3">
+            <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+              <span class="ub-badge">{{ doc.categorie }}</span>
+              <span class="ub-badge" *ngIf="doc.type">{{ doc.type }}</span>
+            </div>
+            <h3 class="fw-semibold mb-1 text-truncate" style="font-size:15px;" [title]="doc.titre">{{ doc.titre }}</h3>
+            <p class="text-secondary small mb-1" *ngIf="doc.auteur"><i class="fa-regular fa-user me-1"></i>{{ doc.auteur }}</p>
+            <p class="text-secondary small mb-1">Acquis le {{ doc.dateAchat | date:'dd/MM/yyyy' }} à {{ doc.dateAchat | date:'HH:mm' }}</p>
+            <p class="text-secondary small mb-1" *ngIf="doc.numeroCommande">Commande {{ doc.numeroCommande }}</p>
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <span class="fw-semibold small" style="color:var(--accent)">{{ (doc.prix || 0) | number:'1.3-3' }} د.ت</span>
+              <span class="small text-secondary"><i class="fa-solid fa-download me-1"></i>{{ doc.telechargements || 0 }}</span>
+            </div>
+            <div class="d-flex gap-2" *ngIf="!estExpire(doc)">
+              <button class="btn btn-accent btn-sm flex-grow-1 ub-ripple" (click)="telecharger(doc)">
+                <i class="fa-solid fa-download me-1"></i>Télécharger
+              </button>
+              <button class="btn btn-outline-dark-ub btn-sm" title="Voir" (click)="voirDetail(doc)">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+              <button class="btn btn-outline-dark-ub btn-sm" title="Ajouter aux favoris" (click)="ajouterFavoris(doc)">
+                <i class="fa-regular fa-heart"></i>
+              </button>
+            </div>
+            <div class="d-flex gap-2" *ngIf="estExpire(doc)">
+              <button class="btn btn-outline-dark-ub btn-sm flex-grow-1" title="Voir" (click)="voirDetail(doc)">
+                <i class="fa-regular fa-eye me-1"></i>Détails
+              </button>
+              <button class="btn btn-accent btn-sm flex-grow-1 ub-ripple" (click)="racheter(doc)">
+                <i class="fa-solid fa-cart-shopping me-1"></i>Acheter de nouveau
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-center align-items-center gap-3 mt-4" *ngIf="totalPages > 1">
+      <button class="btn btn-sm btn-outline-dark-ub" [disabled]="page <= 1" (click)="pagePrecedente()">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <span class="small">Page {{ page }} / {{ totalPages }}</span>
+      <button class="btn btn-sm btn-outline-dark-ub" [disabled]="page >= totalPages" (click)="pageSuivante()">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+  </ng-container>
+
+  <!-- Détail document -->
+  <div *ngIf="documentSelectionne" class="ub-doc-overlay" (click)="fermerDetail()">
+    <div class="ub-doc-modal" (click)="$event.stopPropagation()">
+      <button class="ub-doc-modal-close" (click)="fermerDetail()" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+      <div class="ub-doc-thumb ub-doc-thumb-lg">
+        <img *ngIf="documentSelectionne.image" [src]="documentSelectionne.image" [alt]="documentSelectionne.titre">
+        <i *ngIf="!documentSelectionne.image" class="fa-solid fa-file-pdf"></i>
+      </div>
+      <h3 class="fw-bold mt-3 mb-2" style="font-size:18px;">{{ documentSelectionne.titre }}</h3>
+      <p class="text-secondary small mb-2" *ngIf="documentSelectionne.auteur"><i class="fa-regular fa-user me-1"></i>{{ documentSelectionne.auteur }}</p>
+      <div class="d-flex gap-2 mb-3 flex-wrap">
+        <span class="ub-badge d-inline-block">{{ documentSelectionne.categorie }}</span>
+        <span class="ub-badge d-inline-block" *ngIf="documentSelectionne.type">{{ documentSelectionne.type }}</span>
+        <span class="ub-badge-type-doc" [class.gratuit]="!documentSelectionne.prix">{{ documentSelectionne.prix ? 'Payant' : 'Gratuit' }}</span>
+      </div>
+      <div class="ub-doc-modal-row"><span>Numéro de commande</span><strong>{{ documentSelectionne.numeroCommande || '—' }}</strong></div>
+      <div class="ub-doc-modal-row"><span>Date d'acquisition</span><strong>{{ documentSelectionne.dateAchat | date:'dd/MM/yyyy' }}</strong></div>
+      <div class="ub-doc-modal-row"><span>Heure</span><strong>{{ documentSelectionne.dateAchat | date:'HH:mm' }}</strong></div>
+      <div class="ub-doc-modal-row"><span>Prix payé</span><strong>{{ (documentSelectionne.prix || 0) | number:'1.3-3' }} د.ت</strong></div>
+      <div class="ub-doc-modal-row"><span>Téléchargements</span><strong>{{ documentSelectionne.telechargements || 0 }}</strong></div>
+      <div class="ub-doc-modal-row">
+        <span>Statut</span>
+        <strong [style.color]="estExpire(documentSelectionne) ? '#DC2626' : '#16A34A'">
+          {{ estExpire(documentSelectionne) ? 'Accès expiré' : tempsRestant(documentSelectionne) + ' restant' }}
+        </strong>
+      </div>
+      <button *ngIf="!estExpire(documentSelectionne)" class="btn btn-accent w-100 mt-3" (click)="telecharger(documentSelectionne)">
+        <i class="fa-solid fa-download me-1"></i>Télécharger
+      </button>
+      <ng-container *ngIf="estExpire(documentSelectionne)">
+        <p class="small text-secondary mt-3 mb-2">
+          Le téléchargement n'est plus disponible. Vous devez acheter de nouveau ce document pour obtenir un nouvel accès de 24 heures.
+        </p>
+        <button class="btn btn-accent w-100 ub-ripple" (click)="racheter(documentSelectionne)">
+          <i class="fa-solid fa-cart-shopping me-1"></i>Acheter de nouveau
+        </button>
+      </ng-container>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,225 @@
+<!-- SECTION INSCRIPTION -->
+<section class="py-5 min-vh-auth"
+         style="background:linear-gradient(150deg,#F9F4F4 0%,#FDF8F8 50%,#F7F8FA 100%);">
+  <div class="container-xl px-4">
+    <div class="row justify-content-center">
+      <div class="col-12 col-sm-10 col-md-8 col-lg-6">
+
+        <!-- Logo et intro -->
+        <div class="text-center mb-4">
+          <!--a routerLink="/" class="d-inline-flex align-items-center gap-2 mb-4 text-decoration-none">
+            <svg width="44" height="44" viewBox="0 0 60 60" fill="none">
+              <circle cx="30" cy="30" r="29" fill="url(#ub_grad_reg)"/>
+              <path d="M30 16 L44 21.5 L30 27 L16 21.5 Z" fill="#fff"/>
+              <path d="M21.5 24.2 V31 c0 2.6 3.8 4.4 8.5 4.4 s8.5-1.8 8.5-4.4 V24.2"
+                    stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>
+              <path d="M44 21.5 V30" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
+              <circle cx="44" cy="31.4" r="1.6" fill="#F4D9A0"/>
+              <defs>
+                <linearGradient id="ub_grad_reg" x1="8" y1="6" x2="52" y2="54" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#9A2A3A"/>
+                  <stop offset="1" stop-color="#6E1726"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <span class="font-spectral fw-bold fs-5 text-dark">University Book</span>
+          </a-->
+
+          
+        </div>
+
+        <!-- Carte formulaire -->
+        <div class="card border-0 p-4 p-md-5"
+             style="border-radius:24px;box-shadow:0 12px 48px -16px rgba(0,0,0,.12);">
+          <h1 class="font-spectral fw-bold mb-2" style="font-size:clamp(26px,3.5vw,36px);">
+            Créez votre compte
+          </h1>
+          <p class="mb-0" style="font-size:15px;color:#6B7480;">
+            Rejoignez +8 500 étudiants et accédez à toutes les ressources universitaires.
+          </p>
+          <br>
+          <!-- Badges avantages -->
+          <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
+            <span class="badge rounded-pill px-3 py-1"
+                  style="background:#F0F1F4;color:#3C444E;font-size:12px;font-weight:500;">
+              <i class="fa-solid fa-bolt me-1" style="color:var(--accent)"></i>Accès immédiat
+            </span>
+            <span class="badge rounded-pill px-3 py-1"
+                  style="background:#F0F1F4;color:#3C444E;font-size:12px;font-weight:500;">
+              <i class="fa-solid fa-gift me-1" style="color:var(--accent)"></i>Gratuit
+            </span>
+            <span class="badge rounded-pill px-3 py-1"
+                  style="background:#F0F1F4;color:#3C444E;font-size:12px;font-weight:500;">
+              <i class="fa-solid fa-shield-halved me-1" style="color:var(--accent)"></i>Données protégées
+            </span>
+          </div>
+
+          <form (ngSubmit)="register()">
+            <div class="row g-3">
+
+              <!-- Message d'erreur -->
+              <div class="col-12" *ngIf="erreur">
+                <div class="alert alert-danger py-2 px-3 mb-0" style="font-size:14px;border-radius:12px;">
+                  <i class="fa-solid fa-circle-exclamation me-2"></i>{{ erreur }}
+                </div>
+              </div>
+
+              <!-- Nom complet -->
+              <div class="col-12">
+                <label class="form-label ub-label">Nom complet *</label>
+                <div class="input-group-ub">
+                  <i class="fa-regular fa-user input-icon-ub" style="color:#9AA0A8"></i>
+                  <input type="text"
+                         class="form-control ub-input"
+                         placeholder="Ex. Ahmed Ben Salah"
+                         [(ngModel)]="nom"
+                         name="nom"
+                         required>
+                </div>
+              </div>
+
+              <!-- Email -->
+              <div class="col-12 col-md-6">
+                <label class="form-label ub-label">Adresse e-mail *</label>
+                <div class="input-group-ub">
+                  <i class="fa-regular fa-envelope input-icon-ub" style="color:#9AA0A8"></i>
+                  <input type="email"
+                         class="form-control ub-input"
+                         placeholder="votre@email.com"
+                         [(ngModel)]="email"
+                         name="email"
+                         required>
+                </div>
+              </div>
+
+              <!-- Téléphone -->
+              <div class="col-12 col-md-6">
+                <label class="form-label ub-label">Téléphone</label>
+                <div class="input-group-ub">
+                  <i class="fa-solid fa-phone input-icon-ub" style="color:#9AA0A8"></i>
+                  <input type="tel"
+                         class="form-control ub-input"
+                         placeholder="+216 XX XXX XXX"
+                         [(ngModel)]="telephone"
+                         name="telephone">
+                </div>
+              </div>
+
+              <!-- Mot de passe -->
+              <div class="col-12">
+                <label class="form-label ub-label">Mot de passe *</label>
+                <div class="input-group-ub">
+                  <i class="fa-solid fa-lock input-icon-ub" style="color:#9AA0A8"></i>
+                  <input [type]="showPassword ? 'text' : 'password'"
+                         class="form-control ub-input"
+                         placeholder="Min. 8 caractères"
+                         [(ngModel)]="motDePasse"
+                         name="motDePasse"
+                         required>
+                  <button type="button"
+                          (click)="togglePassword()"
+                          class="btn btn-sm btn-link eye-toggle"
+                          tabindex="-1">
+                    <i class="fa-regular" [class.fa-eye]="!showPassword" [class.fa-eye-slash]="showPassword"
+                       style="color:#9AA0A8;"></i>
+                  </button>
+                </div>
+                <!-- Indicateur force -->
+                <div class="d-flex gap-1 mt-2" *ngIf="motDePasse.length > 0">
+                  <div class="flex-grow-1 rounded-pill" style="height:3px;"
+                       [style.background]="motDePasse.length >= 3 ? 'var(--accent)' : '#ECEDEF'"></div>
+                  <div class="flex-grow-1 rounded-pill" style="height:3px;"
+                       [style.background]="motDePasse.length >= 6 ? 'var(--accent)' : '#ECEDEF'"></div>
+                  <div class="flex-grow-1 rounded-pill" style="height:3px;"
+                       [style.background]="motDePasse.length >= 10 ? '#22C55E' : '#ECEDEF'"></div>
+                </div>
+              </div>
+
+              <!-- Confirmation mot de passe -->
+              <div class="col-12">
+                <label class="form-label ub-label">Confirmer le mot de passe *</label>
+                <div class="input-group-ub"
+                     [class.ub-input-ok]="passwordsMatch"
+                     [class.ub-input-err]="confirmation.length > 0 && !passwordsMatch">
+                  <i class="fa-solid fa-lock-open input-icon-ub" style="color:#9AA0A8"></i>
+                  <input [type]="showConfirmation ? 'text' : 'password'"
+                         class="form-control ub-input"
+                         placeholder="Répétez votre mot de passe"
+                         [(ngModel)]="confirmation"
+                         name="confirmation"
+                         required>
+                  <button type="button"
+                          (click)="toggleConfirmation()"
+                          class="btn btn-sm btn-link eye-toggle"
+                          tabindex="-1">
+                    <i class="fa-regular" [class.fa-eye]="!showConfirmation" [class.fa-eye-slash]="showConfirmation"
+                       style="color:#9AA0A8;"></i>
+                  </button>
+                  <div class="eye-toggle d-flex align-items-center pe-3" *ngIf="confirmation.length > 0">
+                    <i *ngIf="passwordsMatch" class="fa-solid fa-circle-check" style="color:#22C55E;font-size:14px;"></i>
+                    <i *ngIf="!passwordsMatch" class="fa-solid fa-circle-xmark" style="color:#EF4444;font-size:14px;"></i>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Conditions -->
+              <div class="col-12">
+                <div class="d-flex align-items-start gap-2">
+                  <input type="checkbox"
+                         class="form-check-input ub-check mt-1"
+                         id="conditions"
+                         [(ngModel)]="accepteConditions"
+                         name="accepteConditions"
+                         required>
+                  <label class="form-check-label small" for="conditions" style="color:#5A626C;line-height:1.6;">
+                    J'accepte les
+                    <a href="#" class="fw-semibold text-decoration-none" style="color:var(--accent);">conditions d'utilisation</a>
+                    et la
+                    <a href="#" class="fw-semibold text-decoration-none" style="color:var(--accent);">politique de confidentialité</a>
+                    du portail University Book.
+                  </label>
+                </div>
+              </div>
+
+              <!-- Bouton inscription -->
+              <div class="col-12 mt-2">
+                <button type="submit"
+                        class="btn btn-accent w-100 py-3 rounded-pill fw-semibold"
+                        style="font-size:16px;"
+                        [disabled]="!accepteConditions || chargement">
+                  <span *ngIf="!chargement">
+                    <i class="fa-solid fa-user-plus me-2"></i>
+                    Créer mon compte
+                  </span>
+                  <span *ngIf="chargement">
+                    <i class="fa-solid fa-spinner fa-spin me-2"></i>
+                    Création en cours...
+                  </span>
+                </button>
+              </div>
+
+            </div>
+          </form>
+
+          <!-- Lien connexion -->
+          <p class="text-center mb-0 small mt-4" style="color:#6B7480;">
+            Déjà inscrit ?
+            <a routerLink="/login" class="fw-semibold text-decoration-none" style="color:var(--accent);">
+              Se connecter
+            </a>
+          </p>
+
+        </div>
+
+        <!-- Lien retour -->
+        <div class="text-center mt-4">
+          <a routerLink="/" class="small text-decoration-none d-inline-flex align-items-center gap-1" style="color:#9AA0A8;">
+            <i class="fa-solid fa-arrow-left" style="font-size:11px"></i>
+            Retour à l'accueil
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,178 @@
+<div class="p-4 p-lg-5">
+  <h1 class="font-spectral fw-bold mb-4" style="font-size:24px;">Utilisateurs</h1>
+
+  <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
+    <div class="input-group" style="max-width:320px;">
+      <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-magnifying-glass text-secondary"></i></span>
+      <input type="text" class="form-control border-start-0 ps-0" placeholder="Nom ou email..."
+             [(ngModel)]="recherche" (keyup.enter)="rechercher()">
+    </div>
+    <button class="btn btn-outline-dark-ub btn-sm" (click)="rechercher()">Rechercher</button>
+
+    <label class="d-flex align-items-center gap-2 ms-auto small fw-semibold" style="cursor:pointer;">
+      <input type="checkbox" class="ub-check" [checked]="avecSupprimes" (change)="basculerAvecSupprimes()">
+      Afficher aussi les supprimés
+    </label>
+  </div>
+
+  <div class="d-flex justify-content-center py-5" *ngIf="chargement">
+    <i class="fa-solid fa-spinner fa-spin fa-2x" style="color:var(--accent)"></i>
+  </div>
+
+  <div class="alert alert-danger" *ngIf="erreur && !chargement">{{ erreur }}</div>
+  <div class="alert alert-success" *ngIf="succes">{{ succes }}</div>
+
+  <div class="card border-0 p-4" style="border-radius:20px;box-shadow:0 12px 48px -16px rgba(0,0,0,.1);"
+       *ngIf="!chargement">
+
+    <p class="text-secondary mb-0" *ngIf="utilisateurs.length === 0">Aucun utilisateur trouvé.</p>
+
+    <div class="table-responsive" *ngIf="utilisateurs.length > 0">
+      <table class="table align-middle">
+        <thead>
+          <tr class="text-secondary small">
+            <th></th>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Téléphone</th>
+            <th>Inscrit le</th>
+            <th>Commandes</th>
+            <th>Montant dépensé</th>
+            <th>Dernière connexion</th>
+            <th>Statut</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let u of utilisateurs; trackBy: trackById" [class.ub-row-supprime]="u.supprime">
+            <td>
+              <span class="ub-avatar-sm">
+                <img *ngIf="u.photo" [src]="photoDe(u.photo)" alt="">
+                <i *ngIf="!u.photo" class="fa-solid fa-circle-user"></i>
+              </span>
+            </td>
+            <td class="fw-semibold">{{ u.prenom }} {{ u.nom }}</td>
+            <td>{{ u.email }}</td>
+            <td>{{ u.telephone || '—' }}</td>
+            <td>{{ u.dateInscription | date:'dd/MM/yyyy' }}</td>
+            <td>{{ u.totalCommandes || 0 }}</td>
+            <td>{{ (u.totalAchats || 0) | number:'1.3-3' }} DT</td>
+            <td>{{ u.derniereConnexion ? (u.derniereConnexion | date:'dd/MM/yyyy HH:mm') : 'Jamais connecté' }}</td>
+            <td>
+              <span class="ub-badge ub-badge-supprime" *ngIf="u.supprime">🔴 Supprimé</span>
+              <span class="ub-badge" [class.ub-badge-off]="!u.actif" *ngIf="!u.supprime">
+                {{ u.actif ? '🟢 Actif' : '🟠 Bloqué' }}
+              </span>
+            </td>
+            <td class="text-end">
+              <button class="btn btn-sm btn-outline-dark-ub me-1" (click)="voir(u)" title="Voir">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-dark-ub me-1" (click)="ouvrirEdition(u)" title="Modifier" [disabled]="u.supprime">
+                <i class="fa-solid fa-pen"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-dark-ub me-1" (click)="basculerActif(u)"
+                      [title]="u.actif ? 'Bloquer' : 'Débloquer'" [disabled]="u.supprime">
+                <i class="fa-solid" [class.fa-lock]="u.actif" [class.fa-lock-open]="!u.actif"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-dark-ub ub-btn-danger-outline" (click)="supprimer(u)" title="Supprimer" [disabled]="u.supprime">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-content-center align-items-center gap-3 mt-3" *ngIf="totalPages > 1">
+      <button class="btn btn-sm btn-outline-dark-ub" [disabled]="page <= 1" (click)="pagePrecedente()">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <span class="small">Page {{ page }} / {{ totalPages }}</span>
+      <button class="btn btn-sm btn-outline-dark-ub" [disabled]="page >= totalPages" (click)="pageSuivante()">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════ Dialogue : Détail ══════════════ -->
+  <div class="ub-overlay" *ngIf="dialogDetailOuvert" (click)="fermerDetail()">
+    <div class="ub-dialog" (click)="$event.stopPropagation()">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h3 class="fw-bold mb-0" style="font-size:18px;">Détail utilisateur</h3>
+        <button class="ub-dialog-close" (click)="fermerDetail()" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="d-flex justify-content-center py-4" *ngIf="chargementDetail">
+        <i class="fa-solid fa-spinner fa-spin" style="color:var(--accent)"></i>
+      </div>
+
+      <div *ngIf="utilisateurDetail && !chargementDetail">
+        <div class="d-flex align-items-center gap-3 mb-4">
+          <span class="ub-avatar-lg">
+            <img *ngIf="utilisateurDetail.photo" [src]="photoDe(utilisateurDetail.photo)" alt="">
+            <i *ngIf="!utilisateurDetail.photo" class="fa-solid fa-circle-user"></i>
+          </span>
+          <div>
+            <p class="fw-bold mb-0" style="font-size:17px;">{{ utilisateurDetail.prenom }} {{ utilisateurDetail.nom }}</p>
+            <p class="text-secondary small mb-0">{{ utilisateurDetail.email }}</p>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-6"><p class="ub-view-label">Téléphone</p><p class="ub-view-value">{{ utilisateurDetail.telephone || '—' }}</p></div>
+          <div class="col-6"><p class="ub-view-label">Inscrit le</p><p class="ub-view-value">{{ utilisateurDetail.dateInscription | date:'dd/MM/yyyy' }}</p></div>
+          <div class="col-6"><p class="ub-view-label">Dernière connexion</p><p class="ub-view-value">{{ utilisateurDetail.derniereConnexion ? (utilisateurDetail.derniereConnexion | date:'dd/MM/yyyy HH:mm') : 'Jamais connecté' }}</p></div>
+          <div class="col-6"><p class="ub-view-label">Statut</p><p class="ub-view-value">{{ utilisateurDetail.supprime ? '🔴 Supprimé' : (utilisateurDetail.actif ? '🟢 Actif' : '🟠 Bloqué') }}</p></div>
+          <div class="col-6"><p class="ub-view-label">Nombre de commandes</p><p class="ub-view-value">{{ utilisateurDetail.totalCommandes }}</p></div>
+          <div class="col-6"><p class="ub-view-label">Montant dépensé</p><p class="ub-view-value">{{ utilisateurDetail.totalAchats | number:'1.3-3' }} DT</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ Dialogue : Édition ══════════════ -->
+  <div class="ub-overlay" *ngIf="dialogEditionOuvert" (click)="fermerEdition()">
+    <div class="ub-dialog" (click)="$event.stopPropagation()">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h3 class="fw-bold mb-0" style="font-size:18px;">Modifier l'utilisateur</h3>
+        <button class="ub-dialog-close" (click)="fermerEdition()" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="alert alert-danger py-2 px-3" *ngIf="erreurEdition">{{ erreurEdition }}</div>
+
+      <form (ngSubmit)="enregistrerEdition()">
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label ub-label">Nom *</label>
+            <input type="text" class="form-control ub-input" [(ngModel)]="formNom" name="nom" required>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label ub-label">Prénom</label>
+            <input type="text" class="form-control ub-input" [(ngModel)]="formPrenom" name="prenom">
+          </div>
+          <div class="col-12">
+            <label class="form-label ub-label">Email *</label>
+            <input type="email" class="form-control ub-input" [(ngModel)]="formEmail" name="email" required>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label ub-label">Téléphone</label>
+            <input type="tel" class="form-control ub-input" [(ngModel)]="formTelephone" name="telephone">
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label ub-label">Téléphone secondaire</label>
+            <input type="tel" class="form-control ub-input" [(ngModel)]="formTelephoneSecondaire" name="telephoneSecondaire">
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+          <button type="button" class="btn btn-outline-dark-ub flex-grow-1" (click)="fermerEdition()">Annuler</button>
+          <button type="submit" class="btn btn-accent flex-grow-1 ub-ripple" [disabled]="enregistrement">
+            <span *ngIf="!enregistrement"><i class="fa-solid fa-floppy-disk me-2"></i>Enregistrer</span>
+            <span *ngIf="enregistrement"><i class="fa-solid fa-spinner fa-spin me-2"></i>Enregistrement...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

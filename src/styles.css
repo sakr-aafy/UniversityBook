@@ -1,1 +1,342 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --accent: #8C2433;
+  --accent-dark: #6E1726;
+  --accent-light: #FDF0F1;
+  --text-dark: #1B2430;
+  --text-mid: #5A626C;
+  --text-light: #8A939D;
+  --border: #ECEDEF;
+  --bg-footer: #2E0B12;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: 'Hanken Grotesk', system-ui, sans-serif;
+  background: #FFFFFF;
+  color: var(--text-dark);
+  -webkit-font-smoothing: antialiased;
+}
+::selection { background: var(--accent); color: #fff; }
+a { color: inherit; text-decoration: none; }
+input::placeholder { color: #9AA0A8; }
+.font-spectral { font-family: 'Spectral', serif; }
+.btn-accent {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  font-weight: 600;
+  box-shadow: 0 10px 24px -10px rgba(140,36,51,.55);
+}
+.btn-accent:hover {
+  background: var(--accent-dark);
+  color: #fff;
+}
+.btn-outline-dark-ub {
+  background: #fff;
+  border: 1px solid #E4E5E9;
+  color: var(--text-dark);
+  border-radius: 999px;
+  font-weight: 600;
+}
+.btn-outline-dark-ub:hover {
+  background: #F7F8FA;
+  color: var(--text-dark);
+}
+
+/* ── Système de formulaires UB ── */
+.ub-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1B2430;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.input-group-ub {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon-ub {
+  position: absolute;
+  left: 14px;
+  z-index: 1;
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.ub-input {
+  width: 100%;
+  padding: 11px 14px 11px 40px;
+  border: 1px solid #ECEDEF;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #1B2430;
+  background: #FAFBFC;
+  transition: border-color .2s, box-shadow .2s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.ub-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(140,36,51,.1);
+  background: #fff;
+}
+
+.ub-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #ECEDEF;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #1B2430;
+  background: #FAFBFC;
+  resize: vertical;
+  font-family: inherit;
+  transition: border-color .2s, box-shadow .2s;
+}
+
+.ub-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(140,36,51,.1);
+  background: #fff;
+}
+
+.eye-toggle {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0 12px;
+  color: #9AA0A8;
+  text-decoration: none;
+  z-index: 2;
+}
+
+.ub-check {
+  width: 17px;
+  height: 17px;
+  border: 2px solid #CBCDD3;
+  border-radius: 5px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.ub-check:checked {
+  background-color: var(--accent);
+  border-color: var(--accent);
+}
+
+.ub-input-ok .ub-input {
+  border-color: #22C55E;
+}
+
+.ub-input-err .ub-input {
+  border-color: #EF4444;
+}
+
+/* Pages auth */
+.min-vh-auth {
+  min-height: calc(100vh - 180px);
+}
+
+/* Icône contact */
+.contact-icon-wrap {
+  width: 38px;
+  height: 38px;
+  background: #FDF2F3;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+}
+
+/* Social bouton contact */
+.social-btn-contact {
+  width: 40px;
+  height: 40px;
+  background: #F0F1F4;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .2s;
+}
+
+.social-btn-contact:hover {
+  background: #E4E5E9;
+}
+
+/* Boutons quantité panier */
+.qty-btn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ECEDEF;
+  border-radius: 8px;
+  background: #fff;
+  color: #5A626C;
+  transition: all .15s;
+}
+
+.qty-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: #FDF2F3;
+}
+
+.qty-btn:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+/* ── Système champ UB (wrapper avec focus-within) ── */
+.ub-form-label {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #3C444E;
+  margin-bottom: 8px;
+}
+
+.ub-field {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 0 16px;
+  height: 52px;
+  background: #FBFCFD;
+  border: 1px solid #E4E7EC;
+  border-radius: 13px;
+  transition: border-color .15s, box-shadow .15s;
+}
+
+.ub-field:focus-within {
+  border-color: #8C2433 !important;
+  box-shadow: 0 0 0 3px rgba(140,36,51,.1) !important;
+}
+
+.ub-field-textarea {
+  height: auto;
+  align-items: flex-start;
+  padding: 0;
+}
+
+.ub-field-textarea .ub-field-input {
+  padding: 14px 16px;
+}
+
+.ub-field-icon {
+  font-size: 15px;
+  color: #9AA2AB;
+  flex-shrink: 0;
+}
+
+.ub-field-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 15px;
+  color: #1B2430;
+  min-width: 0;
+}
+
+.ub-field-input::placeholder {
+  color: #9AA0A8;
+}
+
+/* Cartes info contact */
+.contact-info-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  background: #F4E7E8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.info-label {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .4px;
+  text-transform: uppercase;
+  color: #9AA2AB;
+}
+
+/* Blocage scroll quand un modal est ouvert */
+.ub-no-scroll {
+  overflow: hidden;
+}
+
+/* ── Animation d'apparition au scroll, pilotée par [ubReveal] (IntersectionObserver) ── */
+.ub-reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .6s cubic-bezier(.16,.84,.44,1), transform .6s cubic-bezier(.16,.84,.44,1);
+}
+.ub-reveal.ub-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Effet ripple léger, réutilisable sur n'importe quel bouton ── */
+@keyframes ub-ripple-anim {
+  to { transform: scale(2.6); opacity: 0; }
+}
+.ub-ripple {
+  position: relative;
+  overflow: hidden;
+  transition: transform .15s ease, box-shadow .2s ease, background .2s ease;
+}
+.ub-ripple:active {
+  transform: scale(.97);
+}
+.ub-ripple::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  top: 50%;
+  left: 50%;
+  background: rgba(255,255,255,.55);
+  border-radius: 50%;
+  transform: translate(-50%,-50%) scale(0);
+  opacity: 0;
+  pointer-events: none;
+}
+.ub-ripple:active::after {
+  animation: ub-ripple-anim .5s ease-out;
+}
+
+/* Boutons sociaux contact */
+.social-contact-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid #ECEDEF;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #51637A;
+  text-decoration: none;
+  transition: border-color .2s, color .2s;
+}
+
+.social-contact-btn:hover {
+  border-color: #8C2433;
+  color: #8C2433;
+}

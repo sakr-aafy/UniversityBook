@@ -1,0 +1,605 @@
+<!-- ══════════════════════════════════════════════════════════════
+     HERO BANNER (bannière de présentation, slider auto-défilant)
+═══════════════════════════════════════════════════════════════ -->
+<section class="boutique-hero ub-anim-fade-up" aria-label="Bannière de présentation de la boutique">
+  <div *ngFor="let s of heroBannerSlides; let i = index; trackBy: trackByIndex"
+       class="boutique-hero-slide"
+       [class.active]="i === heroSlideActif"
+       [style.background-image]="'url(' + s.image + '), ' + s.gradient">
+  </div>
+  <div class="boutique-hero-overlay"></div>
+  <div class="boutique-hero-content">
+    <h1 class="boutique-hero-titre">
+      Tout ce dont vous avez besoin pour vos études et vos documents numériques
+    </h1>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════════════
+     BARRE CONTRÔLES (recherche instantanée / tri / résultats)
+═══════════════════════════════════════════════════════════════ -->
+<div class="ub-controlbar">
+  <div class="container-xl px-4 py-3">
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+
+      <!-- Recherche instantanée avec suggestions -->
+      <div class="ub-field ub-search-field flex-grow-1">
+        <i class="fa-solid fa-magnifying-glass ub-field-icon"></i>
+        <input class="ub-field-input" type="text" autocomplete="off"
+               placeholder="Rechercher un produit, une catégorie, une sous-catégorie…"
+               [(ngModel)]="recherche" name="recherche" (ngModelChange)="onRechercheChange()"
+               (focus)="onRechercheFocus()" (blur)="onRechercheBlur()">
+        <button *ngIf="recherche" (click)="recherche=''; onRechercheChange()"
+                class="ub-search-clear" aria-label="Effacer la recherche">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <!-- Suggestions instantanées (nom / catégorie / sous-catégorie) -->
+        <div class="ub-search-suggestions" *ngIf="rechercheFocus && suggestionsRecherche.length > 0">
+          <button *ngFor="let s of suggestionsRecherche; trackBy: trackById" type="button"
+                  class="ub-search-suggestion" (mousedown)="choisirSuggestion(s)">
+            <span class="ub-search-suggestion-visuel" [style.background]="s.images?.length ? '#fff' : s.iconeBg">
+              <img *ngIf="s.images?.length" [src]="imageActuelle(s)" [alt]="s.titre">
+              <i *ngIf="!s.images?.length" class="fa-solid {{ s.icone }}"></i>
+            </span>
+            <span class="ub-search-suggestion-infos">
+              <span class="ub-search-suggestion-titre">{{ s.titre }}</span>
+              <span class="ub-search-suggestion-meta">{{ s.categorie }}<span *ngIf="s.sousCategorie"> · {{ s.sousCategorie }}</span></span>
+            </span>
+            <span class="ub-search-suggestion-prix">{{ formatPrix(s.prix) }}</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="vr d-none d-md-block" style="height:28px;"></div>
+
+      <!-- Tri -->
+      <div class="d-flex align-items-center gap-2">
+        <span class="small fw-semibold" style="color:#6B7480; white-space:nowrap;">Trier par</span>
+        <select class="ub-select"
+                [(ngModel)]="triActif" name="tri" (change)="onTriChange()">
+          <option *ngFor="let o of options" [value]="o.val">{{ o.label }}</option>
+        </select>
+      </div>
+
+      <div class="vr d-none d-md-block" style="height:28px;"></div>
+
+      <!-- Compteur résultats -->
+      <span class="small ms-auto" style="color:#8A929C; white-space:nowrap;">
+        <strong style="color:#1B2430;">{{ produitsFiltres.length }}</strong> résultat{{ produitsFiltres.length > 1 ? 's' : '' }}
+      </span>
+
+      <!-- Bouton filtres mobile -->
+      <button class="ub-btn-filtre-mobile d-lg-none" (click)="toggleFiltres()">
+        <i class="fa-solid fa-sliders"></i>
+        Filtres
+      </button>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     MISE EN PAGE PRINCIPALE : Filtres | Catalogue
+═══════════════════════════════════════════════════════════════ -->
+<section class="ub-boutique-bg">
+  <div class="container-xl px-4 py-5">
+
+    <!-- ── Onglets de domaine ── -->
+    <div class="ub-domaine-tabs ub-anim-fade-up">
+      <button class="ub-domaine-tab" [class.active]="domaineActif === 'documents'" (click)="changerDomaine('documents')">
+        <span class="ub-domaine-emoji">📚</span> Documents
+      </button>
+      <button class="ub-domaine-tab" [class.active]="domaineActif === 'fournitures'" (click)="changerDomaine('fournitures')">
+        <span class="ub-domaine-emoji">🎒</span> Fournitures scolaires
+      </button>
+    </div>
+
+    <div class="boutique-shell" [class.ub-shell--panier-ouvert]="panierOuvert">
+
+      <!-- ─── FILTRES (mobile drawer) ──────────────────────────── -->
+      <div class="ub-drawer-overlay" *ngIf="filtresOuverts" (click)="toggleFiltres()"></div>
+      <aside class="filtres-drawer-mobile" [class.open]="filtresOuverts">
+        <div class="filtres-card">
+          <ng-container *ngTemplateOutlet="filtresContenu"></ng-container>
+        </div>
+      </aside>
+
+      <!-- ─── FILTRES (desktop) ────────────────────────────────── -->
+      <aside class="filtres-col d-none d-lg-block">
+        <div class="filtres-card ub-anim-fade-up">
+          <ng-container *ngTemplateOutlet="filtresContenu"></ng-container>
+        </div>
+      </aside>
+
+      <!-- ─── CATALOGUE ────────────────────────────────────────── -->
+      <main class="produits-col">
+
+        <!-- Chips type de produit -->
+        <div class="d-flex flex-wrap gap-2 mb-4">
+          <button *ngFor="let t of typesActifs; trackBy: trackByStr"
+                  (click)="filtrerType(t)"
+                  class="type-chip"
+                  [class.active]="typeActif === t">
+            {{ t }}
+          </button>
+        </div>
+
+        <!-- Chargement du catalogue -->
+        <div class="d-flex justify-content-center py-5" *ngIf="catalogueService.chargement">
+          <i class="fa-solid fa-spinner fa-spin fa-2x" style="color:var(--accent)"></i>
+        </div>
+
+        <!-- État vide -->
+        <div *ngIf="!catalogueService.chargement && produitsFiltres.length === 0" class="ub-empty-state">
+          <div class="ub-empty-icon">
+            <i class="fa-solid fa-magnifying-glass"></i>
+          </div>
+          <h5 class="font-spectral fw-bold mb-2">Aucun résultat trouvé</h5>
+          <p class="mb-4 small" style="color:#6B7480; max-width:360px; margin:0 auto;">
+            Aucun document ne correspond à vos critères de recherche.
+          </p>
+          <button (click)="reinitialiser()" class="btn btn-accent px-4 py-2 rounded-pill fw-semibold">
+            Réinitialiser les filtres
+          </button>
+        </div>
+
+        <!-- Grille produits -->
+        <div id="grille-produits" class="produits-grid" *ngIf="!catalogueService.chargement && produitsFiltres.length > 0">
+          <div *ngFor="let p of produitsPage; trackBy: trackById; let i = index"
+               class="ub-anim-fade-up" [style.animation-delay.ms]="i * 40">
+            <ng-container *ngTemplateOutlet="produitCardTpl; context:{ p: p }"></ng-container>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <nav *ngIf="produitsFiltres.length > 0" class="ub-pagination" aria-label="Pagination des produits">
+          <button class="page-btn page-nav" [disabled]="pageActuelle === 1" (click)="pagePrecedente()">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+
+          <ng-container *ngFor="let n of pagesAvecEllipses; trackBy: trackByIndex">
+            <span *ngIf="n === '...'" class="page-ellipsis">…</span>
+            <button *ngIf="n !== '...'" class="page-btn" [class.active]="n === pageActuelle" (click)="allerPage(n)">{{ n }}</button>
+          </ng-container>
+
+          <button class="page-btn page-nav" [disabled]="pageActuelle === totalPages" (click)="pageSuivante()">
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </nav>
+
+        <!-- ── Bannière promotions ── -->
+        <div class="promo-banner ub-anim-fade-up">
+          <div class="promo-banner-content">
+            <span class="promo-eyebrow"><i class="fa-solid fa-bolt me-2"></i>Offre à durée limitée</span>
+            <h3 class="promo-title font-spectral">Jusqu'à -20% sur les annales &amp; examens corrigés</h3>
+            <p class="promo-desc">
+              Préparez vos partiels dans les meilleures conditions grâce à notre sélection d'examens corrigés en promotion.
+            </p>
+            <button (click)="decouvrirPromo()" class="btn btn-light-promo">
+              Découvrir
+              <i class="fa-solid fa-arrow-right ms-2"></i>
+            </button>
+          </div>
+          <div class="promo-banner-icon">
+            <i class="fa-solid fa-graduation-cap"></i>
+          </div>
+        </div>
+
+        <!-- ── Produits recommandés ── -->
+        <div class="recommandes-section" *ngIf="produitsRecommandes.length > 0">
+          <div class="d-flex align-items-center justify-content-between mb-4">
+            <h3 class="font-spectral fw-bold mb-0" style="font-size:22px;">
+              <i class="fa-solid fa-star me-2" style="color:#F5B301; font-size:18px;"></i>
+              Produits recommandés
+            </h3>
+          </div>
+          <div class="recommandes-carousel">
+            <div *ngFor="let p of produitsRecommandes; trackBy: trackById" class="recommande-item">
+              <ng-container *ngTemplateOutlet="produitCardTpl; context:{ p: p }"></ng-container>
+            </div>
+          </div>
+        </div>
+
+      </main>
+
+      <!-- ─── PANIER (3ᵉ colonne de la grille dès le desktop — sticky, défilement
+           indépendant de la colonne produits ; carte flottante sur tablette ; drawer
+           modal plein écran sur mobile). Ouvert automatiquement à l'ajout d'un produit
+           ou via l'icône panier du header ; réductible par le bouton dédié, fermable
+           par le clic en dehors (mobile uniquement) ou la touche Échap. ────────── -->
+      <div class="ub-drawer-overlay ub-drawer-overlay--panier" *ngIf="panierOuvert" (click)="fermerPanier()"></div>
+      <aside class="panier-drawer" [class.open]="panierOuvert" [class.ub-panier-bump]="panierBump"
+             role="dialog" aria-modal="true" aria-label="Panier">
+        <div class="panier-card panier-card--drawer">
+          <button class="panier-drawer-close" (click)="fermerPanier()" aria-label="Réduire le panier">
+            <i class="fa-solid fa-chevron-right d-none d-md-inline"></i>
+            <i class="fa-solid fa-xmark d-md-none"></i>
+          </button>
+          <div class="panier-card-body">
+            <ng-container *ngTemplateOutlet="panierContenu"></ng-container>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─── Bouton flottant compact (mobile — icône + badge) ─── -->
+<button class="ub-fab-panier d-md-none" [class.ub-panier-bump]="panierBump"
+        *ngIf="!panierOuvert" (click)="cartService.ouvrirPanier()" aria-label="Ouvrir le panier">
+  <i class="fa-solid fa-cart-shopping"></i>
+  <span *ngIf="(cartService.count) as n" class="ub-fab-badge" [class.ub-badge-pulse]="panierBump">{{ n }}</span>
+</button>
+
+<!-- ─── Bouton flottant étendu (tablette/desktop — icône + libellé + badge + total) ─── -->
+<button class="ub-fab-panier-pill d-none d-md-flex" [class.ub-panier-bump]="panierBump"
+        *ngIf="!panierOuvert" (click)="cartService.ouvrirPanier()" aria-label="Ouvrir le panier">
+  <span class="ub-fab-pill-icon">
+    <i class="fa-solid fa-cart-shopping"></i>
+    <span *ngIf="(cartService.count) as n" class="ub-fab-badge" [class.ub-badge-pulse]="panierBump">{{ n }}</span>
+  </span>
+  <span class="ub-fab-pill-texte">
+    <span class="ub-fab-pill-titre">Panier <span *ngIf="cartService.count as n">({{ n }})</span></span>
+    <span class="ub-fab-pill-total" *ngIf="cartService.count > 0">{{ formatPrix(cartService.total) }}</span>
+  </span>
+</button>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     TEMPLATE : CARTE PRODUIT (réutilisée grille + carrousel)
+═══════════════════════════════════════════════════════════════ -->
+<ng-template #produitCardTpl let-p="p">
+  <article class="produit-card h-100" [class.indisponible]="p.disponible === false">
+
+    <!-- Visuel -->
+    <div class="produit-visuel" (click)="voirDetail(p)"
+         (mouseenter)="demarrerCarrousel(p)" (mouseleave)="arreterCarrousel()">
+
+      <!-- Image réelle (upload admin) si disponible -->
+      <img *ngIf="p.images && p.images.length > 0" [src]="imageActuelle(p)" [alt]="p.titre" class="produit-img">
+
+      <!-- Repli icône + couleur (aucune photo réelle pour ce produit) -->
+      <div *ngIf="!p.images || p.images.length === 0" class="produit-icone-wrap" [style.background]="p.iconeBg">
+        <i class="fa-solid {{ p.icone }}"></i>
+      </div>
+
+      <!-- Indicateur carrousel (plusieurs images) -->
+      <div class="produit-img-dots" *ngIf="p.images && p.images.length > 1">
+        <span *ngFor="let img of p.images; let i = index; trackBy: trackByIndex"
+              class="produit-img-dot" [class.active]="i === indexImageActuel(p)"></span>
+      </div>
+      <span class="produit-img-compteur" *ngIf="p.images && p.images.length > 1">
+        {{ indexImageActuel(p) + 1 }}/{{ p.images.length }}
+      </span>
+
+      <!-- Badges -->
+      <div class="produit-badges">
+        <span *ngIf="p.nouveaute" class="produit-badge badge-nouveau">
+          <i class="fa-solid fa-sparkles"></i> Nouveau
+        </span>
+        <span *ngIf="pourcentagePromo(p) > 0" class="produit-badge badge-promo">
+          -{{ pourcentagePromo(p) }}%
+        </span>
+        <span *ngIf="p.badge" class="produit-badge"
+              [class.badge-bestseller]="p.badge === 'Best-seller'"
+              [class.badge-gratuit]="p.badge === 'Gratuit'"
+              [class.badge-premium]="p.badge === 'Premium'">
+          {{ p.badge }}
+        </span>
+        <span *ngIf="p.domaine === 'documents' && p.gratuit && p.badge !== 'Gratuit'" class="produit-badge badge-gratuit">Gratuit</span>
+        <span *ngIf="p.stock !== undefined && p.stock > 0 && p.stock <= 5" class="produit-badge badge-stock-faible">
+          Stock faible
+        </span>
+      </div>
+
+      <!-- Favoris (toujours visible, en haut à droite) -->
+      <button (click)="toggleFavori(p); $event.stopPropagation()" class="produit-fav-btn"
+              [class.active]="estFavori(p.id)" [class.ub-fav-anim]="favorisAnimId === p.id" title="Favoris">
+        <i class="fa-solid fa-heart" *ngIf="estFavori(p.id)"></i>
+        <i class="fa-regular fa-heart" *ngIf="!estFavori(p.id)"></i>
+      </button>
+
+      <!-- Type de fichier (documents uniquement) -->
+      <span *ngIf="p.domaine === 'documents' && p.formatDocument" class="produit-filetype-tag">
+        <i class="fa-solid" [class.fa-file-pdf]="p.formatDocument === 'PDF'" [class.fa-book]="p.formatDocument !== 'PDF'"></i>
+        {{ p.formatDocument }}
+      </span>
+
+      <span *ngIf="p.disponible === false" class="produit-indispo-tag">Rupture de stock</span>
+
+      <!-- Action rapide (survol) : comparateur -->
+      <div class="produit-actions-hover">
+        <button (click)="toggleComparaison(p); $event.stopPropagation()" class="produit-action-btn"
+                [class.active]="estEnComparaison(p.id)" title="Comparer">
+          <i class="fa-solid fa-code-compare"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Corps -->
+    <div class="produit-body">
+      <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+        <span class="produit-cat-badge">{{ p.categorie }}</span>
+        <span *ngIf="p.sousCategorie" class="produit-souscat-badge">{{ p.sousCategorie }}</span>
+      </div>
+
+      <h3 class="produit-titre" (click)="voirDetail(p)">{{ p.titre }}</h3>
+
+      <p *ngIf="p.description" class="produit-description">{{ p.description }}</p>
+
+      <div *ngIf="p.auteur || p.faculte" class="produit-auteur">
+        <i class="fa-regular fa-user me-1" *ngIf="p.auteur"></i>{{ p.auteur }}<span *ngIf="p.auteur && p.faculte"> · </span><i class="fa-solid fa-building-columns me-1" *ngIf="p.faculte && !p.auteur"></i>{{ p.faculte }}
+      </div>
+
+      <div class="produit-avis" *ngIf="p.note">
+        <span class="produit-etoiles">
+          <i class="fa-solid fa-star" *ngFor="let n of [1,2,3,4,5]" [class.vide]="n > p.note"></i>
+        </span>
+        <span class="produit-avis-count">{{ p.note }} ({{ p.nombreAvis }} avis)</span>
+      </div>
+
+      <div class="d-flex align-items-center justify-content-between produit-meta">
+        <span class="small" style="color:#8A929C; font-size:12.5px;">
+          <i class="fa-solid fa-tag me-1" style="font-size:10px;"></i>{{ p.type }}
+        </span>
+        <span class="produit-dispo" [class.rupture]="p.disponible === false">
+          <i class="fa-solid" [class.fa-circle-check]="p.disponible !== false" [class.fa-circle-xmark]="p.disponible === false"></i>
+          {{ p.disponible === false ? 'Indisponible' : 'En stock' }}
+        </span>
+      </div>
+
+      <!-- Prix -->
+      <div class="produit-prix-wrap mt-auto pt-3">
+        <span *ngIf="p.ancienPrix" class="produit-ancien-prix">{{ formatPrix(p.ancienPrix) }}</span>
+        <div class="produit-prix" [class.gratuit]="p.gratuit">{{ formatPrix(p.prix) }}</div>
+        <span *ngIf="economie(p) > 0" class="produit-economie">Économisez {{ formatPrix(economie(p)) }}</span>
+      </div>
+
+      <!-- Actions : bouton principal pleine largeur + bouton "Voir" compact (icône) —
+           mieux adapté aux cartes plus étroites (grille 3-4/ligne). -->
+      <div class="d-flex align-items-center gap-2 pt-3">
+        <button (click)="voirDetail(p); $event.stopPropagation()"
+                class="produit-btn-voir"
+                title="Voir le produit" aria-label="Voir le produit">
+          <i class="fa-regular fa-eye"></i>
+        </button>
+        <button *ngIf="!(p.domaine === 'documents' && p.gratuit)"
+                (click)="ajouterPanier(p); $event.stopPropagation()"
+                [disabled]="p.disponible === false"
+                class="produit-btn-ajouter d-flex align-items-center justify-content-center gap-2 ub-ripple">
+          <i class="fa-solid fa-cart-plus"></i>
+          Ajouter au panier
+        </button>
+        <button *ngIf="p.domaine === 'documents' && p.gratuit"
+                (click)="telechargerGratuitement(p); $event.stopPropagation()"
+                class="produit-btn-ajouter d-flex align-items-center justify-content-center gap-2 ub-ripple">
+          <i class="fa-solid fa-download"></i>
+          Télécharger
+        </button>
+      </div>
+    </div>
+
+  </article>
+</ng-template>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     TEMPLATE : FILTRES (desktop + mobile) — accordéons modernes
+═══════════════════════════════════════════════════════════════ -->
+<ng-template #filtresContenu>
+
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <span class="filtres-titre">
+      <i class="fa-solid fa-sliders me-2"></i>
+      Filtres
+    </span>
+    <button (click)="reinitialiser()" class="ub-btn-reset">
+      Réinitialiser
+    </button>
+  </div>
+
+  <!-- Catégories (uniquement pour le domaine Documents) -->
+  <details class="filtre-accordion" open *ngIf="domaineActif === 'documents'">
+    <summary class="filtre-accordion-titre">
+      Catégorie <i class="fa-solid fa-chevron-down filtre-accordion-chevron"></i>
+    </summary>
+    <div class="filtre-accordion-body">
+      <div class="d-flex flex-column gap-1">
+        <button *ngFor="let cat of categories; trackBy: trackByStr"
+                (click)="filtrerCategorie(cat.nom)"
+                class="filtre-cat-btn"
+                [class.active]="categorieActive === cat.nom">
+          <span class="d-flex align-items-center gap-2">
+            <span class="filtre-cat-icon"><i class="fa-solid {{ cat.icone }}"></i></span>
+            {{ cat.nom }}
+          </span>
+          <span class="filtre-count">{{ cat.count }}</span>
+        </button>
+      </div>
+
+      <div *ngIf="sousCategoriesActives.length > 0" class="mt-2 ms-3 d-flex flex-column gap-1">
+        <button *ngFor="let sc of sousCategoriesActives; trackBy: trackByStr"
+                (click)="filtrerSousCategorie(sc)"
+                class="filtre-sub-btn"
+                [class.active]="sousCategorieActive === sc">
+          <i class="fa-solid fa-circle-dot me-2" style="font-size:9px; opacity:.5;"></i>
+          {{ sc }}
+        </button>
+      </div>
+    </div>
+  </details>
+
+  <!-- Type de produit (dynamique selon le domaine actif) -->
+  <details class="filtre-accordion" open>
+    <summary class="filtre-accordion-titre">
+      {{ domaineActif === 'documents' ? 'Type de document' : 'Type de fourniture' }}
+      <i class="fa-solid fa-chevron-down filtre-accordion-chevron"></i>
+    </summary>
+    <div class="filtre-accordion-body">
+      <div class="d-flex flex-column gap-1">
+        <button *ngFor="let t of typesActifs; trackBy: trackByStr"
+                (click)="filtrerType(t)"
+                class="filtre-cat-btn"
+                [class.active]="typeActif === t">
+          {{ t }}
+        </button>
+      </div>
+    </div>
+  </details>
+
+  <!-- Prix -->
+  <details class="filtre-accordion" open>
+    <summary class="filtre-accordion-titre">
+      Prix <i class="fa-solid fa-chevron-down filtre-accordion-chevron"></i>
+    </summary>
+    <div class="filtre-accordion-body">
+      <div class="d-flex align-items-center gap-2">
+        <div class="ub-field ub-field-sm">
+          <input type="number" min="0" class="ub-field-input" placeholder="Min"
+                 [(ngModel)]="prixMin" name="prixMin" (ngModelChange)="onPrixChange()">
+        </div>
+        <span class="small" style="color:#B0B7BF;">—</span>
+        <div class="ub-field ub-field-sm">
+          <input type="number" min="0" class="ub-field-input" placeholder="Max"
+                 [(ngModel)]="prixMax" name="prixMax" (ngModelChange)="onPrixChange()">
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <!-- Disponibilité -->
+  <details class="filtre-accordion" open>
+    <summary class="filtre-accordion-titre">
+      Disponibilité <i class="fa-solid fa-chevron-down filtre-accordion-chevron"></i>
+    </summary>
+    <div class="filtre-accordion-body">
+      <div class="d-flex flex-wrap gap-2">
+        <button class="filtre-chip" [class.active]="filtreDisponibilite==='stock'" (click)="filtrerDisponibilite('stock')">
+          <i class="fa-solid fa-circle-check me-1"></i>En stock
+        </button>
+        <button class="filtre-chip" [class.active]="filtreDisponibilite==='rupture'" (click)="filtrerDisponibilite('rupture')">
+          <i class="fa-solid fa-circle-xmark me-1"></i>Rupture
+        </button>
+      </div>
+    </div>
+  </details>
+
+  <!-- Promotions / Gratuit -->
+  <details class="filtre-accordion" open>
+    <summary class="filtre-accordion-titre">
+      Offres <i class="fa-solid fa-chevron-down filtre-accordion-chevron"></i>
+    </summary>
+    <div class="filtre-accordion-body d-flex flex-column gap-1">
+      <label class="d-flex align-items-center gap-3 py-2" style="cursor:pointer;">
+        <input type="checkbox" class="ub-check" [(ngModel)]="filtrePromotion" name="filtrePromotion" (ngModelChange)="onFiltrePromotionChange()">
+        <span class="small" style="color:#3C444E; font-weight:500;">Promotions uniquement</span>
+      </label>
+      <label class="d-flex align-items-center gap-3 py-2" style="cursor:pointer;">
+        <input type="checkbox" class="ub-check" [(ngModel)]="filtreGratuit" name="filtreGratuit" (ngModelChange)="onFiltreGratuitChange()">
+        <span class="small" style="color:#3C444E; font-weight:500;">
+          {{ domaineActif === 'documents' ? 'Documents gratuits uniquement' : 'Articles gratuits uniquement' }}
+        </span>
+      </label>
+    </div>
+  </details>
+
+  <button class="ub-btn-filtrer d-lg-none" (click)="appliquerFiltres()">
+    <i class="fa-solid fa-check me-2"></i>Filtrer
+  </button>
+
+</ng-template>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     TEMPLATE : CONTENU PANIER (colonne desktop + drawer mobile)
+═══════════════════════════════════════════════════════════════ -->
+<ng-template #panierContenu>
+
+  <div class="panier-header">
+    <span class="panier-titre">
+      <i class="fa-solid fa-cart-shopping me-2"></i>
+      Mon panier
+      <span class="panier-count-badge" *ngIf="(cartService.count) > 0">{{ cartService.count }}</span>
+    </span>
+  </div>
+
+  <!-- Contenu (une seule souscription au flux du panier) -->
+  <ng-container *ngIf="(cartService.items$ | async) as items">
+
+    <!-- Vide -->
+    <div *ngIf="items.length === 0" class="panier-vide">
+      <div class="panier-vide-icon">
+        <i class="fa-solid fa-cart-shopping"></i>
+      </div>
+      <p class="small mb-0" style="color:#8A929C;">Votre panier est vide.</p>
+      <p class="small" style="color:#B7BEC6;">Ajoutez des documents pour commencer.</p>
+    </div>
+
+    <!-- Articles -->
+    <div *ngIf="items.length > 0" class="panier-items">
+      <div *ngFor="let item of items; trackBy: trackById" class="panier-item">
+        <div class="panier-item-img">
+          <img *ngIf="item.image" [src]="item.image" [alt]="item.titre" class="panier-item-img-photo">
+          <i *ngIf="!item.image" class="fa-solid {{ item.icone }}"></i>
+        </div>
+        <div class="panier-item-infos">
+          <div class="panier-item-titre">{{ item.titre }}</div>
+          <div class="d-flex align-items-center gap-2 mt-1 flex-wrap">
+            <span class="panier-item-cat">{{ item.categorie }}</span>
+            <span *ngIf="item.variante" class="panier-item-cat" style="background:#EFF6FF;color:#2563EB;">{{ item.variante }}</span>
+            <span class="panier-item-unitaire">{{ formatPrix(item.prix) }} / unité</span>
+          </div>
+          <div class="d-flex align-items-center justify-content-between mt-2">
+            <div class="panier-qty">
+              <button class="qty-btn" (click)="cartService.decrementer(item.id, item.variante)" [disabled]="item.quantite <= 1">
+                <i class="fa-solid fa-minus"></i>
+              </button>
+              <span>{{ item.quantite }}</span>
+              <button class="qty-btn" (click)="cartService.incrementer(item.id, item.variante)">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+            <div class="panier-item-prix">{{ formatPrix(item.prix * item.quantite) }}</div>
+          </div>
+        </div>
+        <button class="panier-item-remove" (click)="cartService.supprimer(item.id, item.variante)" title="Supprimer">
+          <i class="fa-solid fa-trash-can"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Résumé -->
+    <div *ngIf="items.length > 0" class="panier-resume">
+      <div class="panier-resume-ligne">
+        <span>Nombre d'articles</span>
+        <span>{{ cartService.count }}</span>
+      </div>
+      <div class="panier-resume-ligne">
+        <span>Sous-total</span>
+        <span>{{ formatPrix(cartService.sousTotal) }}</span>
+      </div>
+      <div class="panier-resume-total">
+        <span>Total</span>
+        <span>{{ formatPrix(cartService.total) }}</span>
+      </div>
+
+      <div class="panier-actions">
+        <a routerLink="/panier" (click)="fermerPanier()"
+           class="btn btn-outline-dark-ub w-100 py-2 rounded-pill fw-semibold">
+          Voir le panier
+        </a>
+        <a routerLink="/panier" [queryParams]="{ checkout: 1 }" (click)="fermerPanier()"
+           class="btn btn-accent w-100 py-3 rounded-pill fw-semibold d-flex align-items-center justify-content-center gap-2 ub-ripple">
+          <i class="fa-solid fa-lock"></i>
+          Commander
+        </a>
+        <button (click)="fermerPanier()" class="ub-lien-panier-complet">
+          Continuer les achats
+        </button>
+      </div>
+    </div>
+  </ng-container>
+
+</ng-template>

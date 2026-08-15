@@ -1,0 +1,374 @@
+<!-- ══════════════════════════ HERO ══════════════════════════ -->
+<section class="hero-section">
+  <span class="hero-blob hero-blob-1"></span>
+  <span class="hero-blob hero-blob-2"></span>
+  <span class="hero-blob hero-blob-3"></span>
+
+  <div class="container-xl px-4">
+    <div class="hero-grid">
+
+      <!-- Colonne texte (gauche, 40%) -->
+      <div class="hero-col-texte">
+        <span class="hero-badge ub-anim-hero-in" style="animation-delay:.05s">
+          <i class="fa-solid fa-shop"></i>
+          Boutique en ligne
+        </span>
+
+        <h1 class="hero-titre ub-anim-hero-in" style="animation-delay:.15s">
+          Tout ce dont vous avez besoin pour <span class="hero-titre-accent">réussir vos études</span>
+        </h1>
+
+        <p class="hero-description ub-anim-hero-in" style="animation-delay:.25s">
+          Découvrez notre collection de fournitures scolaires et de documents numériques de qualité.
+          Commandez facilement et profitez d'une expérience d'achat rapide, moderne et sécurisée.
+        </p>
+
+        <div class="hero-boutons ub-anim-hero-in" style="animation-delay:.35s">
+          <a routerLink="/boutique" class="btn btn-accent px-4 py-3 d-flex align-items-center gap-2 fs-6 ub-ripple hero-btn-principal">
+            <i class="fa-solid fa-cart-shopping"></i>
+            Découvrir la boutique
+            <i class="fa-solid fa-arrow-right hero-btn-arrow"></i>
+          </a>
+          <a routerLink="/boutique" class="btn btn-outline-dark-ub px-4 py-3 d-flex align-items-center gap-2 fs-6 hero-btn-secondaire ub-ripple">
+            <i class="fa-solid fa-file-lines" style="color:var(--accent)"></i>
+            Explorer les documents
+          </a>
+        </div>
+
+        <div class="hero-stats ub-anim-hero-in" style="animation-delay:.45s">
+          <div class="hero-stat-card" *ngFor="let s of heroStats">
+            <span class="hero-stat-emoji">{{ s.emoji }}</span>
+            <div>
+              <div class="hero-stat-valeur">{{ s.valeur }}</div>
+              <div class="hero-stat-label">{{ s.label }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Colonne visuels (droite, 60%) -->
+      <div class="hero-col-visuel ub-anim-hero-slide-in"
+           (mouseenter)="pauseGalerieAutoplay()" (mouseleave)="reprendreGalerieAutoplay()"
+           (touchstart)="onHeroTouchStart($event)" (touchend)="onHeroTouchEnd($event)">
+
+        <div class="hero-gallery">
+          <!-- Image secondaire arrière -->
+          <div class="hero-gallery-img hero-gallery-img--back"
+               [style.background-image]="'url(' + heroGalleryImages[heroImgSecondaire2].image + '), ' + heroGalleryImages[heroImgSecondaire2].gradient">
+          </div>
+
+          <!-- Image secondaire avant -->
+          <div class="hero-gallery-img hero-gallery-img--front"
+               [style.background-image]="'url(' + heroGalleryImages[heroImgSecondaire1].image + '), ' + heroGalleryImages[heroImgSecondaire1].gradient">
+          </div>
+
+          <!-- Image principale -->
+          <div class="hero-gallery-img hero-gallery-img--main"
+               [style.background-image]="'url(' + heroGalleryImages[heroImgActif].image + '), ' + heroGalleryImages[heroImgActif].gradient">
+            <span class="hero-gallery-label">{{ heroGalleryImages[heroImgActif].label }}</span>
+          </div>
+        </div>
+
+        <!-- Flèches précédent / suivant -->
+        <div class="hero-gallery-arrows">
+          <button class="hero-arrow-btn" (click)="galeriePrecedente()" aria-label="Image précédente">
+            <i class="fa-solid fa-arrow-left"></i>
+          </button>
+          <button class="hero-arrow-btn" (click)="galerieSuivante()" aria-label="Image suivante">
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+
+        <!-- Indicateurs -->
+        <div class="hero-gallery-dots">
+          <button *ngFor="let img of heroGalleryImages; let i = index"
+                  class="hero-dot"
+                  [class.active]="i === heroImgActif"
+                  (click)="allerAGalerieImage(i)"
+                  [attr.aria-label]="'Voir ' + img.label">
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════ POURQUOI CHOISIR UNIVERSITY BOOK ══════════════════════════ -->
+<section class="py-5" ubReveal>
+  <div class="container-xl px-4">
+    <div class="row g-5 align-items-center">
+
+      <!-- Texte + avantages -->
+      <div class="col-12 col-lg-6">
+        <h2 class="fw-bold mb-3" style="font-size:clamp(26px,3vw,34px);">
+          Pourquoi choisir <span style="color:var(--accent)">University Book</span> ?
+        </h2>
+        <p class="mb-4" style="color:#5A626C;font-size:15.5px;line-height:1.75;max-width:480px;">
+          Nous accompagnons les étudiants tunisiens avec une sélection rigoureuse de fournitures et de documents
+          numériques, une plateforme rapide et un service de confiance, du premier clic à la réception.
+        </p>
+
+        <div class="d-flex flex-column gap-3">
+          <div class="ub-why-item" *ngFor="let a of pourquoiNous">
+            <span class="ub-why-icon"><i class="fa-solid {{ a.icone }}"></i></span>
+            <div>
+              <p class="fw-bold mb-1" style="font-size:15px;">{{ a.titre }}</p>
+              <p class="mb-0 small" style="color:#6B7480;">{{ a.description }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Illustration -->
+      <div class="col-12 col-lg-6">
+        <div class="ub-why-illustration">
+          <i class="fa-solid fa-graduation-cap"></i>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+<div class="text-center mb-5">
+        <h2 class="fw-bold mb-3" style="font-size:clamp(26px,3vw,34px);">
+          Nos <span style="color:var(--accent)">Cathegories</span>
+        </h2>
+        <div class="avantages-underline">
+          <span class="seg-1"></span><span class="seg-2"></span>
+        </div>
+      </div>
+
+
+<!-- ══════════════════════════ CATÉGORIES + CARROUSELS ══════════════════════════ -->
+<section class="py-4" *ngFor="let cat of categorySections">
+  <div class="container-xl px-4">
+   
+    <div class="row g-4 align-items-stretch">
+      
+      <!-- Carte catégorie (gauche) -->
+      <div class="col-12 col-lg-4">
+        <a [routerLink]="cat.lien" class="cat-card-lottie" [style.background]="cat.gradient">
+          <span class="cat-card-lottie-blob cat-card-lottie-blob-1"></span>
+          <span class="cat-card-lottie-blob cat-card-lottie-blob-2"></span>
+
+          <div class="cat-card-lottie-anim">
+            <app-lottie-player [path]="cat.lottiePath" [fallbackIcon]="cat.icone" [size]="150"></app-lottie-player>
+          </div>
+
+          <h3 class="cat-card-lottie-titre">{{ cat.titre }}</h3>
+          <p class="cat-card-lottie-desc">{{ cat.description }}</p>
+
+          <span class="cat-card-lottie-btn">
+            {{ cat.ctaLabel }}
+            <i class="fa-solid fa-arrow-right"></i>
+          </span>
+        </a>
+      </div>
+
+      <!-- Carrousel produits (droite) — masqué sur mobile -->
+      <div class="col-12 col-lg-8 d-none d-md-block">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h4 class="fw-bold mb-0" style="font-size:19px;color:#1B2430;">{{ cat.carouselTitre }}</h4>
+          <div class="d-flex align-items-center gap-3">
+            <a [routerLink]="cat.lien" class="small fw-semibold d-none d-lg-inline-flex align-items-center gap-1"
+               style="color:var(--accent);">
+              Voir tout
+              <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i>
+            </a>
+            <div class="d-flex gap-2">
+              <button class="carousel-arrow" (click)="faireDefiler(track, -1)" aria-label="Précédent">
+                <i class="fa-solid fa-chevron-left"></i>
+              </button>
+              <button class="carousel-arrow" (click)="faireDefiler(track, 1)" aria-label="Suivant">
+                <i class="fa-solid fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="cat-carousel-track" #track>
+          <div class="cat-carousel-card" *ngFor="let p of cat.produits" (click)="ouvrirCategorie(cat.lien)">
+            <div class="cat-carousel-visuel" [style.background]="p.iconeBg">
+              <span *ngIf="p.badge" class="produit-badge"
+                    [class.badge-bestseller]="p.badge === 'Best-seller'"
+                    [class.badge-gratuit]="p.badge === 'Gratuit'"
+                    [class.badge-premium]="p.badge === 'Premium'">
+                {{ p.badge }}
+              </span>
+              <button class="cat-carousel-checkbox"
+                      [class.checked]="estDansComparateur(p.id)"
+                      (click)="toggleComparaison(p, cat.titre, $event)"
+                      aria-label="Ajouter au comparateur">
+                <i class="fa-solid fa-check" *ngIf="estDansComparateur(p.id)"></i>
+              </button>
+              <i class="fa-solid {{ p.icone }} cat-carousel-icon"></i>
+            </div>
+            <div class="cat-carousel-body">
+              <h4 class="cat-carousel-titre">{{ p.titre }}</h4>
+              <div class="d-flex align-items-center gap-2 mt-2 flex-wrap">
+                <span class="cat-carousel-prix" [class.gratuit]="p.prix === 0">{{ formatPrix(p.prix) }}</span>
+                <span *ngIf="p.ancienPrix" class="cat-carousel-old-prix">{{ formatPrix(p.ancienPrix) }}</span>
+              </div>
+              <span *ngIf="p.ancienPrix && p.ancienPrix > p.prix" class="cat-carousel-economie">
+                Économisez {{ formatPrix(p.ancienPrix - p.prix) }}
+              </span>
+              <div class="d-flex align-items-center justify-content-end mt-2">
+                <button class="cat-carousel-add" (click)="ajouterPanier(p, cat.titre); $event.stopPropagation()"
+                        aria-label="Ajouter au panier">
+                  <i class="fa-solid fa-cart-plus"></i>
+                  Ajouter
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════ OFFRE SPÉCIALE + PRÊT À COMMENCER ══════════════════════════ -->
+<section class="py-4">
+  
+  <div class="container-xl px-4">
+    <div class="row g-4 align-items-stretch">
+      <div class="text-center mb-5">
+        <h2 class="fw-bold mb-3" style="font-size:clamp(26px,3vw,34px);">
+          Nos <span style="color:var(--accent)">Promos</span>
+        </h2>
+        <div class="avantages-underline">
+          <span class="seg-1"></span><span class="seg-2"></span>
+        </div>
+      </div>
+
+      <!-- SECTION 1 — Offre spéciale (~66%) -->
+      <div class="col-12 col-lg-8">
+        <div class="promo-banner h-100">
+          <div class="row g-0 align-items-center h-100">
+
+            <div class="col-12 col-md-7">
+              <div class="promo-content">
+                <span class="badge rounded-pill px-3 py-2 mb-3 d-inline-flex align-items-center gap-2"
+                      style="background:rgba(255,255,255,.15);color:#fff;font-size:13px;font-weight:600;width:fit-content;">
+                  <i class="fa-solid fa-stopwatch"></i>
+                  Offre limitée
+                </span>
+                <h2 class="fw-bold text-white mb-3" style="font-size:clamp(24px,2.8vw,32px);line-height:1.25;">
+                  Offres spéciales sur les fournitures scolaires
+                </h2>
+                <p class="mb-4" style="color:rgba(255,255,255,.85);font-size:15.5px;line-height:1.7;max-width:400px;">
+                  Profitez de réductions exclusives sur une sélection de produits.
+                </p>
+                <a routerLink="/boutique"
+                   class="promo-cta-btn">
+                  <i class="fa-solid fa-tag"></i>
+                  Profiter des offres
+                  <i class="fa-solid fa-arrow-right"></i>
+                </a>
+              </div>
+            </div>
+
+            <div class="col-12 col-md-5">
+              <div class="promo-visual">
+                <div class="promo-dots-pattern"></div>
+                <img [src]="promoImage" alt="Fournitures scolaires en promotion" loading="lazy" decoding="async" class="promo-visual-image">
+                <span class="promo-mini-tag">-30%</span>
+                <span class="promo-discount-circle">
+                  <small>Jusqu'à</small>
+                  <strong>-30%</strong>
+                </span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 2 — Prêt à commencer (~33%) -->
+      <div class="col-12 col-lg-4">
+        <div class="cta-card h-100">
+          <span class="cta-badge">
+            <i class="fa-solid fa-user"></i>
+            Nouveau ici ?
+          </span>
+          <h2 class="fw-bold mb-3" style="font-size:clamp(24px,2.6vw,30px);line-height:1.25;">
+            Prêt à <span style="color:var(--accent)">commencer</span> ?
+          </h2>
+          <p class="mb-4" style="color:#6B7480;font-size:15px;line-height:1.65;">
+            Créez votre compte maintenant pour un accès rapide à vos favoris et une meilleure expérience d'achat.
+          </p>
+
+          <div class="cta-illustration">
+            <div class="cta-illustration-card">
+              <div class="cta-illustration-avatar">
+                <i class="fa-solid fa-user"></i>
+              </div>
+              <div class="cta-illustration-line"></div>
+              <div class="cta-illustration-line short"></div>
+            </div>
+            <span class="cta-illustration-lock">
+              <i class="fa-solid fa-lock"></i>
+            </span>
+          </div>
+
+          <div class="d-flex flex-column gap-2 mt-auto">
+            <a routerLink="/register" class="btn btn-accent d-flex align-items-center justify-content-center gap-2 py-3"
+               style="border-radius:12px;">
+              <i class="fa-solid fa-user-plus"></i>
+              Créer un compte
+              <i class="fa-solid fa-arrow-right ms-auto"></i>
+            </a>
+            <a routerLink="/login" class="btn-outline-accent d-flex align-items-center justify-content-center gap-2 py-3">
+              <i class="fa-solid fa-right-to-bracket"></i>
+              Se connecter
+              <i class="fa-solid fa-arrow-right ms-auto"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════ NOS AVANTAGES ══════════════════════════ -->
+<section class="py-4">
+  <div class="container-xl px-4">
+    <div class="avantages-container">
+
+      <div class="text-center mb-5">
+        <h2 class="fw-bold mb-3" style="font-size:clamp(26px,3vw,34px);">
+          Nos <span style="color:var(--accent)">avantages</span>
+        </h2>
+        <div class="avantages-underline">
+          <span class="seg-1"></span><span class="seg-2"></span>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-6 col-md-4 col-lg-2" *ngFor="let a of avantages">
+          <div class="avantage-card h-100">
+            <div class="avantage-icon">
+              <i class="fa-solid {{ a.icone }}"></i>
+            </div>
+            <h5 class="fw-bold mb-2">{{ a.titre }}</h5>
+            <p class="small mb-0" style="color:#6B7480;line-height:1.6;">
+              {{ a.description }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-center gap-2 mt-5">
+        <span class="avantages-dot active"></span>
+        <span class="avantages-dot"></span>
+      </div>
+
+    </div>
+  </div>
+</section>

@@ -1,0 +1,12 @@
+/* Fond décoratif auth */
+:host section::before {
+  content: '';
+  position: fixed;
+  top: -120px;
+  right: -120px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(140,36,51,.06) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}

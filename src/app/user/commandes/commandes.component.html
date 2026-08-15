@@ -1,0 +1,303 @@
+<div class="p-4 p-lg-5">
+  <h1 class="font-spectral fw-bold mb-4" style="font-size:24px;">Mes commandes</h1>
+
+  <!-- Recherche et filtres -->
+  <div class="d-flex flex-wrap gap-2 mb-4">
+    <div class="input-group" style="max-width:280px;">
+      <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-magnifying-glass text-secondary"></i></span>
+      <input type="text" class="form-control border-start-0 ps-0" placeholder="N° de commande..."
+             [(ngModel)]="recherche" (keyup.enter)="rechercher()">
+    </div>
+    <button class="btn btn-outline-dark-ub btn-sm" (click)="rechercher()">Rechercher</button>
+
+    <div class="ms-auto d-flex flex-wrap gap-2">
+      <button class="btn btn-sm" [class.btn-accent]="statutFiltre===''" [class.btn-outline-dark-ub]="statutFiltre!==''"
+              (click)="filtrerParStatut('')">Tous</button>
+      <button *ngFor="let s of statuts" class="btn btn-sm"
+              [class.btn-accent]="statutFiltre===s" [class.btn-outline-dark-ub]="statutFiltre!==s"
+              (click)="filtrerParStatut(s)">{{ statutInfo(s).label }}</button>
+    </div>
+  </div>
+
+  <div class="d-flex justify-content-center py-5" *ngIf="chargement">
+    <i class="fa-solid fa-spinner fa-spin fa-2x" style="color:var(--accent)"></i>
+  </div>
+
+  <div class="alert alert-danger" *ngIf="erreur && !chargement">{{ erreur }}</div>
+  <div class="alert alert-success" *ngIf="succes">{{ succes }}</div>
+
+  <ng-container *ngIf="!chargement && !erreur">
+
+    <div class="ub-cmd-empty" *ngIf="commandes.length === 0">
+      <i class="fa-solid fa-bag-shopping"></i>
+      <p class="mb-0">Aucune commande trouvée.</p>
+    </div>
+
+    <div class="ub-cmd-list" *ngIf="commandes.length > 0">
+      <div class="ub-cmd-card" *ngFor="let commande of commandes; trackBy: trackById">
+
+        <div class="ub-cmd-card-top">
+          <div>
+            <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+              <span class="fw-bold" style="font-size:16px;color:#1B2430;">{{ commande.numero }}</span>
+              <span class="ub-statut-badge" [style.color]="statutInfo(commande.statut).couleur" [style.background]="statutInfo(commande.statut).fond">
+                <i class="fa-solid {{ statutInfo(commande.statut).icone }} me-1"></i>{{ statutInfo(commande.statut).label }}
+              </span>
+            </div>
+            <span class="small text-secondary">
+              <i class="fa-regular fa-calendar me-1"></i>{{ commande.createdAt | date:'dd/MM/yyyy' }}
+              <i class="fa-regular fa-clock ms-2 me-1"></i>{{ commande.createdAt | date:'HH:mm' }}
+            </span>
+          </div>
+          <div class="text-end">
+            <div class="fw-bold font-spectral" style="font-size:19px;color:var(--accent);">{{ commande.total | number:'1.3-3' }} د.ت</div>
+            <span class="small text-secondary">{{ nombreArticles(commande) }} article{{ nombreArticles(commande) > 1 ? 's' : '' }}</span>
+          </div>
+        </div>
+
+        <div class="ub-cmd-card-meta">
+          <div class="ub-cmd-meta-item">
+            <i class="fa-solid fa-wallet"></i>
+            <div><span class="ub-cmd-meta-label">Paiement</span><span>{{ commande.paiement || '—' }}</span></div>
+          </div>
+          <div class="ub-cmd-meta-item">
+            <i class="fa-solid fa-truck"></i>
+            <div><span class="ub-cmd-meta-label">Livraison</span><span>{{ modeLivraison(commande) }}</span></div>
+          </div>
+          <div class="ub-cmd-meta-item" *ngIf="commande.adresseLivraison && commande.adresseLivraison !== 'Retrait en magasin'">
+            <i class="fa-solid fa-location-dot"></i>
+            <div><span class="ub-cmd-meta-label">Adresse</span><span class="text-truncate d-inline-block" style="max-width:220px;">{{ commande.adresseLivraison }}</span></div>
+          </div>
+        </div>
+
+        <div class="ub-cmd-card-actions">
+          <button class="btn btn-accent btn-sm ub-ripple" (click)="voirDetail(commande, 'suivi')">
+            <i class="fa-solid fa-truck-fast me-2"></i>Voir le suivi
+          </button>
+          <button class="btn btn-outline-dark-ub btn-sm" (click)="voirDetail(commande, 'infos')">
+            <i class="fa-solid fa-receipt me-2"></i>Détails
+          </button>
+          <button class="btn btn-outline-dark-ub btn-sm" (click)="commanderDeNouveau(commande)">
+            <i class="fa-solid fa-rotate-right me-2"></i>Commander à nouveau
+          </button>
+          <button class="btn btn-sm ub-btn-danger-outline" *ngIf="peutAnnuler(commande)" (click)="annuler(commande)">
+            <i class="fa-solid fa-xmark me-2"></i>Annuler la commande
+          </button>
+          <span *ngIf="!peutAnnuler(commande) && commande.statut !== 'Annulée'" class="small text-secondary fst-italic">
+            Cette commande ne peut plus être annulée.
+          </span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="d-flex justify-content-center align-items-center gap-3 py-3" *ngIf="totalPages > 1">
+      <button class="btn btn-sm btn-outline-dark-ub" [disabled]="page <= 1" (click)="pagePrecedente()">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <span class="small">Page {{ page }} / {{ totalPages }}</span>
+      <button class="btn btn-sm btn-outline-dark-ub" [disabled]="page >= totalPages" (click)="pageSuivante()">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+  </ng-container>
+
+  <!-- Détail commande -->
+  <div class="ub-detail-overlay" *ngIf="commandeSelectionnee" (click)="fermerDetail()">
+    <div class="ub-detail-modal" (click)="$event.stopPropagation()">
+
+      <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+          <h2 class="fw-bold mb-1" style="font-size:20px;">Commande {{ commandeSelectionnee.numero }}</h2>
+          <span class="ub-statut-badge" [style.color]="statutInfo(commandeSelectionnee.statut).couleur" [style.background]="statutInfo(commandeSelectionnee.statut).fond">
+            <i class="fa-solid {{ statutInfo(commandeSelectionnee.statut).icone }} me-1"></i>{{ statutInfo(commandeSelectionnee.statut).label }}
+          </span>
+        </div>
+        <button class="btn btn-sm btn-outline-dark-ub" (click)="fermerDetail()" aria-label="Fermer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="d-flex justify-content-center py-5" *ngIf="chargementDetail">
+        <i class="fa-solid fa-spinner fa-spin fa-2x" style="color:var(--accent)"></i>
+      </div>
+
+      <ng-container *ngIf="!chargementDetail">
+
+        <p class="alert py-2 px-3 mb-3" *ngIf="!peutAnnuler(commandeSelectionnee)" style="background:#F0F1F4;color:#6B7480;font-size:13px;">
+          <i class="fa-solid fa-circle-info me-2"></i>Cette commande ne peut plus être annulée.
+        </p>
+
+        <!-- Onglets -->
+        <div class="ub-onglets mb-3">
+          <button class="ub-onglet-btn" [class.active]="ongletDetail==='infos'" (click)="ongletDetail='infos'">
+            <i class="fa-solid fa-receipt me-2"></i>Détails
+          </button>
+          <button class="ub-onglet-btn" [class.active]="ongletDetail==='suivi'" (click)="ongletDetail='suivi'">
+            <i class="fa-solid fa-truck-fast me-2"></i>Suivi
+          </button>
+        </div>
+
+        <!-- Onglet Détails -->
+        <ng-container *ngIf="ongletDetail==='infos'">
+          <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+              <p class="small text-secondary mb-1">Date</p>
+              <p class="fw-semibold mb-0">{{ commandeSelectionnee.createdAt | date:'dd/MM/yyyy' }}</p>
+            </div>
+            <div class="col-6 col-md-3">
+              <p class="small text-secondary mb-1">Heure</p>
+              <p class="fw-semibold mb-0">{{ commandeSelectionnee.createdAt | date:'HH:mm' }}</p>
+            </div>
+            <div class="col-6 col-md-3">
+              <p class="small text-secondary mb-1">Client</p>
+              <p class="fw-semibold mb-0">{{ client?.prenom }} {{ client?.nom }}</p>
+            </div>
+            <div class="col-6 col-md-3">
+              <p class="small text-secondary mb-1">Téléphone</p>
+              <p class="fw-semibold mb-0">{{ client?.telephone || '—' }}</p>
+            </div>
+            <div class="col-12 col-md-6">
+              <p class="small text-secondary mb-1">Email</p>
+              <p class="fw-semibold mb-0">{{ client?.email || '—' }}</p>
+            </div>
+            <div class="col-6 col-md-3">
+              <p class="small text-secondary mb-1">Livraison</p>
+              <p class="fw-semibold mb-0">{{ modeLivraison(commandeSelectionnee) }}</p>
+            </div>
+            <div class="col-12" *ngIf="commandeSelectionnee.adresseLivraison && commandeSelectionnee.adresseLivraison !== 'Retrait en magasin'">
+              <p class="small text-secondary mb-1">Adresse de livraison</p>
+              <p class="fw-semibold mb-0">{{ commandeSelectionnee.adresseLivraison }}</p>
+            </div>
+            <div class="col-12" *ngIf="commandeSelectionnee.commentaire">
+              <p class="small text-secondary mb-1">Commentaire</p>
+              <p class="fw-semibold mb-0">{{ commandeSelectionnee.commentaire }}</p>
+            </div>
+          </div>
+
+          <!-- Informations de paiement -->
+          <p class="ub-section-titre">Informations de paiement</p>
+          <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3">
+              <p class="small text-secondary mb-1">Mode</p>
+              <p class="fw-semibold mb-0">{{ commandeSelectionnee.paiement || '—' }}</p>
+            </div>
+            <div class="col-6 col-md-3">
+              <p class="small text-secondary mb-1">Statut</p>
+              <p class="fw-semibold mb-0">{{ statutPaiementLabel(commandeSelectionnee) }}</p>
+            </div>
+            <div class="col-6 col-md-3">
+              <p class="small text-secondary mb-1">Référence</p>
+              <p class="fw-semibold mb-0">{{ commandeSelectionnee.referencePaiement || '—' }}</p>
+            </div>
+            <div class="col-6 col-md-3">
+              <p class="small text-secondary mb-1">Montant</p>
+              <p class="fw-semibold mb-0">{{ commandeSelectionnee.total | number:'1.3-3' }} DT</p>
+            </div>
+          </div>
+
+          <p class="small text-secondary mb-2 fw-semibold">Articles</p>
+          <div class="ub-item-cards mb-3">
+            <div class="ub-item-card" *ngFor="let item of commandeSelectionnee.items">
+              <span class="ub-item-icon"><i class="fa-solid" [ngClass]="item.image || 'fa-file'"></i></span>
+              <div class="flex-grow-1">
+                <p class="fw-semibold mb-1">{{ item.titre }}</p>
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                  <span class="ub-item-badge">{{ badgeItem(item) }}</span>
+                  <span class="small text-secondary" *ngIf="item.categorie">{{ item.categorie }}</span>
+                  <span class="small text-secondary" *ngIf="item.variante"><i class="fa-solid fa-palette me-1"></i>{{ item.variante }}</span>
+                </div>
+              </div>
+              <div class="text-end">
+                <p class="small text-secondary mb-1">{{ item.prix | number:'1.3-3' }} DT × {{ item.quantite }}</p>
+                <p class="fw-bold mb-0" style="color:var(--accent);">{{ (item.prix * item.quantite) | number:'1.3-3' }} DT</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="ub-total-recap">
+            <div class="d-flex justify-content-between small text-secondary mb-1">
+              <span>Sous-total</span><span>{{ sousTotalCommande(commandeSelectionnee) | number:'1.3-3' }} DT</span>
+            </div>
+            <div class="d-flex justify-content-between small text-secondary mb-1">
+              <span>Frais de livraison</span>
+              <span>{{ fraisLivraisonCommande(commandeSelectionnee) === 0 ? 'Gratuite' : (fraisLivraisonCommande(commandeSelectionnee) | number:'1.3-3') + ' DT' }}</span>
+            </div>
+            <div class="d-flex justify-content-between small text-secondary mb-1">
+              <span>Remise</span><span>0,000 DT</span>
+            </div>
+            <div class="d-flex justify-content-between small text-secondary mb-2">
+              <span>TVA</span><span style="color:#22C55E;">Incluse</span>
+            </div>
+            <div class="d-flex justify-content-between fw-bold" style="font-size:17px;color:var(--accent);">
+              <span>Total</span><span>{{ commandeSelectionnee.total | number:'1.3-3' }} DT</span>
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 mt-3 flex-wrap">
+            <button class="btn btn-outline-dark-ub" [disabled]="telechargementFactureEnCours" (click)="telechargerFacture(commandeSelectionnee)">
+              <i class="fa-solid" [class.fa-file-invoice]="!telechargementFactureEnCours" [class.fa-spinner]="telechargementFactureEnCours" [class.fa-spin]="telechargementFactureEnCours" style="margin-right:8px;"></i>
+              Télécharger la facture
+            </button>
+            <button class="btn btn-outline-dark-ub" (click)="imprimerFacture()">
+              <i class="fa-solid fa-print me-2"></i>Imprimer
+            </button>
+            <button class="btn btn-outline-dark-ub" (click)="commanderDeNouveau(commandeSelectionnee)">
+              <i class="fa-solid fa-rotate-right me-2"></i>Commander à nouveau
+            </button>
+            <a routerLink="/contact" class="btn btn-outline-dark-ub">
+              <i class="fa-solid fa-headset me-2"></i>Contacter le support
+            </a>
+            <button class="btn ub-btn-danger-outline" *ngIf="peutAnnuler(commandeSelectionnee)" (click)="annuler(commandeSelectionnee)">
+              <i class="fa-solid fa-xmark me-2"></i>Annuler la commande
+            </button>
+          </div>
+        </ng-container>
+
+        <!-- Onglet Suivi -->
+        <ng-container *ngIf="ongletDetail==='suivi'">
+
+          <!-- Commande annulée ou remboursée : état à part -->
+          <div class="ub-suivi-annule" *ngIf="commandeSelectionnee.statut === 'Annulée'">
+            <i class="fa-solid fa-circle-xmark"></i>
+            <p class="fw-bold mb-1">Commande annulée</p>
+            <p class="small text-secondary mb-0">Cette commande a été annulée et ne sera pas traitée.</p>
+          </div>
+          <div class="ub-suivi-annule" *ngIf="commandeSelectionnee.statut === 'Remboursée'">
+            <i class="fa-solid fa-rotate-left"></i>
+            <p class="fw-bold mb-1">Commande remboursée</p>
+            <p class="small text-secondary mb-0">Cette commande a été remboursée.</p>
+          </div>
+
+          <!-- Barre de progression horizontale -->
+          <div class="ub-progress-track" *ngIf="commandeSelectionnee.statut !== 'Annulée' && commandeSelectionnee.statut !== 'Remboursée'">
+            <div class="ub-progress-fill" [style.width.%]="etapeActuelleIndex(commandeSelectionnee) / (etapesProgression.length - 1) * 100"></div>
+            <div class="ub-progress-step" *ngFor="let etape of etapesProgression; let i = index"
+                 [class.done]="i <= etapeActuelleIndex(commandeSelectionnee)"
+                 [class.current]="i === etapeActuelleIndex(commandeSelectionnee)">
+              <span class="ub-progress-dot" [style.background]="i <= etapeActuelleIndex(commandeSelectionnee) ? statutInfo(etape).couleur : '#E4E7EC'">
+                <i class="fa-solid {{ statutInfo(etape).icone }}"></i>
+              </span>
+              <span class="ub-progress-label">{{ statutInfo(etape).label }}</span>
+            </div>
+          </div>
+
+          <!-- Historique daté -->
+          <div class="ub-timeline mt-4">
+            <div class="ub-timeline-step" *ngFor="let etape of timeline(commandeSelectionnee); let last = last" [class.last]="last">
+              <span class="ub-timeline-dot" [style.background]="statutInfo(etape.statut).fond" [style.color]="statutInfo(etape.statut).couleur">
+                <i class="fa-solid {{ statutInfo(etape.statut).icone }}"></i>
+              </span>
+              <div class="ub-timeline-content">
+                <p class="fw-semibold mb-0">{{ statutInfo(etape.statut).label }}</p>
+                <p class="small text-secondary mb-0">{{ etape.date | date:'dd/MM/yyyy HH:mm' }}</p>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+      </ng-container>
+    </div>
+  </div>
+</div>

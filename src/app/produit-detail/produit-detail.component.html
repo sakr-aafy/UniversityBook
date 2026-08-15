@@ -1,0 +1,231 @@
+<section class="pdd-bg">
+  <div class="container-xl px-4 py-5">
+
+    <!-- ── Chargement du catalogue (lien direct / rafraîchissement) ── -->
+    <div class="d-flex justify-content-center py-5" *ngIf="chargementProduit">
+      <i class="fa-solid fa-spinner fa-spin fa-2x" style="color:var(--accent)"></i>
+    </div>
+
+    <!-- ── Produit introuvable ── -->
+    <div *ngIf="!chargementProduit && !produit" class="pdd-empty">
+      <div class="pdd-empty-icon"><i class="fa-solid fa-box-open"></i></div>
+      <h4 class="font-spectral fw-bold mb-2">Produit introuvable</h4>
+      <p class="mb-4" style="color:#6B7480;">Ce produit n'existe pas ou n'est plus disponible.</p>
+      <a routerLink="/boutique" class="btn btn-accent px-4 py-2 rounded-pill fw-semibold">
+        <i class="fa-solid fa-arrow-left me-2"></i>Retour à la boutique
+      </a>
+    </div>
+
+    <ng-container *ngIf="produit as p">
+
+      <!-- ── Fil d'Ariane ── -->
+      <div class="pdd-breadcrumb mb-4">
+        <a routerLink="/boutique">Boutique</a>
+        <i class="fa-solid fa-chevron-right"></i>
+        <span>{{ p.domaine === 'documents' ? 'Documents' : 'Fournitures scolaires' }}</span>
+        <i class="fa-solid fa-chevron-right"></i>
+        <span class="pdd-breadcrumb-current">{{ p.titre }}</span>
+      </div>
+
+      <!-- ══ FICHE PRODUIT : deux colonnes ══ -->
+      <div class="pdd-shell">
+
+        <!-- ─── Colonne gauche : galerie ─── -->
+        <div class="pdd-gallery">
+          <div class="pdd-gallery-main" [style.background]="aDesImages ? '#fff' : p.iconeBg">
+            <span *ngIf="p.badge" class="pdd-badge" [class.badge-bestseller]="p.badge === 'Best-seller'" [class.badge-gratuit]="p.badge === 'Gratuit'">{{ p.badge }}</span>
+            <span *ngIf="pourcentagePromo(p) > 0" class="pdd-badge badge-promo">-{{ pourcentagePromo(p) }}%</span>
+            <img *ngIf="aDesImages" [src]="imageUrl(imageActive)" [alt]="p.titre" class="pdd-gallery-img">
+            <i *ngIf="!aDesImages" class="fa-solid {{ p.icone }} pdd-gallery-icon" [class]="'pdd-tint-' + imageActive"></i>
+          </div>
+          <div class="pdd-thumbs" *ngIf="galerie.length > 1">
+            <button *ngFor="let i of galerie; trackBy: trackByValue" class="pdd-thumb"
+                    [class.active]="imageActive === i" (click)="choisirImage(i)">
+              <img [src]="imageUrl(i)" [alt]="p.titre">
+            </button>
+          </div>
+        </div>
+
+        <!-- ─── Colonne droite : informations + actions ─── -->
+        <div class="pdd-infos">
+
+          <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+            <span class="pdd-cat-badge">{{ p.categorie }}</span>
+            <span *ngIf="p.sousCategorie" class="small" style="color:#9AA2AB;">· {{ p.sousCategorie }}</span>
+            <span *ngIf="p.marque" class="small" style="color:#9AA2AB;">· {{ p.marque }}</span>
+          </div>
+
+          <h1 class="pdd-titre font-spectral">{{ p.titre }}</h1>
+
+          <div *ngIf="p.auteur" class="pdd-auteur mb-2">
+            <i class="fa-regular fa-user me-1"></i>{{ p.auteur }}
+          </div>
+
+          <div class="d-flex align-items-center gap-3 flex-wrap pdd-meta">
+            <span><i class="fa-solid fa-hashtag me-1"></i>{{ reference(p) }}</span>
+            <span><i class="fa-solid fa-barcode me-1"></i>{{ p.sku }}</span>
+            <span [style.color]="etatStock === 'rupture' ? '#8C2433' : (etatStock === 'stock-faible' ? '#C2410C' : '#166534')">
+              <i class="fa-solid"
+                 [class.fa-circle-check]="etatStock === 'en-stock'"
+                 [class.fa-triangle-exclamation]="etatStock === 'stock-faible'"
+                 [class.fa-circle-xmark]="etatStock === 'rupture'"></i>
+              {{ etatStock === 'en-stock' ? 'En stock' : (etatStock === 'stock-faible' ? 'Stock faible' : 'Rupture de stock') }}
+              <ng-container *ngIf="etatStock !== 'rupture' && stockAffiche !== null"> ({{ stockAffiche }} restants)</ng-container>
+            </span>
+          </div>
+
+          <div class="pdd-prix-wrap">
+            <span *ngIf="ancienPrixAffiche" class="pdd-ancien-prix">{{ formatPrix(ancienPrixAffiche) }}</span>
+            <span class="pdd-prix" [class.gratuit]="p.gratuit">{{ formatPrix(prixAffiche) }}</span>
+          </div>
+
+          <!-- ── Variantes couleur (fournitures) ── -->
+          <div *ngIf="p.couleurs?.length" class="pdd-variante-bloc">
+            <div class="pdd-variante-label">Couleur <span class="fw-semibold" style="color:#1B2430;">— {{ couleurSelectionnee?.nom }}</span></div>
+            <div class="d-flex gap-2 flex-wrap">
+              <button *ngFor="let c of p.couleurs; trackBy: trackByNom" class="pdd-couleur-pastille"
+                      [class.active]="couleurSelectionnee?.nom === c.nom"
+                      [style.background]="c.hex" [title]="c.nom" (click)="selectCouleur(c)">
+                <i class="fa-solid fa-check" *ngIf="couleurSelectionnee?.nom === c.nom"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- ── Variantes format (fournitures) ── -->
+          <div *ngIf="p.formats?.length" class="pdd-variante-bloc">
+            <div class="pdd-variante-label">Format <span class="fw-semibold" style="color:#1B2430;">— {{ formatSelectionne?.nom }}</span></div>
+            <div class="d-flex gap-2 flex-wrap">
+              <button *ngFor="let f of p.formats; trackBy: trackByNom" class="pdd-format-btn"
+                      [class.active]="formatSelectionne?.nom === f.nom" (click)="selectFormat(f)">
+                {{ f.nom }}
+              </button>
+            </div>
+          </div>
+
+          <!-- ── Quantité ── -->
+          <div class="pdd-variante-bloc">
+            <div class="pdd-variante-label">Quantité</div>
+            <div class="panier-qty" style="width:fit-content;">
+              <button class="qty-btn" (click)="decrementerQuantite()" [disabled]="quantite <= 1">
+                <i class="fa-solid fa-minus"></i>
+              </button>
+              <span style="min-width:28px;text-align:center;font-weight:700;">{{ quantite }}</span>
+              <button class="qty-btn" (click)="incrementerQuantite()" [disabled]="stockAffiche !== null && quantite >= stockAffiche">
+                <i class="fa-solid fa-plus"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- ── Actions ── -->
+          <div class="pdd-actions" *ngIf="!estDocumentGratuit">
+            <button (click)="ajouterAuPanier()" [disabled]="!estDisponible"
+                    class="btn btn-accent d-flex align-items-center justify-content-center gap-2 rounded-pill py-3 ub-ripple pdd-btn-principal">
+              <i class="fa-solid fa-cart-plus"></i> Ajouter au panier
+            </button>
+            <button (click)="acheterMaintenant()" [disabled]="!estDisponible"
+                    class="btn btn-outline-dark-ub d-flex align-items-center justify-content-center gap-2 rounded-pill py-3 pdd-btn-principal">
+              <i class="fa-solid fa-bolt"></i> Acheter maintenant
+            </button>
+          </div>
+          <div class="pdd-actions" *ngIf="estDocumentGratuit">
+            <button (click)="telechargerGratuitement()"
+                    class="btn btn-accent d-flex align-items-center justify-content-center gap-2 rounded-pill py-3 ub-ripple pdd-btn-principal">
+              <i class="fa-solid fa-download"></i> Télécharger gratuitement
+            </button>
+          </div>
+          <div class="pdd-actions-sec">
+            <button (click)="toggleFavori()" class="pdd-btn-sec" [class.active]="estFavori(p.id)">
+              <i class="fa-solid fa-heart" *ngIf="estFavori(p.id)"></i>
+              <i class="fa-regular fa-heart" *ngIf="!estFavori(p.id)"></i>
+              Favoris
+            </button>
+            <button (click)="partager()" class="pdd-btn-sec">
+              <i class="fa-solid" [class.fa-share-nodes]="!partageConfirme" [class.fa-check]="partageConfirme"></i>
+              {{ partageConfirme ? 'Lien copié !' : 'Partager' }}
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ══ ONGLETS ══ -->
+      <div class="pdd-tabs">
+        <button class="pdd-tab" [class.active]="ongletActif === 'description'" (click)="changerOnglet('description')">Description</button>
+        <button class="pdd-tab" [class.active]="ongletActif === 'caracteristiques'" (click)="changerOnglet('caracteristiques')">Caractéristiques</button>
+        <button class="pdd-tab" [class.active]="ongletActif === 'complementaires'" (click)="changerOnglet('complementaires')">Informations complémentaires</button>
+        <button class="pdd-tab" [class.active]="ongletActif === 'avis'" (click)="changerOnglet('avis')">Avis</button>
+        <button class="pdd-tab" [class.active]="ongletActif === 'similaires'" (click)="changerOnglet('similaires')">Produits similaires</button>
+      </div>
+
+      <div class="pdd-tab-content">
+
+        <div *ngIf="ongletActif === 'description'" class="pdd-anim-fade">
+          <p class="pdd-description">
+            {{ p.description || (p.domaine === 'documents'
+                ? "Document pédagogique de référence proposé par University Book, sélectionné pour accompagner votre réussite universitaire. Contenu vérifié et régulièrement mis à jour."
+                : "Fourniture scolaire de qualité, sélectionnée par University Book pour accompagner votre quotidien universitaire.") }}
+          </p>
+          <div *ngIf="p.apercuDisponible" class="pdd-apercu">
+            <i class="fa-regular fa-file-lines me-2"></i>Un aperçu de ce document est disponible avant achat.
+          </div>
+        </div>
+
+        <div *ngIf="ongletActif === 'caracteristiques'" class="pdd-anim-fade">
+          <div class="pdd-caract-grid">
+            <div *ngFor="let c of (p.domaine === 'documents' ? champsDocument : champsFourniture)" class="pdd-caract-ligne">
+              <span class="pdd-caract-label">{{ c.label }}</span>
+              <span class="pdd-caract-value">{{ c.value }}</span>
+            </div>
+            <p *ngIf="(p.domaine === 'documents' ? champsDocument : champsFourniture).length === 0" class="small" style="color:#9AA0A8;">
+              Aucune caractéristique renseignée pour ce produit.
+            </p>
+          </div>
+        </div>
+
+        <div *ngIf="ongletActif === 'complementaires'" class="pdd-anim-fade">
+          <div class="pdd-caract-grid">
+            <div *ngFor="let c of informationsComplementaires" class="pdd-caract-ligne">
+              <span class="pdd-caract-label">{{ c.label }}</span>
+              <span class="pdd-caract-value">{{ c.value }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="ongletActif === 'avis'" class="pdd-anim-fade pdd-avis-vide">
+          <div class="pdd-avis-etoiles">
+            <i class="fa-regular fa-star" *ngFor="let s of [1,2,3,4,5]"></i>
+          </div>
+          <p class="fw-semibold mb-1" style="color:#1B2430;">Aucun avis pour le moment</p>
+          <p class="small" style="color:#9AA0A8;">Soyez le premier à donner votre avis sur ce produit.</p>
+        </div>
+
+        <div *ngIf="ongletActif === 'similaires'" class="pdd-anim-fade">
+          <div *ngIf="produitsSimilaires.length === 0" class="small" style="color:#9AA0A8;">
+            Aucun autre produit dans cette catégorie pour le moment.
+          </div>
+          <div class="pdd-similaires-carousel" *ngIf="produitsSimilaires.length > 0">
+            <a *ngFor="let sp of produitsSimilaires; trackBy: trackById" [routerLink]="['/produit', sp.id]" class="pdd-similaire-card">
+              <div class="pdd-similaire-visuel" [style.background]="sp.images?.length ? '#fff' : sp.iconeBg">
+                <span *ngIf="sp.badge" class="pdd-badge pdd-badge-sm">{{ sp.badge }}</span>
+                <img *ngIf="sp.images?.length" [src]="imagePrincipale(sp)" [alt]="sp.titre" class="pdd-similaire-img">
+                <i *ngIf="!sp.images?.length" class="fa-solid {{ sp.icone }}"></i>
+              </div>
+              <div class="pdd-similaire-body">
+                <div class="pdd-similaire-titre">{{ sp.titre }}</div>
+                <div class="d-flex align-items-center justify-content-between mt-2">
+                  <span class="pdd-similaire-prix">{{ formatPrix(sp.prix) }}</span>
+                  <button (click)="ajouterAuPanierRapide(sp); $event.preventDefault(); $event.stopPropagation()"
+                          class="pdd-similaire-add" title="Ajouter au panier">
+                    <i class="fa-solid fa-cart-plus"></i>
+                  </button>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+    </ng-container>
+  </div>
+</section>

@@ -1,0 +1,288 @@
+<div class="p-4 p-lg-5">
+  <h1 class="font-spectral fw-bold mb-4" style="font-size:24px;">Mon profil</h1>
+
+  <div class="d-flex justify-content-center py-5" *ngIf="chargement">
+    <i class="fa-solid fa-spinner fa-spin fa-2x" style="color:var(--accent)"></i>
+  </div>
+
+  <div class="alert alert-danger" *ngIf="erreur && !chargement">{{ erreur }}</div>
+
+  <ng-container *ngIf="profil && !chargement">
+
+    <!-- Bannière -->
+    <div class="ub-profil-banniere mb-4">
+      <div class="ub-profil-banniere-avatar">
+        <img *ngIf="profil.photo" [src]="photoActuelleUrl" alt="Photo de profil">
+        <i *ngIf="!profil.photo" class="fa-solid fa-user-shield"></i>
+      </div>
+      <div class="flex-grow-1">
+        <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+          <h2 class="fw-bold text-white mb-0" style="font-size:22px;">{{ profil.prenom }} {{ profil.nom }}</h2>
+          <span class="ub-badge-role">
+            <i class="fa-solid fa-shield-halved me-1"></i>Administrateur
+          </span>
+        </div>
+        <div class="d-flex align-items-center gap-3 flex-wrap" style="color:rgba(255,255,255,.85);font-size:13.5px;">
+          <span><i class="fa-regular fa-envelope me-2"></i>{{ profil.email }}</span>
+          <span *ngIf="profil.telephone"><i class="fa-solid fa-phone me-2"></i>{{ profil.telephone }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Compte système : lecture seule -->
+    <div class="alert ub-alert-systeme" *ngIf="profil.systeme">
+      <i class="fa-solid fa-circle-info me-2"></i>
+      Ce compte administrateur système (identifiants du fichier <code>.env</code>) n'a pas de profil modifiable.
+      Pour gérer un profil complet, créez un administrateur nominatif depuis la page Utilisateurs
+      (<code>POST /api/admin/create</code>), puis connectez-vous avec ce compte.
+    </div>
+
+    <div class="row g-4" *ngIf="!profil.systeme">
+
+      <!-- Informations personnelles -->
+      <div class="col-12 col-lg-6">
+        <div class="ub-profil-card h-100">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="ub-section-titre mb-0">Informations personnelles</div>
+            <button class="btn btn-outline-dark-ub btn-sm" (click)="ouvrirDialogInfos()">
+              <i class="fa-solid fa-pen me-2"></i>Modifier
+            </button>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-6">
+              <p class="ub-view-label">Nom</p>
+              <p class="ub-view-value">{{ profil.nom }}</p>
+            </div>
+            <div class="col-6">
+              <p class="ub-view-label">Prénom</p>
+              <p class="ub-view-value">{{ profil.prenom || '—' }}</p>
+            </div>
+            <div class="col-6">
+              <p class="ub-view-label">Email</p>
+              <p class="ub-view-value">{{ profil.email }}</p>
+            </div>
+            <div class="col-6">
+              <p class="ub-view-label">Téléphone</p>
+              <p class="ub-view-value">{{ profil.telephone || '—' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Adresse -->
+      <div class="col-12 col-lg-6">
+        <div class="ub-profil-card h-100">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="ub-section-titre mb-0">Adresse</div>
+            <button class="btn btn-outline-dark-ub btn-sm" (click)="ouvrirDialogAdresse()">
+              <i class="fa-solid fa-pen me-2"></i>Modifier
+            </button>
+          </div>
+
+          <div class="row g-3" *ngIf="profil.adresse">
+            <div class="col-6">
+              <p class="ub-view-label">Gouvernorat</p>
+              <p class="ub-view-value">{{ profil.adresse.gouvernorat || '—' }}</p>
+            </div>
+            <div class="col-6">
+              <p class="ub-view-label">Délégation</p>
+              <p class="ub-view-value">{{ profil.adresse.delegation || '—' }}</p>
+            </div>
+            <div class="col-6">
+              <p class="ub-view-label">Code postal</p>
+              <p class="ub-view-value">{{ profil.adresse.codePostal || '—' }}</p>
+            </div>
+            <div class="col-12">
+              <p class="ub-view-label">Adresse détaillée</p>
+              <p class="ub-view-value">{{ profil.adresse.ligne1 || '—' }}</p>
+            </div>
+          </div>
+          <p class="text-secondary small mb-0" *ngIf="!profil.adresse">Aucune adresse enregistrée.</p>
+        </div>
+      </div>
+
+      <!-- Sécurité -->
+      <div class="col-12">
+        <div class="ub-profil-card">
+          <div class="ub-section-titre mb-2">Sécurité</div>
+          <p class="text-secondary small mb-3">Modifiez régulièrement votre mot de passe pour protéger votre compte.</p>
+          <button class="btn btn-outline-dark-ub" (click)="ouvrirDialogMotDePasse()">
+            <i class="fa-solid fa-lock me-2"></i>Modifier le mot de passe
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </ng-container>
+
+  <!-- ══════════════ Dialogue : Informations personnelles ══════════════ -->
+  <div class="ub-profil-overlay" *ngIf="dialogInfosOuvert" (click)="fermerDialogInfos()">
+    <div class="ub-profil-dialog" (click)="$event.stopPropagation()">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h3 class="fw-bold mb-0" style="font-size:18px;">Modifier mes informations</h3>
+        <button class="ub-dialog-close" (click)="fermerDialogInfos()" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="alert alert-danger py-2 px-3" *ngIf="erreurInfos">{{ erreurInfos }}</div>
+
+      <form (ngSubmit)="enregistrerInfos()">
+        <div class="d-flex align-items-center gap-3 mb-4">
+          <div class="ub-avatar-lg">
+            <img *ngIf="photoApercu" [src]="photoApercu" alt="Aperçu photo">
+            <img *ngIf="!photoApercu && photoActuelleUrl" [src]="photoActuelleUrl" alt="Photo de profil">
+            <i *ngIf="!photoApercu && !photoActuelleUrl" class="fa-solid fa-user-shield"></i>
+          </div>
+          <div>
+            <label for="photo" class="btn btn-outline-dark-ub btn-sm px-3">
+              <i class="fa-solid fa-camera me-2"></i>Changer la photo
+            </label>
+            <input type="file" id="photo" accept="image/png,image/jpeg,image/webp" class="d-none" (change)="onPhotoSelectionnee($event)">
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label ub-label">Nom *</label>
+            <input type="text" class="form-control ub-input" [(ngModel)]="nom" name="nom" required>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label ub-label">Prénom</label>
+            <input type="text" class="form-control ub-input" [(ngModel)]="prenom" name="prenom">
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label ub-label">Téléphone</label>
+            <input type="tel" class="form-control ub-input" [(ngModel)]="telephone" name="telephone">
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label ub-label">Adresse e-mail *</label>
+            <input type="email" class="form-control ub-input" [(ngModel)]="email" name="email" required>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+          <button type="button" class="btn btn-outline-dark-ub flex-grow-1" (click)="fermerDialogInfos()">Annuler</button>
+          <button type="submit" class="btn btn-accent flex-grow-1 ub-ripple" [disabled]="enregistrement">
+            <span *ngIf="!enregistrement"><i class="fa-solid fa-floppy-disk me-2"></i>Enregistrer</span>
+            <span *ngIf="enregistrement"><i class="fa-solid fa-spinner fa-spin me-2"></i>Enregistrement...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══════════════ Dialogue : Adresse ══════════════ -->
+  <div class="ub-profil-overlay" *ngIf="dialogAdresseOuvert" (click)="fermerDialogAdresse()">
+    <div class="ub-profil-dialog" (click)="$event.stopPropagation()">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h3 class="fw-bold mb-0" style="font-size:18px;">Modifier l'adresse</h3>
+        <button class="ub-dialog-close" (click)="fermerDialogAdresse()" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="alert alert-danger py-2 px-3" *ngIf="erreurAdresse">{{ erreurAdresse }}</div>
+
+      <form (ngSubmit)="enregistrerAdresse()">
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label ub-label">Gouvernorat</label>
+            <app-searchable-select
+              [ngModel]="formGouvernorat"
+              (ngModelChange)="onGouvernoratChange($event)"
+              [options]="gouvernorats"
+              name="gouvernorat"
+              placeholder="Rechercher un gouvernorat…">
+            </app-searchable-select>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label ub-label">Délégation</label>
+            <app-searchable-select
+              [(ngModel)]="formDelegation"
+              [options]="delegationsDisponibles"
+              name="delegation"
+              [placeholder]="formGouvernorat ? 'Rechercher une délégation…' : 'Choisir un gouvernorat d\'abord'">
+            </app-searchable-select>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label ub-label">Code postal</label>
+            <input type="text" class="form-control ub-input" [(ngModel)]="formCodePostal" name="codePostal" maxlength="4">
+          </div>
+          <div class="col-12">
+            <label class="form-label ub-label">Adresse détaillée *</label>
+            <textarea class="form-control ub-input" rows="3" [(ngModel)]="formAdresseDetaillee" name="adresse"
+                       placeholder="Résidence, immeuble, étage, numéro de rue, quartier…" required></textarea>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+          <button type="button" class="btn btn-outline-dark-ub flex-grow-1" (click)="fermerDialogAdresse()">Annuler</button>
+          <button type="submit" class="btn btn-accent flex-grow-1 ub-ripple" [disabled]="chargementAdresse">
+            <span *ngIf="!chargementAdresse"><i class="fa-solid fa-floppy-disk me-2"></i>Enregistrer</span>
+            <span *ngIf="chargementAdresse"><i class="fa-solid fa-spinner fa-spin me-2"></i>Enregistrement...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══════════════ Dialogue : Mot de passe ══════════════ -->
+  <div class="ub-profil-overlay" *ngIf="dialogMotDePasseOuvert" (click)="fermerDialogMotDePasse()">
+    <div class="ub-profil-dialog" style="max-width:440px;" (click)="$event.stopPropagation()">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h3 class="fw-bold mb-0" style="font-size:18px;">Modifier le mot de passe</h3>
+        <button class="ub-dialog-close" (click)="fermerDialogMotDePasse()" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="alert alert-danger py-2 px-3" *ngIf="erreurMotDePasse">{{ erreurMotDePasse }}</div>
+      <div class="alert alert-success py-2 px-3" *ngIf="succesMotDePasse">{{ succesMotDePasse }}</div>
+
+      <form (ngSubmit)="changerMotDePasse()">
+        <div class="mb-3">
+          <label class="form-label ub-label">Ancien mot de passe</label>
+          <div class="ub-input-eye-wrap">
+            <input [type]="showAncien ? 'text' : 'password'" class="form-control ub-input" [(ngModel)]="ancienMotDePasse" name="ancienMotDePasse">
+            <button type="button" class="ub-eye-btn" (click)="showAncien = !showAncien">
+              <i class="fa-solid" [class.fa-eye]="!showAncien" [class.fa-eye-slash]="showAncien"></i>
+            </button>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label ub-label">Nouveau mot de passe</label>
+          <div class="ub-input-eye-wrap">
+            <input [type]="showNouveau ? 'text' : 'password'" class="form-control ub-input" [(ngModel)]="nouveauMotDePasse" name="nouveauMotDePasse">
+            <button type="button" class="ub-eye-btn" (click)="showNouveau = !showNouveau">
+              <i class="fa-solid" [class.fa-eye]="!showNouveau" [class.fa-eye-slash]="showNouveau"></i>
+            </button>
+          </div>
+          <div class="ub-strength-meter" *ngIf="nouveauMotDePasse">
+            <span class="ub-strength-bar" [class.ub-strength-ok]="motDePasseFort"></span>
+          </div>
+          <p class="small mt-1 mb-0" [style.color]="motDePasseFort ? '#16A34A' : '#9AA0A8'" *ngIf="nouveauMotDePasse">
+            <i class="fa-solid" [class.fa-circle-check]="motDePasseFort" [class.fa-circle-xmark]="!motDePasseFort"></i>
+            8 caractères min., majuscule, minuscule, chiffre et caractère spécial
+          </p>
+        </div>
+        <div class="mb-3">
+          <label class="form-label ub-label">Confirmation</label>
+          <div class="ub-input-eye-wrap">
+            <input [type]="showConfirmation ? 'text' : 'password'" class="form-control ub-input"
+                   [class.ub-input-err]="confirmationMotDePasse && !motsDePasseCorrespondent"
+                   [class.ub-input-ok]="motsDePasseCorrespondent"
+                   [(ngModel)]="confirmationMotDePasse" name="confirmationMotDePasse">
+            <button type="button" class="ub-eye-btn" (click)="showConfirmation = !showConfirmation">
+              <i class="fa-solid" [class.fa-eye]="!showConfirmation" [class.fa-eye-slash]="showConfirmation"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+          <button type="button" class="btn btn-outline-dark-ub flex-grow-1" (click)="fermerDialogMotDePasse()">Annuler</button>
+          <button type="submit" class="btn btn-accent flex-grow-1 ub-ripple" [disabled]="chargementMotDePasse">
+            <span *ngIf="!chargementMotDePasse"><i class="fa-solid fa-lock me-2"></i>Modifier</span>
+            <span *ngIf="chargementMotDePasse"><i class="fa-solid fa-spinner fa-spin me-2"></i>Enregistrement...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

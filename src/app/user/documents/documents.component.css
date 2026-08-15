@@ -1,0 +1,175 @@
+@keyframes ub-anim-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ub-anim-in {
+  opacity: 0;
+  animation: ub-anim-in .5s cubic-bezier(.16,.84,.44,1) both;
+}
+
+/* ── Carte document ── */
+.ub-doc-card {
+  background: #fff;
+  border-radius: 18px;
+  overflow: hidden;
+  height: 100%;
+  box-shadow: 0 8px 32px -18px rgba(0, 0, 0, .14);
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.ub-doc-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, .2);
+}
+
+.ub-doc-card-visuel {
+  position: relative;
+  height: 150px;
+  background: #F0F1F4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ub-doc-card-visuel img { width: 100%; height: 100%; object-fit: cover; }
+.ub-doc-card-visuel i { font-size: 40px; color: #9AA0A8; }
+
+.ub-doc-card-statut {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+}
+
+.ub-badge-type-doc {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #EFF6FF;
+  color: #2563EB;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.ub-badge-type-doc i { font-size: 6px; }
+.ub-badge-type-doc.gratuit {
+  background: #ECFDF5;
+  color: #16A34A;
+}
+
+/* ── Bannière d'alerte proche expiration ── */
+.ub-alert-expiration {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  color: #B45309;
+  border-radius: 14px;
+  padding: 14px 18px;
+}
+.ub-alert-expiration i { font-size: 18px; margin-top: 2px; }
+.ub-alert-expiration p { font-size: 13.5px; }
+
+.ub-doc-thumb {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: #F0F1F4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.ub-doc-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.ub-doc-thumb i { font-size: 20px; color: #9AA0A8; }
+
+.ub-doc-thumb-lg {
+  width: 100%;
+  height: 160px;
+  border-radius: 16px;
+}
+.ub-doc-thumb-lg i { font-size: 44px; }
+
+.ub-badge {
+  background: #F0F1F4;
+  color: #3C444E;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.ub-badge-restant {
+  display: inline-flex;
+  align-items: center;
+  background: #ECFDF5;
+  color: #16A34A;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.ub-badge-expire {
+  display: inline-flex;
+  align-items: center;
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid #FECACA;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* ── Modal détail ── */
+.ub-doc-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 14, 20, .5);
+  backdrop-filter: blur(2px);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.ub-doc-modal {
+  position: relative;
+  background: #fff;
+  border-radius: 20px;
+  padding: 24px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 32px 80px -16px rgba(0, 0, 0, .3);
+}
+
+.ub-doc-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #ECEDEF;
+  background: #F7F8FA;
+  color: #5A626C;
+}
+
+.ub-doc-modal-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13.5px;
+  color: #6B7480;
+  padding: 8px 0;
+  border-bottom: 1px solid #F0F1F4;
+}
+.ub-doc-modal-row strong { color: #1B2430; }

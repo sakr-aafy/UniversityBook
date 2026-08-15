@@ -1,0 +1,429 @@
+<!-- TOP BAR -->
+<div class="border-bottom bg-white py-2">
+  <div class="container-xl">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+
+      <!-- Gauche : email + téléphone -->
+      <div class="d-flex align-items-center gap-3">
+        <a href="mailto:contact@universitybook.tn"
+           class="d-flex align-items-center gap-2 text-decoration-none text-dark small">
+          <i class="fa-regular fa-envelope" style="color:var(--accent)"></i>
+          contact@universitybook.tn
+        </a>
+        <span class="vr"></span>
+        <a href="tel:+21621717222"
+           class="d-flex align-items-center gap-2 text-decoration-none text-dark small">
+          <i class="fa-solid fa-phone" style="color:var(--accent)"></i>
+          +216 21 717 222
+        </a>
+      </div>
+
+      <!-- Droite : horaires + langue + réseaux -->
+      <div class="d-flex align-items-center gap-3">
+        <span class="d-none d-lg-flex align-items-center gap-2 small text-secondary">
+          <i class="fa-regular fa-clock"></i>
+          Lun – Sam · 8h00 – 18h00
+        </span>
+        <span class="vr d-none d-lg-block"></span>
+
+        <!-- Sélecteur langue -->
+        <div class="d-flex align-items-center gap-1 border rounded-pill px-2 py-1">
+          <i class="fa-solid fa-globe text-secondary" style="font-size:12px"></i>
+          <div class="vr mx-1"></div>
+          <button *ngFor="let l of ['FR','EN','AR']"
+                  (click)="setLang(l)"
+                  class="btn btn-sm rounded-pill px-2 py-0"
+                  style="font-size:11px; font-weight:700;"
+                  [style.background]="currentLang===l ? '#fff' : 'transparent'"
+                  [style.color]="currentLang===l ? '#7E1F2E' : '#AEB6BF'">
+            {{ l }}
+          </button>
+        </div>
+        <span class="vr"></span>
+
+        <!-- Réseaux sociaux -->
+        <div class="d-flex gap-2">
+          <a href="#" class="btn btn-sm rounded-circle p-1"
+             style="width:28px;height:28px;background:rgba(0,0,0,.05);display:flex;align-items:center;justify-content:center;">
+            <i class="fab fa-facebook-f" style="color:#0076ff;font-size:11px"></i>
+          </a>
+          <a href="#" class="btn btn-sm rounded-circle p-1"
+             style="width:28px;height:28px;background:rgba(0,0,0,.05);display:flex;align-items:center;justify-content:center;">
+            <i class="fab fa-instagram" style="color:#a61896;font-size:11px"></i>
+          </a>
+          <a href="#" class="btn btn-sm rounded-circle p-1"
+             style="width:28px;height:28px;background:rgba(0,0,0,.05);display:flex;align-items:center;justify-content:center;">
+            <i class="fab fa-linkedin-in" style="color:#0076ff;font-size:11px"></i>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- NAVBAR PRINCIPALE -->
+<nav class="navbar bg-white border-bottom sticky-top ub-navbar" [class.scrolled]="scrolled">
+  <div class="container-xl">
+
+    <!-- LOGO -->
+    <a class="navbar-brand d-flex align-items-center gap-2" routerLink="/">
+      <svg width="48" height="48" viewBox="0 0 60 60" fill="none">
+        <circle cx="30" cy="30" r="29" fill="url(#ub_grad)"/>
+        <path d="M30 16 L44 21.5 L30 27 L16 21.5 Z" fill="#fff"/>
+        <path d="M21.5 24.2 V31 c0 2.6 3.8 4.4 8.5 4.4 s8.5-1.8 8.5-4.4 V24.2"
+              stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M44 21.5 V30" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
+        <circle cx="44" cy="31.4" r="1.6" fill="#F4D9A0"/>
+        <defs>
+          <linearGradient id="ub_grad" x1="8" y1="6" x2="52" y2="54" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#9A2A3A"/>
+            <stop offset="1" stop-color="#6E1726"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <span class="font-spectral fw-bold fs-5">University Book</span>
+    </a>
+
+    <!-- DESKTOP NAV -->
+    <div class="d-none d-xl-flex align-items-center gap-4" *ngIf="!isMobile">
+
+      <!-- Accueil -->
+      <a routerLink="/" routerLinkActive="ub-active" [routerLinkActiveOptions]="{exact:true}"
+         class="nav-link fw-semibold text-dark px-0 py-2 position-relative">
+        Accueil
+      </a>
+
+      <!-- Boutique mega-menu : catégories/sous-catégories réelles (Category/SousCategorie),
+           aucun contenu codé en dur — une catégorie ajoutée en admin apparaît ici au prochain
+           chargement du catalogue, sans modification de code (voir CatalogueService). -->
+      <div class="dropdown" (mouseenter)="openDropdown('boutique')" (mouseleave)="closeDropdowns()">
+        <a class="nav-link fw-semibold text-secondary d-flex align-items-center gap-1 py-2" routerLink="/boutique"
+           aria-haspopup="true" [attr.aria-expanded]="openMenu==='boutique'">
+          Boutique
+          <i class="fa-solid fa-chevron-down"
+             [style.transform]="openMenu==='boutique' ? 'rotate(180deg)' : 'rotate(0deg)'"
+             style="transition:transform .2s;font-size:11px;"></i>
+        </a>
+        <ul class="dropdown-menu ub-mega-menu border-0 shadow-lg p-3 mt-1"
+            style="border-top:3px solid var(--accent)!important;border-radius:14px;"
+            [class.show]="openMenu==='boutique'">
+
+          <li class="ub-mega-col" *ngIf="categoriesDocuments.length > 0">
+            <div class="ub-mega-col-titre"><i class="fa-solid fa-book me-2"></i>Documents numériques</div>
+            <ul class="list-unstyled mb-0">
+              <li *ngFor="let cat of categoriesDocuments" class="dropdown-submenu position-relative"
+                  (mouseenter)="openSub(cat._id)" (mouseleave)="closeSub()">
+                <a class="dropdown-item rounded-3 d-flex justify-content-between align-items-center"
+                   style="font-size:14.5px;font-weight:500;"
+                   [style.color]="boutiqueSub===cat._id ? 'var(--accent)' : 'inherit'"
+                   [routerLink]="['/boutique']" [queryParams]="{domaine:'documents', categorie: cat.nom}"
+                   (click)="fermerMegaMenu()">
+                  {{ cat.nom }}
+                  <i class="fa-solid fa-chevron-right text-secondary ms-2" style="font-size:11px" *ngIf="cat.sousCategories.length > 0"></i>
+                </a>
+                <ul class="dropdown-menu border-0 shadow-lg p-2" *ngIf="cat.sousCategories.length > 0"
+                    style="top:-11px;left:100%;border-top:3px solid var(--accent)!important;border-radius:12px;min-width:230px;"
+                    [class.show]="boutiqueSub===cat._id">
+                  <li *ngFor="let sc of cat.sousCategories">
+                    <a class="dropdown-item rounded-3" style="font-size:14.5px"
+                       [routerLink]="['/boutique']" [queryParams]="{domaine:'documents', categorie: cat.nom, sousCategorie: sc.nom}"
+                       (click)="fermerMegaMenu()">
+                      {{ sc.nom }}
+                    </a>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+
+          <li class="ub-mega-col" *ngIf="categoriesFournitures.length > 0">
+            <div class="ub-mega-col-titre"><i class="fa-solid fa-box me-2"></i>Fournitures scolaires</div>
+            <ul class="list-unstyled mb-0">
+              <li *ngFor="let cat of categoriesFournitures" class="dropdown-submenu position-relative"
+                  (mouseenter)="openSub(cat._id)" (mouseleave)="closeSub()">
+                <a class="dropdown-item rounded-3 d-flex justify-content-between align-items-center"
+                   style="font-size:14.5px;font-weight:500;"
+                   [style.color]="boutiqueSub===cat._id ? 'var(--accent)' : 'inherit'"
+                   [routerLink]="['/boutique']" [queryParams]="{domaine:'fournitures', categorie: cat.nom}"
+                   (click)="fermerMegaMenu()">
+                  {{ cat.nom }}
+                  <i class="fa-solid fa-chevron-right text-secondary ms-2" style="font-size:11px" *ngIf="cat.sousCategories.length > 0"></i>
+                </a>
+                <ul class="dropdown-menu border-0 shadow-lg p-2" *ngIf="cat.sousCategories.length > 0"
+                    style="top:-11px;left:100%;border-top:3px solid var(--accent)!important;border-radius:12px;min-width:230px;"
+                    [class.show]="boutiqueSub===cat._id">
+                  <li *ngFor="let sc of cat.sousCategories">
+                    <a class="dropdown-item rounded-3" style="font-size:14.5px"
+                       [routerLink]="['/boutique']" [queryParams]="{domaine:'fournitures', categorie: cat.nom, sousCategorie: sc.nom}"
+                       (click)="fermerMegaMenu()">
+                      {{ sc.nom }}
+                    </a>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+
+          <li *ngIf="categoriesDocuments.length === 0 && categoriesFournitures.length === 0" class="px-3 py-2 small text-secondary">
+            Aucune catégorie pour le moment.
+          </li>
+        </ul>
+      </div>
+
+      <a routerLink="/contact" class="nav-link fw-semibold text-secondary py-2">Documents Gratuits</a>
+      <a routerLink="/contact" class="nav-link fw-semibold text-secondary py-2">Contact</a>
+    </div>
+
+    <!-- ACTIONS DESKTOP -->
+    <div class="d-none d-xl-flex align-items-center gap-3" *ngIf="!isMobile">
+
+      <!-- Panier -->
+      <a href="#" (click)="onCartClick($event)" class="ub-cart-link d-flex align-items-center gap-2 text-decoration-none text-dark">
+        <span class="ub-cart-icon-wrap position-relative" [class.bump]="cartBump">
+          <i class="fa-solid fa-cart-shopping fs-5"></i>
+          <span class="ub-cart-badge position-absolute top-0 start-100 translate-middle badge rounded-pill">
+            {{ cartCount }}
+          </span>
+        </span>
+        <span class="fw-semibold small">{{ cartTotal }} د.ت</span>
+      </a>
+
+      <div class="vr"></div>
+
+      <!-- Bouton recherche -->
+      <button (click)="toggleSearch()"
+              class="btn btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center p-0"
+              style="width:40px;height:40px;"
+              aria-label="Recherche">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </button>
+
+      <!-- Favoris -->
+      <a routerLink="/user/favoris" *ngIf="currentUser" class="ub-icon-link position-relative" aria-label="Favoris">
+        <i class="fa-regular fa-heart fs-5"></i>
+        <span class="ub-icon-badge" *ngIf="favorisCount > 0">{{ favorisCount }}</span>
+      </a>
+
+      <!-- Notifications -->
+      <div class="position-relative" *ngIf="currentUser">
+        <button class="ub-icon-link position-relative" (click)="toggleNotifications(); $event.stopPropagation()" aria-label="Notifications">
+          <i class="fa-regular fa-bell fs-5"></i>
+          <span class="ub-icon-badge" *ngIf="notifNonLues > 0">{{ notifNonLues }}</span>
+        </button>
+
+        <div class="ub-dropdown-panel" *ngIf="notifOuvert" (click)="$event.stopPropagation()">
+          <div class="d-flex align-items-center justify-content-between px-3 pt-3 pb-2">
+            <span class="fw-bold small">Notifications</span>
+            <button class="ub-lien-discret" *ngIf="notifications.length > 0" (click)="toutMarquerLu()">Tout marquer lu</button>
+          </div>
+          <div class="ub-notif-list">
+            <p class="text-secondary small px-3 pb-3 mb-0" *ngIf="notifications.length === 0">Aucune notification.</p>
+            <div class="ub-notif-item" *ngFor="let n of notifications" (click)="marquerLue(n, $event)">
+              <span class="ub-notif-dot" [style.background]="n.lu ? '#D6D9DE' : 'var(--accent)'"></span>
+              <div>
+                <p class="mb-0 fw-semibold small">{{ n.titre }}</p>
+                <p class="mb-0 text-secondary small">{{ n.message }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Non connecté -->
+      <ng-container *ngIf="!currentUser">
+        <a routerLink="/login" class="btn btn-outline-dark-ub d-flex align-items-center gap-2 px-4">
+          <i class="fa-regular fa-user"></i>
+          Connexion
+        </a>
+        <a routerLink="/register" class="btn btn-accent px-4">
+          Inscription
+        </a>
+      </ng-container>
+
+      <!-- Connecté : avatar + menu déroulant -->
+      <div class="position-relative" *ngIf="currentUser">
+        <button class="ub-avatar-btn" (click)="toggleUserMenu(); $event.stopPropagation()">
+          <span class="ub-avatar-sm">
+            <img *ngIf="photoUrl" [src]="photoUrl" alt="Photo de profil">
+            <i *ngIf="!photoUrl" class="fa-solid" [class.fa-user-shield]="currentUser.role==='admin'" [class.fa-circle-user]="currentUser.role!=='admin'"></i>
+          </span>
+          <span class="small fw-semibold text-dark d-none d-xxl-inline">{{ currentUser.role === 'admin' ? 'Admin' : currentUser.nom }}</span>
+          <i class="fa-solid fa-chevron-down" style="font-size:10px;color:#9AA0A8;"></i>
+        </button>
+
+        <div class="ub-dropdown-panel ub-user-panel" *ngIf="userMenuOuvert" (click)="$event.stopPropagation()">
+          <button class="ub-user-menu-item" (click)="goToEspace()">
+            <i class="fa-solid fa-gauge"></i>Mon espace
+          </button>
+          
+          <div class="ub-user-menu-sep"></div>
+          <button class="ub-user-menu-item ub-user-menu-danger" (click)="logout()">
+            <i class="fa-solid fa-right-from-bracket"></i>Déconnexion
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Backdrop de fermeture des panneaux déroulants -->
+    <div class="ub-dropdown-backdrop" *ngIf="notifOuvert || userMenuOuvert" (click)="fermerNotifications(); fermerUserMenu()"></div>
+
+    <!-- HAMBURGER MOBILE -->
+    <button *ngIf="isMobile"
+            (click)="toggleMenu()"
+            class="btn btn-outline-secondary d-xl-none"
+            style="border-radius:13px;width:46px;height:46px;padding:0;">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+
+  </div>
+</nav>
+
+<!-- BARRE RECHERCHE -->
+<div [class.show]="searchOpen" class="collapse border-top bg-white ub-search-collapse">
+  <div class="container-xl py-3">
+    <div class="d-flex gap-3">
+      <div class="ub-field flex-grow-1" style="height:48px;">
+        <i class="fa-solid fa-magnifying-glass ub-field-icon"></i>
+        <input type="text"
+               class="ub-field-input"
+               placeholder="Rechercher un document, un cours, un code juridique…">
+      </div>
+      <button class="btn btn-accent px-4 rounded-pill fw-semibold">Rechercher</button>
+    </div>
+  </div>
+</div>
+
+<!-- MENU MOBILE -->
+<div [class.show]="menuOpen && isMobile" class="collapse border-top bg-white px-3 pb-4">
+  <div class="accordion accordion-flush" id="mobileAccordion">
+
+    <!-- Panier -->
+    <a href="#" (click)="onCartClick($event)" class="d-flex align-items-center justify-content-between py-3 fw-semibold border-bottom">
+      <span><i class="fa-solid fa-cart-shopping me-2" style="color:var(--accent)"></i>Panier</span>
+      <span class="badge rounded-pill" style="background:var(--accent);font-size:11px;">{{ cartCount }}</span>
+    </a>
+
+    <!-- Accueil -->
+    <a routerLink="/" (click)="closeMenu()" class="d-block py-3 fw-semibold border-bottom">
+      <i class="fa-solid fa-house me-2" style="color:var(--accent)"></i>Accueil
+    </a>
+
+    <!-- Boutique accordéon -->
+    <div class="accordion-item border-0 border-bottom">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed bg-white fw-semibold ps-0 shadow-none"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#mobileBoutique">
+          <i class="fa-solid fa-shop me-2" style="color:var(--accent)"></i>Boutique
+        </button>
+      </h2>
+      <div id="mobileBoutique" class="accordion-collapse collapse" data-bs-parent="#mobileAccordion">
+        <div class="accordion-body ps-3 pe-0 py-2">
+
+          <!-- Catégories réelles (Documents numériques) : aucun contenu codé en dur — voir
+               le mega-menu desktop pour le détail du câblage CatalogueService. -->
+          <div class="ub-mobile-domaine-titre" *ngIf="categoriesDocuments.length > 0">
+            <i class="fa-solid fa-book me-2"></i>Documents numériques
+          </div>
+          <div class="accordion" *ngIf="categoriesDocuments.length > 0">
+            <div class="accordion-item border-0 border-bottom" *ngFor="let cat of categoriesDocuments">
+              <h2 class="accordion-header">
+                <ng-container *ngIf="cat.sousCategories.length > 0; else lienSimpleDoc">
+                  <button class="accordion-button collapsed bg-white fw-500 ps-2 shadow-none small"
+                          type="button" data-bs-toggle="collapse" [attr.data-bs-target]="'#sub-' + cat._id">
+                    {{ cat.nom }}
+                  </button>
+                </ng-container>
+                <ng-template #lienSimpleDoc>
+                  <a class="d-block py-2 ps-2 small fw-500" style="color:#1B2430;"
+                     [routerLink]="['/boutique']" [queryParams]="{domaine:'documents', categorie: cat.nom}"
+                     (click)="closeMenu()">{{ cat.nom }}</a>
+                </ng-template>
+              </h2>
+              <div [id]="'sub-' + cat._id" class="accordion-collapse collapse" *ngIf="cat.sousCategories.length > 0">
+                <div class="accordion-body ps-4 py-1">
+                  <a class="d-block py-2 small text-secondary" *ngFor="let sc of cat.sousCategories"
+                     [routerLink]="['/boutique']" [queryParams]="{domaine:'documents', categorie: cat.nom, sousCategorie: sc.nom}"
+                     (click)="closeMenu()">{{ sc.nom }}</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Catégories réelles (Fournitures scolaires) -->
+          <div class="ub-mobile-domaine-titre mt-2" *ngIf="categoriesFournitures.length > 0">
+            <i class="fa-solid fa-box me-2"></i>Fournitures scolaires
+          </div>
+          <div class="accordion" *ngIf="categoriesFournitures.length > 0">
+            <div class="accordion-item border-0 border-bottom" *ngFor="let cat of categoriesFournitures">
+              <h2 class="accordion-header">
+                <ng-container *ngIf="cat.sousCategories.length > 0; else lienSimpleFourn">
+                  <button class="accordion-button collapsed bg-white fw-500 ps-2 shadow-none small"
+                          type="button" data-bs-toggle="collapse" [attr.data-bs-target]="'#sub-' + cat._id">
+                    {{ cat.nom }}
+                  </button>
+                </ng-container>
+                <ng-template #lienSimpleFourn>
+                  <a class="d-block py-2 ps-2 small fw-500" style="color:#1B2430;"
+                     [routerLink]="['/boutique']" [queryParams]="{domaine:'fournitures', categorie: cat.nom}"
+                     (click)="closeMenu()">{{ cat.nom }}</a>
+                </ng-template>
+              </h2>
+              <div [id]="'sub-' + cat._id" class="accordion-collapse collapse" *ngIf="cat.sousCategories.length > 0">
+                <div class="accordion-body ps-4 py-1">
+                  <a class="d-block py-2 small text-secondary" *ngFor="let sc of cat.sousCategories"
+                     [routerLink]="['/boutique']" [queryParams]="{domaine:'fournitures', categorie: cat.nom, sousCategorie: sc.nom}"
+                     (click)="closeMenu()">{{ sc.nom }}</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p *ngIf="categoriesDocuments.length === 0 && categoriesFournitures.length === 0" class="small text-secondary py-2 mb-0">
+            Aucune catégorie pour le moment.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <a routerLink="/contact" (click)="closeMenu()" class="d-block py-3 fw-semibold border-bottom">
+      <i class="fa-solid fa-file me-2" style="color:var(--accent)"></i>Documents Gratuits
+    </a>
+    <a routerLink="/contact" (click)="closeMenu()" class="d-block py-3 fw-semibold">
+      <i class="fa-solid fa-envelope me-2" style="color:var(--accent)"></i>Contact
+    </a>
+  </div>
+
+  <!-- Langue mobile + boutons auth -->
+  <div class="d-flex align-items-center gap-2 mt-3 pt-3 border-top flex-wrap">
+    <i class="fa-solid fa-globe text-secondary"></i>
+    <div class="d-flex gap-1">
+      <button *ngFor="let l of ['FR','EN','AR']"
+              (click)="setLang(l)"
+              class="btn btn-sm rounded-pill border px-3"
+              [style.background]="currentLang===l ? '#8C2433' : '#fff'"
+              [style.color]="currentLang===l ? '#fff' : '#1B2430'"
+              [style.borderColor]="currentLang===l ? '#8C2433' : '#dee2e6'">
+        {{ l }}
+      </button>
+    </div>
+    <div class="ms-auto d-flex gap-2">
+      <ng-container *ngIf="!currentUser">
+        <a routerLink="/login" (click)="closeMenu()" class="btn btn-outline-dark-ub btn-sm px-3">
+          <i class="fa-regular fa-user me-1"></i>Connexion
+        </a>
+        <a routerLink="/register" (click)="closeMenu()" class="btn btn-accent btn-sm px-3">Inscription</a>
+      </ng-container>
+      <ng-container *ngIf="currentUser">
+        <button (click)="goToEspace()" class="btn btn-accent btn-sm px-3">
+          <i class="fa-solid fa-gauge me-1"></i>Mon espace
+        </button>
+        <button (click)="logout()" class="btn btn-outline-dark-ub btn-sm px-3">
+          <i class="fa-solid fa-right-from-bracket me-1"></i>Quitter
+        </button>
+      </ng-container>
+    </div>
+  </div>
+</div>

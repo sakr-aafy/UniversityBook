@@ -1,0 +1,600 @@
+<div class="doc-page">
+
+  <!-- ═══ PAGE HEADER ══════════════════════════════════════════════════════ -->
+  <div class="doc-page-hdr">
+    <div class="doc-breadcrumb">
+      <span class="material-symbols-rounded">home</span>
+      <span class="doc-bc-sep">/</span>
+      <span class="doc-bc-active">Documents Numériques</span>
+    </div>
+    <div class="doc-hdr-row">
+      <div class="doc-hdr-title">
+        <span class="material-symbols-rounded doc-hdr-icon">folder_open</span>
+        <div>
+          <h1>Documents Numériques</h1>
+          <p>Gérez votre bibliothèque de documents numériques</p>
+        </div>
+      </div>
+
+      <div class="doc-hdr-actions">
+        <button class="doc-btn-outline" *ngIf="someSelected" (click)="supprimerSelection()">
+          <span class="material-symbols-rounded">delete_sweep</span>
+          Supprimer ({{ selectedIds.size }})
+        </button>
+
+        <button class="doc-btn-primary" (click)="ouvrirAjout()">
+          <span class="material-symbols-rounded">add</span>
+          Nouveau document
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ STAT CARDS ═══════════════════════════════════════════════════════ -->
+  <div class="doc-stats">
+    <div class="doc-stat-card" (click)="activeTab='documents'" style="cursor:pointer">
+      <div class="doc-stat-icon ic-purple"><span class="material-symbols-rounded">folder_open</span></div>
+      <div class="doc-stat-body">
+        <span class="doc-stat-val">{{ totalDocs }}</span>
+        <span class="doc-stat-lbl">Total Documents</span>
+        <span class="doc-stat-sub">{{ totalTelechargements }} téléchargements</span>
+      </div>
+    </div>
+    <div class="doc-stat-card" (click)="activeTab='documents'" style="cursor:pointer">
+      <div class="doc-stat-icon ic-green"><span class="material-symbols-rounded">payments</span></div>
+      <div class="doc-stat-body">
+        <span class="doc-stat-val">{{ docsPayants }}</span>
+        <span class="doc-stat-lbl">Documents Payants</span>
+        <span class="doc-stat-sub">{{ revenuTotal | number:'1.0-0' }} DT générés</span>
+      </div>
+    </div>
+    <div class="doc-stat-card" (click)="activeTab='documents'" style="cursor:pointer">
+      <div class="doc-stat-icon ic-orange"><span class="material-symbols-rounded">card_giftcard</span></div>
+      <div class="doc-stat-body">
+        <span class="doc-stat-val">{{ docsGratuits }}</span>
+        <span class="doc-stat-lbl">Documents Gratuits</span>
+        <span class="doc-stat-sub">Accès libre</span>
+      </div>
+    </div>
+    <div class="doc-stat-card" (click)="activeTab='promotions'" style="cursor:pointer">
+      <div class="doc-stat-icon ic-red"><span class="material-symbols-rounded">local_offer</span></div>
+      <div class="doc-stat-body">
+        <span class="doc-stat-val">{{ docsAvecPromo.length }}</span>
+        <span class="doc-stat-lbl">Promotions actives</span>
+        <span class="doc-stat-sub">{{ expirantBientot }} expirent bientôt</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB BAR ══════════════════════════════════════════════════════════ -->
+  <div class="doc-tab-bar">
+    <button class="doc-tab" [class.active]="activeTab==='documents'" (click)="activeTab='documents'">
+      <span class="material-symbols-rounded">folder_open</span>
+      Documents
+      <span class="doc-tab-badge">{{ totalDocs }}</span>
+    </button>
+    <button class="doc-tab" [class.active]="activeTab==='promotions'" (click)="activeTab='promotions'">
+      <span class="material-symbols-rounded">local_offer</span>
+      Promotions
+      <span class="doc-tab-badge promo" *ngIf="docsAvecPromo.length > 0">{{ docsAvecPromo.length }}</span>
+    </button>
+  </div>
+
+  <!-- ═══ TAB : DOCUMENTS ═══════════════════════════════════════════════ -->
+  <ng-container *ngIf="activeTab === 'documents'">
+    <div class="doc-table-card">
+
+      <div class="doc-filters">
+        <div class="doc-search-wrap">
+          <span class="material-symbols-rounded doc-search-ico">search</span>
+          <input class="doc-search-input" type="text" placeholder="Rechercher un document..."
+                 [(ngModel)]="searchQuery" (ngModelChange)="currentPage=1"/>
+          <button class="doc-search-clear" *ngIf="searchQuery" (click)="searchQuery=''; currentPage=1">
+            <span class="material-symbols-rounded">close</span>
+          </button>
+        </div>
+
+        <select class="doc-filter-sel" [(ngModel)]="categorieFiltre" (ngModelChange)="currentPage=1">
+          <option value="">Toutes catégories</option>
+          <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+        </select>
+
+        <select class="doc-filter-sel" [(ngModel)]="typeFiltre" (ngModelChange)="currentPage=1">
+          <option value="">Tous types</option>
+          <option value="payant">Payant</option><option value="gratuit">Gratuit</option>
+        </select>
+
+        <button class="doc-btn-reset" *ngIf="hasActiveFilters" (click)="resetFilters()">
+          <span class="material-symbols-rounded">filter_alt_off</span>
+        </button>
+      </div>
+
+      <div class="doc-table-toolbar">
+        <span class="doc-table-count">{{ paginationInfo }}</span>
+        <div class="doc-toolbar-right">
+          <select class="doc-page-sel" appExclude [(ngModel)]="pageSize" (ngModelChange)="currentPage=1">
+            <option *ngFor="let s of pageSizeOptions" [value]="s">{{ s }} / page</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="doc-table-wrap">
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th class="th-check"><input type="checkbox" class="doc-chk" [checked]="allSelected" (change)="toggleAll()"/></th>
+              <th class="th-sortable" (click)="sort('nom')">Nom du document <span class="material-symbols-rounded sort-ico" [class.asc]="sortCol==='nom'&&sortDir==='asc'" [class.desc]="sortCol==='nom'&&sortDir==='desc'">unfold_more</span></th>
+              <th class="th-sortable" (click)="sort('categorie')">Catégorie <span class="material-symbols-rounded sort-ico" [class.asc]="sortCol==='categorie'&&sortDir==='asc'" [class.desc]="sortCol==='categorie'&&sortDir==='desc'">unfold_more</span></th>
+              <th class="th-sortable" (click)="sort('prix')">Prix <span class="material-symbols-rounded sort-ico" [class.asc]="sortCol==='prix'&&sortDir==='asc'" [class.desc]="sortCol==='prix'&&sortDir==='desc'">unfold_more</span></th>
+              <th class="th-sortable" (click)="sort('telechargements')">Téléch. <span class="material-symbols-rounded sort-ico" [class.asc]="sortCol==='telechargements'&&sortDir==='asc'" [class.desc]="sortCol==='telechargements'&&sortDir==='desc'">unfold_more</span></th>
+              <th>Paiement</th>
+              <th class="th-sortable" (click)="sort('dateAjout')">Date <span class="material-symbols-rounded sort-ico" [class.asc]="sortCol==='dateAjout'&&sortDir==='asc'" [class.desc]="sortCol==='dateAjout'&&sortDir==='desc'">unfold_more</span></th>
+              <th class="th-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of documentsPagines"
+                [class.row-selected]="selectedIds.has(d.id)">
+              <td class="td-check"><input type="checkbox" class="doc-chk" [checked]="selectedIds.has(d.id)" (change)="toggleSelect(d.id)"/></td>
+              <td class="td-nom">
+                <div class="doc-nom-wrap"><span class="doc-nom-text">{{ d.nom }}</span></div>
+                <div class="doc-promo-strip" *ngIf="promoActive(d)"><span class="material-symbols-rounded">local_offer</span>Promo – {{ d.prixPromo | number:'1.2-2' }} DT</div>
+              </td>
+              <td><span class="doc-cat-badge">{{ d.categorie }}</span></td>
+              <td class="td-prix">
+                <span class="doc-gratuit-lbl" *ngIf="d.typeDoc==='gratuit'">Gratuit</span>
+                <ng-container *ngIf="d.typeDoc==='payant'">
+                  <span class="doc-prix-val" [class.prix-promo]="promoActive(d)">{{ getPrix(d) | number:'1.2-2' }} DT</span>
+                  <span class="doc-prix-old" *ngIf="promoActive(d)">{{ d.prix | number:'1.2-2' }}</span>
+                </ng-container>
+              </td>
+              <td class="td-dl"><span class="material-symbols-rounded td-dl-ico">download</span>{{ d.telechargements }}</td>
+              <td><span class="doc-pay-chip" [class.pay-paye]="d.statutPaiement==='payé'" [class.pay-gratuit]="d.statutPaiement==='gratuit'" [class.pay-partiel]="d.statutPaiement==='partiel'" [class.pay-nonpaye]="d.statutPaiement==='non-payé'">{{ d.statutPaiement === 'non-payé' ? 'Non payé' : d.statutPaiement === 'partiel' ? 'Partiel' : d.statutPaiement | titlecase }}</span></td>
+              <td class="td-date">{{ d.dateAjout | date:'dd/MM/yyyy' }}</td>
+              <td class="td-actions">
+                <div class="doc-actions-group">
+                  <button class="doc-act-btn act-view"  title="Consulter"    (click)="ouvrirConsulter(d)"><span class="material-symbols-rounded">visibility</span></button>
+                  <button class="doc-act-btn act-edit"  title="Modifier"     (click)="ouvrirModification(d)"><span class="material-symbols-rounded">edit</span></button>
+                  <button class="doc-act-btn act-dl"    title="Télécharger"  (click)="telecharger(d)"><span class="material-symbols-rounded">download</span></button>
+                  <button class="doc-act-btn act-del"   title="Supprimer"    (click)="ouvrirSuppression(d)"><span class="material-symbols-rounded">delete</span></button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="documentsPagines.length === 0">
+              <td colspan="8" class="doc-empty-row">
+                <div class="doc-empty">
+                  <span class="material-symbols-rounded">folder_off</span>
+                  <p>Aucun document trouvé</p>
+                  <button class="doc-btn-outline" *ngIf="hasActiveFilters" (click)="resetFilters()">Réinitialiser les filtres</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="doc-pagination">
+        <span class="doc-pag-info">{{ paginationInfo }}</span>
+        <div class="doc-pag-nav">
+          <button class="doc-pag-btn" [disabled]="currentPage===1" (click)="currentPage=1"><span class="material-symbols-rounded">first_page</span></button>
+          <button class="doc-pag-btn" [disabled]="currentPage===1" (click)="currentPage=currentPage-1"><span class="material-symbols-rounded">chevron_left</span></button>
+          <ng-container *ngFor="let p of pageNumbers">
+            <span *ngIf="p===-1" class="doc-pag-dots">…</span>
+            <button *ngIf="p!==-1" class="doc-pag-btn doc-pag-num" [class.active]="currentPage===p" (click)="currentPage=p">{{ p }}</button>
+          </ng-container>
+          <button class="doc-pag-btn" [disabled]="currentPage===totalPages" (click)="currentPage=currentPage+1"><span class="material-symbols-rounded">chevron_right</span></button>
+          <button class="doc-pag-btn" [disabled]="currentPage===totalPages" (click)="currentPage=totalPages"><span class="material-symbols-rounded">last_page</span></button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ═══ TAB : PROMOTIONS ═════════════════════════════════════════════ -->
+  <ng-container *ngIf="activeTab === 'promotions'">
+
+    <!-- Promo summary cards -->
+    <div class="doc-sf-summary">
+      <div class="doc-sf-kpi sf-kpi-promo-active">
+        <span class="material-symbols-rounded">local_offer</span>
+        <div>
+          <span class="sf-kpi-val">{{ docsAvecPromoFiltres.length === 0 ? docsAvecPromo.length : docsAvecPromoFiltres.length }}</span>
+          <span class="sf-kpi-lbl">Promotions</span>
+        </div>
+      </div>
+      <div class="doc-sf-kpi sf-kpi-info">
+        <span class="material-symbols-rounded">timer</span>
+        <div>
+          <span class="sf-kpi-val">{{ expirantBientot }}</span>
+          <span class="sf-kpi-lbl">Expirent bientôt</span>
+        </div>
+      </div>
+      <div class="doc-sf-kpi sf-kpi-warn">
+        <span class="material-symbols-rounded">event_busy</span>
+        <div>
+          <span class="sf-kpi-val">{{ docsPromoExpirees }}</span>
+          <span class="sf-kpi-lbl">Expirées</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="doc-table-card">
+      <div class="doc-tab-card-hdr">
+        <div class="doc-tab-card-title">
+          <span class="material-symbols-rounded">local_offer</span>
+          Gestion des promotions
+        </div>
+        <button class="doc-btn-primary" (click)="ouvrirAjoutPromo()">
+          <span class="material-symbols-rounded">add</span>
+          Nouvelle promotion
+        </button>
+      </div>
+
+      <div class="doc-filters">
+        <div class="doc-search-wrap">
+          <span class="material-symbols-rounded doc-search-ico">search</span>
+          <input class="doc-search-input" type="text" placeholder="Rechercher une promotion..."
+                 [(ngModel)]="promoSearch" (ngModelChange)="promoPage=1"/>
+          <button class="doc-search-clear" *ngIf="promoSearch" (click)="promoSearch=''; promoPage=1">
+            <span class="material-symbols-rounded">close</span>
+          </button>
+        </div>
+        <select class="doc-filter-sel" [(ngModel)]="promoStatutFiltre" (ngModelChange)="promoPage=1">
+          <option value="">Tous les statuts</option>
+          <option value="active">Active</option>
+          <option value="inactif">Inactif</option>
+          <option value="expire">Expiré</option>
+        </select>
+        <button class="doc-btn-reset" *ngIf="promoSearch || promoStatutFiltre" (click)="promoSearch=''; promoStatutFiltre=''; promoPage=1">
+          <span class="material-symbols-rounded">filter_alt_off</span>
+        </button>
+      </div>
+
+      <div class="doc-table-toolbar">
+        <span class="doc-table-count">{{ docsAvecPromoFiltres.length }} promotion{{ docsAvecPromoFiltres.length !== 1 ? 's' : '' }}</span>
+        <select class="doc-page-sel" appExclude [(ngModel)]="promoPageSize" (ngModelChange)="promoPage=1">
+          <option *ngFor="let s of pageSizeOptions" [value]="s">{{ s }} / page</option>
+        </select>
+      </div>
+
+      <div class="doc-table-wrap">
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th>Nom du document</th>
+              <th style="text-align:right">Prix normal</th>
+              <th style="text-align:right">Prix promo</th>
+              <th style="text-align:center">Remise</th>
+              <th>Date début</th>
+              <th>Date fin</th>
+              <th>Statut</th>
+              <th class="th-actions">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of promoPaginees">
+              <td class="td-nom">
+                <div class="doc-nom-wrap"><span class="doc-nom-text">{{ d.nom }}</span></div>
+                <div style="font-size:12px;color:#9ca3af;margin-top:2px">{{ d.categorie }}</div>
+              </td>
+              <td style="text-align:right"><span style="text-decoration:line-through;color:#9ca3af">{{ d.prix | number:'1.2-2' }} DT</span></td>
+              <td style="text-align:right"><span class="promo-prix-val">{{ d.prixPromo | number:'1.2-2' }} DT</span></td>
+              <td style="text-align:center"><span class="promo-remise-badge">-{{ getDiscountPct(d) }}%</span></td>
+              <td class="td-date">{{ d.debutPromo || '—' }}</td>
+              <td class="td-date" [class.td-expire]="getPromoStatut(d)==='expire'">{{ d.finPromo || '—' }}</td>
+              <td>
+                <span class="promo-statut-chip"
+                      [class.ps-active]="getPromoStatut(d)==='active'"
+                      [class.ps-inactif]="getPromoStatut(d)==='inactif'"
+                      [class.ps-expire]="getPromoStatut(d)==='expire'">
+                  <span class="doc-stat-dot"></span>
+                  {{ getPromoStatut(d) === 'active' ? 'Active' : getPromoStatut(d) === 'expire' ? 'Expirée' : 'Inactive' }}
+                </span>
+              </td>
+              <td class="td-actions">
+                <div class="doc-actions-group">
+                  <button class="doc-act-btn act-toggle" [title]="getPromoStatut(d)==='active' ? 'Désactiver' : 'Activer'" (click)="togglePromoActive(d)">
+                    <span class="material-symbols-rounded">{{ getPromoStatut(d) === 'active' ? 'pause_circle' : 'play_circle' }}</span>
+                  </button>
+                  <button class="doc-act-btn act-edit" title="Modifier" (click)="ouvrirModifPromo(d)"><span class="material-symbols-rounded">edit</span></button>
+                  <button class="doc-act-btn act-view" title="Consulter" (click)="ouvrirConsulter(d)"><span class="material-symbols-rounded">visibility</span></button>
+                  <button class="doc-act-btn act-del"  title="Supprimer la promotion" (click)="supprimerPromo(d)"><span class="material-symbols-rounded">delete</span></button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="promoPaginees.length === 0">
+              <td colspan="8" class="doc-empty-row">
+                <div class="doc-empty">
+                  <span class="material-symbols-rounded">local_offer</span>
+                  <p>Aucune promotion trouvée</p>
+                  <button class="doc-btn-primary" (click)="ouvrirAjoutPromo()">
+                    <span class="material-symbols-rounded">add</span> Nouvelle promotion
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="doc-pagination" *ngIf="promoTotalPages > 1">
+        <span class="doc-pag-info">{{ docsAvecPromoFiltres.length }} promotions</span>
+        <div class="doc-pag-nav">
+          <button class="doc-pag-btn" [disabled]="promoPage===1" (click)="promoPage=1"><span class="material-symbols-rounded">first_page</span></button>
+          <button class="doc-pag-btn" [disabled]="promoPage===1" (click)="promoPage=promoPage-1"><span class="material-symbols-rounded">chevron_left</span></button>
+          <ng-container *ngFor="let p of promoPageNumbers">
+            <span *ngIf="p===-1" class="doc-pag-dots">…</span>
+            <button *ngIf="p!==-1" class="doc-pag-btn doc-pag-num" [class.active]="promoPage===p" (click)="promoPage=p">{{ p }}</button>
+          </ng-container>
+          <button class="doc-pag-btn" [disabled]="promoPage===promoTotalPages" (click)="promoPage=promoPage+1"><span class="material-symbols-rounded">chevron_right</span></button>
+          <button class="doc-pag-btn" [disabled]="promoPage===promoTotalPages" (click)="promoPage=promoTotalPages"><span class="material-symbols-rounded">last_page</span></button>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+</div><!-- /doc-page -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MODAL — Promotion (ajouter / modifier)
+═══════════════════════════════════════════════════════════════════════════ -->
+<div class="doc-backdrop" *ngIf="showModalPromo" (click)="showModalPromo = false"></div>
+<div class="doc-modal" *ngIf="showModalPromo">
+  <div class="doc-modal-hdr">
+    <div class="doc-modal-title">
+      <span class="material-symbols-rounded">local_offer</span>
+      {{ isPromoEdit ? 'Modifier la promotion' : 'Ajouter une promotion' }}
+    </div>
+    <button class="doc-modal-close" (click)="showModalPromo = false"><span class="material-symbols-rounded">close</span></button>
+  </div>
+
+  <div class="doc-modal-body">
+    <div class="doc-field">
+      <label class="doc-label">Document <span class="req">*</span></label>
+      <select class="doc-input" [(ngModel)]="promoForm.documentId" [disabled]="isPromoEdit">
+        <option *ngFor="let d of docsPayantsEligibles" [value]="d.id">{{ d.nom }} ({{ d.prix | number:'1.2-2' }} DT)</option>
+      </select>
+    </div>
+
+    <div class="doc-field">
+      <label class="doc-label">Prix promotionnel (DT) <span class="req">*</span></label>
+      <input class="doc-input" type="number" min="0" step="0.01" placeholder="0.00"
+             [(ngModel)]="promoForm.prixPromo"/>
+      <div class="promo-discount-info" *ngIf="promoDiscountPreview > 0">
+        <span class="material-symbols-rounded">percent</span>
+        Remise de <strong>{{ promoDiscountPreview }}%</strong> par rapport au prix normal
+      </div>
+    </div>
+
+    <div class="doc-field-row">
+      <div class="doc-field">
+        <label class="doc-label">Date de début</label>
+        <input class="doc-input" type="date" [(ngModel)]="promoForm.debutPromo"/>
+      </div>
+      <div class="doc-field">
+        <label class="doc-label">Date de fin <span class="req">*</span></label>
+        <input class="doc-input" type="date" [(ngModel)]="promoForm.finPromo"/>
+      </div>
+    </div>
+  </div>
+
+  <div class="doc-modal-ftr">
+    <button class="doc-btn-outline" (click)="showModalPromo = false">Annuler</button>
+    <button class="doc-btn-primary" (click)="sauvegarderPromo()"
+            [disabled]="!promoForm.documentId || !promoForm.prixPromo || !promoForm.finPromo">
+      <span class="material-symbols-rounded">{{ isPromoEdit ? 'save' : 'add' }}</span>
+      {{ isPromoEdit ? 'Enregistrer' : 'Ajouter la promotion' }}
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MODAL — Nouveau / Modifier document
+═══════════════════════════════════════════════════════════════════════════ -->
+<div class="doc-backdrop" *ngIf="showModalForm" (click)="showModalForm = false"></div>
+<div class="doc-modal doc-modal-form" *ngIf="showModalForm">
+  <div class="doc-modal-hdr">
+    <div class="doc-modal-title"><span class="material-symbols-rounded">{{ isEditMode ? 'edit' : 'add_circle' }}</span>{{ isEditMode ? 'Modifier le document' : 'Nouveau document numérique' }}</div>
+    <button class="doc-modal-close" (click)="showModalForm = false"><span class="material-symbols-rounded">close</span></button>
+  </div>
+  <div class="doc-modal-body doc-form-grid">
+    <div class="doc-field">
+        <label class="doc-label">Fichier Dropbox</label>
+        <div class="doc-dropbox-link" *ngIf="form.fichierDropboxPath; else noDropboxFile">
+          <span class="material-symbols-rounded">description</span>
+          <span class="doc-dropbox-path">{{ form.fichierDropboxPath }}</span>
+          <button type="button" class="doc-icon-btn" title="Changer" (click)="ouvrirDropboxBrowser()">
+            <span class="material-symbols-rounded">edit</span>
+          </button>
+          <button type="button" class="doc-icon-btn" title="Détacher" (click)="detacherFichierDropbox()">
+            <span class="material-symbols-rounded">close</span>
+          </button>
+        </div>
+        <ng-template #noDropboxFile>
+          <button type="button" class="doc-btn-outline doc-dropbox-browse-btn" (click)="ouvrirDropboxBrowser()">
+            <span class="material-symbols-rounded">folder_open</span>
+            Parcourir Dropbox...
+          </button>
+        </ng-template>
+      </div>
+    <div class="doc-form-col">
+      <div class="doc-field"><label class="doc-label">Nom du document <span class="req">*</span></label><input class="doc-input" type="text" placeholder="Ex: Guide de gestion de stock" [(ngModel)]="form.nom"/></div>
+      <div class="doc-cat-hdr">
+        <label class="doc-label">Catégorie &amp; sous-catégorie</label>
+        <button type="button" class="doc-icon-btn" title="Gérer les catégories" (click)="ouvrirGestionCategories()">
+          <span class="material-symbols-rounded">settings</span>
+        </button>
+      </div>
+      <div class="doc-field-row">
+        <div class="doc-field"><select class="doc-input" [(ngModel)]="form.categorie" (ngModelChange)="onCategorieChange()"><option *ngFor="let c of categories" [value]="c">{{ c }}</option></select></div>
+        <div class="doc-field"><select class="doc-input" [(ngModel)]="form.sousCategorie"><option *ngFor="let sc of sousCategoriesParCategorie[form.categorie]" [value]="sc">{{ sc }}</option></select></div>
+      </div>
+      <div class="doc-field"><label class="doc-label">Description</label><textarea class="doc-input doc-textarea" rows="3" placeholder="Description du document..." [(ngModel)]="form.description"></textarea></div>
+      
+    </div>
+    <div class="doc-form-col">
+      <div class="doc-field">
+        <label class="doc-label">Type de document</label>
+        <select class="doc-input" [(ngModel)]="form.typeDoc" (ngModelChange)="form.typeDoc==='gratuit' && (form.prix=0)">
+          <option value="payant">Payant</option>
+          <option value="gratuit">Gratuit</option>
+        </select>
+      </div>
+      <div class="doc-field" *ngIf="form.typeDoc==='payant'"><label class="doc-label">Prix (DT)</label><input class="doc-input" type="number" min="0" step="0.01" placeholder="0.00" [(ngModel)]="form.prix"/></div>
+      <div class="doc-field" *ngIf="form.typeDoc==='payant'"><label class="doc-label">Prix promo (DT)</label><input class="doc-input" type="number" min="0" step="0.01" [(ngModel)]="form.prixPromo"/></div>
+      <div class="doc-field-row" *ngIf="form.typeDoc==='payant'">
+        <div class="doc-field"><label class="doc-label">Début promotion</label><input class="doc-input" type="date" [(ngModel)]="form.debutPromo"/></div>
+        <div class="doc-field"><label class="doc-label">Fin promotion</label><input class="doc-input" type="date" [(ngModel)]="form.finPromo"/></div>
+      </div>
+    </div>
+  </div>
+  <div class="doc-modal-ftr">
+    <button class="doc-btn-outline" (click)="showModalForm = false">Annuler</button>
+    <button class="doc-btn-primary" (click)="sauvegarder()" [disabled]="!form.nom.trim()"><span class="material-symbols-rounded">{{ isEditMode ? 'save' : 'add' }}</span>{{ isEditMode ? 'Enregistrer' : 'Ajouter le document' }}</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MODAL — Gérer les catégories / sous-catégories
+═══════════════════════════════════════════════════════════════════════════ -->
+<div class="doc-backdrop" *ngIf="showModalCategories" (click)="showModalCategories = false"></div>
+<div class="doc-modal" *ngIf="showModalCategories">
+  <div class="doc-modal-hdr">
+    <div class="doc-modal-title"><span class="material-symbols-rounded">settings</span>Gérer les catégories</div>
+    <button class="doc-modal-close" (click)="showModalCategories = false"><span class="material-symbols-rounded">close</span></button>
+  </div>
+  <div class="doc-modal-body">
+    <div class="doc-field">
+      <label class="doc-label">Nouvelle catégorie</label>
+      <div class="doc-field-row">
+        <input class="doc-input" type="text" placeholder="Ex: Juridique"
+               [(ngModel)]="newCategorieNom" (keydown.enter)="ajouterCategorie()"/>
+        <button type="button" class="doc-btn-primary" [disabled]="!newCategorieNom.trim()" (click)="ajouterCategorie()">
+          <span class="material-symbols-rounded">add</span>Ajouter
+        </button>
+      </div>
+    </div>
+
+    <div class="doc-field">
+      <label class="doc-label">Nouvelle sous-catégorie</label>
+      <div class="doc-field-row">
+        <select class="doc-input" [(ngModel)]="newSousCategorieCategorie">
+          <option *ngFor="let c of categories" [value]="c">{{ c }}</option>
+        </select>
+        <input class="doc-input" type="text" placeholder="Ex: Contentieux"
+               [(ngModel)]="newSousCategorieNom" (keydown.enter)="ajouterSousCategorie()"/>
+      </div>
+      <button type="button" class="doc-btn-primary doc-mt-8" [disabled]="!newSousCategorieNom.trim()" (click)="ajouterSousCategorie()">
+        <span class="material-symbols-rounded">add</span>Ajouter la sous-catégorie
+      </button>
+    </div>
+
+    <div class="doc-cat-manage-list">
+      <div class="doc-cat-manage-item" *ngFor="let c of categories">
+        <span class="doc-cat-badge">{{ c }}</span>
+        <span class="doc-cat-manage-subs">{{ (sousCategoriesParCategorie[c] || []).join(', ') || '— aucune sous-catégorie —' }}</span>
+      </div>
+    </div>
+  </div>
+  <div class="doc-modal-ftr">
+    <button class="doc-btn-outline" (click)="showModalCategories = false">Fermer</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MODAL — Parcourir Dropbox (lier un fichier au document)
+═══════════════════════════════════════════════════════════════════════════ -->
+<div class="doc-backdrop" *ngIf="showModalDropbox" (click)="fermerDropboxBrowser()"></div>
+<div class="doc-modal" *ngIf="showModalDropbox">
+  <div class="doc-modal-hdr">
+    <div class="doc-modal-title"><span class="material-symbols-rounded">folder_open</span>Parcourir Dropbox</div>
+    <button class="doc-modal-close" (click)="fermerDropboxBrowser()"><span class="material-symbols-rounded">close</span></button>
+  </div>
+  <div class="doc-modal-body">
+    <div class="doc-dropbox-path-row">
+      <button type="button" class="doc-icon-btn" title="Dossier parent" [disabled]="!dropboxChemin" (click)="dropboxRemonter()">
+        <span class="material-symbols-rounded">arrow_upward</span>
+      </button>
+      <span class="doc-dropbox-current-path">{{ dropboxChemin || '/' }}</span>
+    </div>
+
+    <div class="doc-dropbox-error" *ngIf="dropboxErreur">
+      <span class="material-symbols-rounded">error</span>{{ dropboxErreur }}
+    </div>
+
+    <div class="doc-dropbox-loading" *ngIf="dropboxChargement">
+      <span class="material-symbols-rounded doc-spin">progress_activity</span>Chargement...
+    </div>
+
+    <div class="doc-dropbox-list" *ngIf="!dropboxChargement && !dropboxErreur">
+      <button type="button" class="doc-dropbox-item" *ngFor="let e of dropboxEntrees" (click)="ouvrirDropboxEntree(e)">
+        <span class="material-symbols-rounded doc-dropbox-item-ico">{{ e.type === 'dossier' ? 'folder' : 'description' }}</span>
+        <span class="doc-dropbox-item-nom">{{ e.nom }}</span>
+        <span class="material-symbols-rounded doc-dropbox-item-arr" *ngIf="e.type === 'dossier'">chevron_right</span>
+      </button>
+      <div class="doc-dropbox-empty" *ngIf="dropboxEntrees.length === 0">
+        <span class="material-symbols-rounded">folder_off</span>Dossier vide
+      </div>
+    </div>
+  </div>
+  <div class="doc-modal-ftr">
+    <button class="doc-btn-outline" (click)="fermerDropboxBrowser()">Fermer</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MODAL — Consulter / Détail
+═══════════════════════════════════════════════════════════════════════════ -->
+<div class="doc-backdrop" *ngIf="showModalDetail" (click)="showModalDetail = false"></div>
+<div class="doc-modal" *ngIf="showModalDetail && docDetail">
+  <div class="doc-modal-hdr">
+    <div class="doc-modal-title"><span class="material-symbols-rounded">description</span>Détail du document</div>
+    <button class="doc-modal-close" (click)="showModalDetail = false"><span class="material-symbols-rounded">close</span></button>
+  </div>
+  <div class="doc-modal-body">
+    <div class="doc-detail-header">
+      <div class="doc-detail-meta">
+        <h2 class="doc-detail-nom">{{ docDetail.nom }}</h2>
+        <div class="doc-detail-chips">
+          
+          <span class="doc-cat-badge">{{ docDetail.categorie }}</span>
+          <span class="doc-cat-badge" *ngIf="docDetail.sousCategorie">{{ docDetail.sousCategorie }}</span>
+        </div>
+        <p class="doc-detail-desc">{{ docDetail.description }}</p>
+      </div>
+    </div>
+    <div class="doc-detail-grid">
+      <div class="doc-detail-row"><span class="doc-detail-key">Prix</span><span class="doc-detail-val">{{ docDetail.typeDoc === 'gratuit' ? 'Gratuit' : (docDetail.prix | number:'1.2-2') + ' DT' }}</span></div>
+      <div class="doc-detail-row" *ngIf="promoActive(docDetail)"><span class="doc-detail-key">Prix promo</span><span class="doc-detail-val promo">{{ docDetail.prixPromo | number:'1.2-2' }} DT (jusqu'au {{ docDetail.finPromo | date:'dd/MM/yyyy' }})</span></div>
+      <div class="doc-detail-row"><span class="doc-detail-key">Téléchargements</span><span class="doc-detail-val">{{ docDetail.telechargements }}</span></div>
+      <div class="doc-detail-row"><span class="doc-detail-key">Ventes</span><span class="doc-detail-val">{{ docDetail.ventes }}</span></div>
+      <div class="doc-detail-row"><span class="doc-detail-key">Date d'ajout</span><span class="doc-detail-val">{{ docDetail.dateAjout | date:'dd/MM/yyyy' }}</span></div>
+    </div>
+  </div>
+  <div class="doc-modal-ftr">
+    <button class="doc-btn-outline" (click)="showModalDetail = false">Fermer</button>
+    <button class="doc-btn-secondary" (click)="showModalDetail = false; ouvrirModification(docDetail!)"><span class="material-symbols-rounded">edit</span> Modifier</button>
+    <button class="doc-btn-primary" (click)="telecharger(docDetail!); showModalDetail = false"><span class="material-symbols-rounded">download</span> Télécharger</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     MODAL — Supprimer
+═══════════════════════════════════════════════════════════════════════════ -->
+<div class="doc-backdrop" *ngIf="showModalDelete" (click)="showModalDelete = false"></div>
+<div class="doc-modal doc-modal-sm" *ngIf="showModalDelete && docDelete">
+  <div class="doc-modal-hdr">
+    <div class="doc-modal-title danger"><span class="material-symbols-rounded">warning</span>Confirmer la suppression</div>
+    <button class="doc-modal-close" (click)="showModalDelete = false"><span class="material-symbols-rounded">close</span></button>
+  </div>
+  <div class="doc-modal-body">
+    <p class="doc-del-msg">Vous êtes sur le point de supprimer définitivement le document :</p>
+    <div class="doc-del-preview">
+      <div><strong>{{ docDelete.nom }}</strong><div><small>{{ docDelete.categorie }}</small></div></div>
+    </div>
+    <div class="doc-del-warn"><span class="material-symbols-rounded">info</span>Cette action est irréversible.</div>
+  </div>
+  <div class="doc-modal-ftr">
+    <button class="doc-btn-outline" (click)="showModalDelete = false">Annuler</button>
+    <button class="doc-btn-danger" (click)="supprimer()"><span class="material-symbols-rounded">delete_forever</span> Supprimer</button>
+  </div>
+</div>

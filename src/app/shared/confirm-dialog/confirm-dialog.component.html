@@ -1,0 +1,20 @@
+<div class="cd-overlay" *ngIf="options" (click)="repondre(false)">
+  <div class="cd-modal" [class.cd-danger]="options.variante === 'danger'" (click)="$event.stopPropagation()">
+    <div class="cd-icon">
+      <i class="fa-solid {{ options.icone || (options.variante === 'danger' ? 'fa-triangle-exclamation' : 'fa-circle-question') }}"></i>
+    </div>
+    <h3 class="cd-titre">{{ options.titre }}</h3>
+    <p class="cd-message">{{ options.message }}</p>
+    <div class="cd-actions">
+      <button type="button" class="btn btn-outline-dark-ub flex-grow-1" (click)="repondre(false)">
+        {{ options.labelAnnuler || 'Annuler' }}
+      </button>
+      <button type="button" class="btn flex-grow-1 ub-ripple"
+              [class.btn-accent]="options.variante !== 'danger'"
+              [class.cd-btn-danger]="options.variante === 'danger'"
+              (click)="repondre(true)">
+        {{ options.labelConfirmer || 'Confirmer' }}
+      </button>
+    </div>
+  </div>
+</div>

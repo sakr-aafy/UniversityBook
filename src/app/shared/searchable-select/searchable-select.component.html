@@ -1,0 +1,26 @@
+<div class="uss-wrap" [class.uss-open]="ouvert" [class.uss-disabled]="disabled">
+  <div class="uss-control" [class.is-invalid]="invalid">
+    <input
+      type="text"
+      class="uss-input"
+      [placeholder]="placeholder"
+      [(ngModel)]="filtre"
+      (ngModelChange)="onFiltreChange()"
+      (focus)="ouvrir()"
+      [disabled]="disabled"
+      autocomplete="off">
+    <i class="fa-solid fa-chevron-down uss-arrow"></i>
+  </div>
+
+  <div class="uss-panel" *ngIf="ouvert">
+    <button
+      type="button"
+      class="uss-option"
+      *ngFor="let opt of optionsFiltrees"
+      [class.selected]="opt === valeur"
+      (mousedown)="$event.preventDefault(); selectionner(opt)">
+      {{ opt }}
+    </button>
+    <div class="uss-empty" *ngIf="optionsFiltrees.length === 0">{{ emptyMessage }}</div>
+  </div>
+</div>

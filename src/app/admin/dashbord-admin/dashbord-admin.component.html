@@ -1,0 +1,219 @@
+<div class="p-4 p-lg-5">
+  <h1 class="font-spectral fw-bold mb-4" style="font-size:24px;">
+    <i class="fa-solid fa-user-shield me-2" style="color:var(--accent)"></i>Tableau de bord administrateur
+  </h1>
+
+  <div class="d-flex justify-content-center py-5" *ngIf="chargement">
+    <i class="fa-solid fa-spinner fa-spin fa-2x" style="color:var(--accent)"></i>
+  </div>
+
+  <div class="alert alert-danger" *ngIf="erreur && !chargement">{{ erreur }}</div>
+
+  <ng-container *ngIf="donnees && !chargement">
+
+    <!-- KPI -->
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-lg-4 col-xl-3">
+        <div class="ub-stat-card ub-anim-in" style="animation-delay:.02s">
+          <span class="ub-stat-icon" style="background:#FDF2F3;color:#8C2433;"><i class="fa-solid fa-users"></i></span>
+          <div><p class="ub-stat-value">{{ donnees.stats.totalUtilisateurs }}</p><p class="ub-stat-label">Utilisateurs</p></div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-4 col-xl-3">
+        <div class="ub-stat-card ub-anim-in" style="animation-delay:.04s">
+          <span class="ub-stat-icon" style="background:#ECFDF5;color:#16A34A;"><i class="fa-solid fa-user-check"></i></span>
+          <div><p class="ub-stat-value">{{ donnees.stats.clientsActifs }}</p><p class="ub-stat-label">Clients actifs</p></div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-4 col-xl-3">
+        <div class="ub-stat-card ub-anim-in" style="animation-delay:.06s">
+          <span class="ub-stat-icon" style="background:#EFF6FF;color:#2563EB;"><i class="fa-solid fa-user-plus"></i></span>
+          <div><p class="ub-stat-value">{{ donnees.stats.nouveauxClients30j }}</p><p class="ub-stat-label">Nouveaux clients (30j)</p></div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-4 col-xl-3">
+        <div class="ub-stat-card ub-anim-in" style="animation-delay:.08s">
+          <span class="ub-stat-icon" style="background:#F5F3FF;color:#7C3AED;"><i class="fa-solid fa-box"></i></span>
+          <div><p class="ub-stat-value">{{ donnees.stats.totalCommandes }}</p><p class="ub-stat-label">Commandes</p></div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-4 col-xl-3">
+        <div class="ub-stat-card ub-anim-in" style="animation-delay:.10s">
+          <span class="ub-stat-icon" style="background:#FFFBEB;color:#B45309;"><i class="fa-solid fa-clock"></i></span>
+          <div><p class="ub-stat-value">{{ donnees.stats.commandesEnAttente }}</p><p class="ub-stat-label">En attente</p></div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-4 col-xl-3">
+        <div class="ub-stat-card ub-anim-in" style="animation-delay:.12s">
+          <span class="ub-stat-icon" style="background:#ECFDF5;color:#22C55E;"><i class="fa-solid fa-circle-check"></i></span>
+          <div><p class="ub-stat-value">{{ donnees.stats.commandesTerminees }}</p><p class="ub-stat-label">Livrées</p></div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-4 col-xl-3">
+        <div class="ub-stat-card ub-anim-in" style="animation-delay:.14s">
+          <span class="ub-stat-icon" style="background:#FDF2F3;color:#8C2433;"><i class="fa-solid fa-sack-dollar"></i></span>
+          <div><p class="ub-stat-value">{{ donnees.stats.revenuTotal | number:'1.3-3' }} DT</p><p class="ub-stat-label">Chiffre d'affaires</p></div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-4 col-xl-3">
+        <div class="ub-stat-card ub-anim-in" style="animation-delay:.16s">
+          <span class="ub-stat-icon" style="background:#FEF2F2;color:#DC2626;"><i class="fa-solid fa-calendar-days"></i></span>
+          <div><p class="ub-stat-value">{{ donnees.stats.revenuMois | number:'1.3-3' }} DT</p><p class="ub-stat-label">Revenu du mois</p></div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-4 col-xl-3">
+        <div class="ub-stat-card ub-anim-in" style="animation-delay:.18s">
+          <span class="ub-stat-icon" style="background:#EFF6FF;color:#2563EB;"><i class="fa-solid fa-book"></i></span>
+          <div><p class="ub-stat-value">{{ donnees.stats.documentsVendus }}</p><p class="ub-stat-label">Documents vendus</p></div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-4 col-xl-3">
+        <div class="ub-stat-card ub-anim-in" style="animation-delay:.20s">
+          <span class="ub-stat-icon" style="background:#FFF7ED;color:#EA580C;"><i class="fa-solid fa-bag-shopping"></i></span>
+          <div><p class="ub-stat-value">{{ donnees.stats.fournituresVendues }}</p><p class="ub-stat-label">Fournitures vendues</p></div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-4 col-xl-3">
+        <div class="ub-stat-card ub-anim-in" style="animation-delay:.22s">
+          <span class="ub-stat-icon" style="background:#FEF2F2;color:#EF4444;"><i class="fa-solid fa-headset"></i></span>
+          <div><p class="ub-stat-value">{{ donnees.stats.ticketsOuverts }}</p><p class="ub-stat-label">Tickets ouverts</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Graphiques -->
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-lg-7">
+        <div class="ub-panel-card ub-anim-in h-100" style="animation-delay:.2s">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h2 class="fw-bold mb-0" style="font-size:16px;">Commandes &amp; revenus (30 derniers jours)</h2>
+            <div class="d-flex gap-3 small">
+              <span><span class="ub-chart-dot" style="background:#8C2433;"></span>Commandes</span>
+              <span><span class="ub-chart-dot" style="background:#16A34A;"></span>Revenu</span>
+            </div>
+          </div>
+          <svg viewBox="0 0 300 100" preserveAspectRatio="none" class="ub-courbe-svg" *ngIf="courbeCommandes && courbeRevenu">
+            <polygon [attr.points]="courbeCommandes.aire" fill="#8C2433" opacity="0.08"></polygon>
+            <polyline [attr.points]="courbeCommandes.points" fill="none" stroke="#8C2433" stroke-width="2" vector-effect="non-scaling-stroke"></polyline>
+            <polyline [attr.points]="courbeRevenu.points" fill="none" stroke="#16A34A" stroke-width="2" vector-effect="non-scaling-stroke"></polyline>
+          </svg>
+        </div>
+      </div>
+      <div class="col-12 col-lg-5">
+        <div class="ub-panel-card ub-anim-in h-100" style="animation-delay:.24s">
+          <h2 class="fw-bold mb-3" style="font-size:16px;">Nouveaux utilisateurs (30 derniers jours)</h2>
+          <svg viewBox="0 0 300 100" preserveAspectRatio="none" class="ub-courbe-svg" *ngIf="courbeUtilisateurs">
+            <polygon [attr.points]="courbeUtilisateurs.aire" fill="#2563EB" opacity="0.1"></polygon>
+            <polyline [attr.points]="courbeUtilisateurs.points" fill="none" stroke="#2563EB" stroke-width="2" vector-effect="non-scaling-stroke"></polyline>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statuts + produits les plus vendus -->
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-lg-7">
+        <div class="ub-panel-card ub-anim-in h-100" style="animation-delay:.26s">
+          <h2 class="fw-bold mb-3" style="font-size:16px;">Commandes par statut</h2>
+          <div class="ub-statuts-grid">
+            <div class="ub-statut-chip" *ngFor="let s of donnees.stats.parStatut | keyvalue">
+              <span class="fw-bold">{{ s.value }}</span>
+              <span class="small text-secondary">{{ s.key }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-5">
+        <div class="ub-panel-card ub-anim-in h-100" style="animation-delay:.28s">
+          <h2 class="fw-bold mb-3" style="font-size:16px;">Produits les plus vendus</h2>
+          <p class="text-secondary small mb-0" *ngIf="donnees.produitsPlusVendus.length === 0">Aucune vente pour le moment.</p>
+          <div class="ub-activite-list" *ngIf="donnees.produitsPlusVendus.length > 0">
+            <div class="ub-activite-item" *ngFor="let p of donnees.produitsPlusVendus">
+              <span class="ub-activite-icon" [style.background]="(p.estDocument ? '#2563EB' : '#EA580C') + '1A'" [style.color]="p.estDocument ? '#2563EB' : '#EA580C'">
+                <i class="fa-solid" [class.fa-book]="p.estDocument" [class.fa-bag-shopping]="!p.estDocument"></i>
+              </span>
+              <div class="flex-grow-1 min-w-0">
+                <p class="mb-0 fw-semibold small text-truncate">{{ p.titre }}</p>
+                <p class="mb-0 text-secondary small">{{ p.estDocument ? 'Document numérique' : 'Fourniture scolaire' }}</p>
+              </div>
+              <strong>{{ p.quantite }}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dernières commandes + Derniers utilisateurs -->
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-lg-7">
+        <div class="ub-panel-card ub-anim-in h-100" style="animation-delay:.3s">
+          <h2 class="fw-bold mb-3" style="font-size:16px;">Dernières commandes</h2>
+          <p class="text-secondary small mb-0" *ngIf="donnees.dernieresCommandes.length === 0">Aucune commande pour le moment.</p>
+          <div class="table-responsive" *ngIf="donnees.dernieresCommandes.length > 0">
+            <table class="table align-middle">
+              <thead>
+                <tr class="text-secondary small">
+                  <th>N° Commande</th>
+                  <th>Client</th>
+                  <th>Date</th>
+                  <th>Total</th>
+                  <th>Statut</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let commande of donnees.dernieresCommandes">
+                  <td class="fw-semibold">{{ commande.numero }}</td>
+                  <td>{{ commande.user?.nom || '—' }}</td>
+                  <td>{{ commande.createdAt | date:'dd/MM/yyyy' }}</td>
+                  <td>{{ commande.total | number:'1.3-3' }} DT</td>
+                  <td><span class="ub-badge">{{ commande.statut }}</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-5">
+        <div class="ub-panel-card ub-anim-in h-100" style="animation-delay:.32s">
+          <h2 class="fw-bold mb-3" style="font-size:16px;">Derniers utilisateurs</h2>
+          <p class="text-secondary small mb-0" *ngIf="donnees.derniersUtilisateurs.length === 0">Aucun utilisateur récent.</p>
+          <div class="ub-activite-list" *ngIf="donnees.derniersUtilisateurs.length > 0">
+            <div class="ub-activite-item" *ngFor="let u of donnees.derniersUtilisateurs">
+              <span class="ub-avatar-sm">
+                <img *ngIf="u.photo" [src]="photoDe(u.photo)" alt="">
+                <i *ngIf="!u.photo" class="fa-solid fa-circle-user"></i>
+              </span>
+              <div class="flex-grow-1 min-w-0">
+                <p class="mb-0 fw-semibold small text-truncate">{{ u.prenom }} {{ u.nom }}</p>
+                <p class="mb-0 text-secondary small text-truncate">{{ u.email }}</p>
+              </div>
+              <span class="ub-badge" [class.ub-badge-off]="!u.actif">{{ u.actif ? 'Actif' : 'Bloqué' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activités récentes -->
+    <div class="row g-3">
+      <div class="col-12">
+        <div class="ub-panel-card ub-anim-in h-100" style="animation-delay:.34s">
+          <h2 class="fw-bold mb-3" style="font-size:16px;">Activités récentes</h2>
+          <p class="text-secondary small mb-0" *ngIf="activites.length === 0">Aucune activité pour le moment.</p>
+          <div class="ub-activite-list" *ngIf="activites.length > 0">
+            <div class="ub-activite-item" *ngFor="let a of activites">
+              <span class="ub-activite-icon" [style.background]="couleurActivite(a.type) + '1A'" [style.color]="couleurActivite(a.type)">
+                <i class="fa-solid {{ iconeActivite(a.type) }}"></i>
+              </span>
+              <div class="flex-grow-1 min-w-0">
+                <p class="mb-0 fw-semibold small text-truncate">{{ a.description }}</p>
+                <p class="mb-0 text-secondary small text-truncate">{{ a.user?.nom || '—' }} · {{ a.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+</div>

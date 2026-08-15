@@ -1,0 +1,768 @@
+<!-- CONTENU PANIER -->
+<section class="py-5">
+  <div class="container-xl px-4">
+
+    <!-- PANIER VIDE -->
+    <div *ngIf="items.length === 0" class="text-center py-5">
+      <div class="d-flex align-items-center justify-content-center mb-4 mx-auto"
+           style="width:88px;height:88px;background:#F7F8FA;border-radius:50%;">
+        <i class="fa-solid fa-cart-shopping fa-2x" style="color:#C4CBD2;"></i>
+      </div>
+      <h4 class="font-spectral fw-bold mb-2">Votre panier est vide</h4>
+      <p class="mb-4" style="color:#6B7480;max-width:400px;margin:0 auto;">
+        Vous n'avez ajouté aucun document pour le moment.
+        Explorez notre boutique pour trouver vos ressources.
+      </p>
+      <a routerLink="/" class="btn btn-accent px-5 py-3 rounded-pill fw-semibold">
+        <i class="fa-solid fa-shop me-2"></i>
+        Explorer la boutique
+      </a>
+    </div>
+
+    <!-- ARTICLES + RÉSUMÉ -->
+    <div *ngIf="items.length > 0" class="row g-4 align-items-start">
+
+      <!-- LISTE DES ARTICLES -->
+      <div class="col-12 col-lg-8">
+        <h1 class="font-spectral fw-bold mb-4" style="font-size:24px;">
+          Mon panier
+          <span class="small fw-normal" style="color:#8A929C;">({{ nombreArticles }} article{{ nombreArticles > 1 ? 's' : '' }})</span>
+        </h1>
+
+        <div class="pn-items-list">
+          <div *ngFor="let item of items; trackBy: trackById" class="pn-item-card">
+
+            <div class="pn-item-visuel">
+              <img *ngIf="item.image" [src]="item.image" [alt]="item.titre" class="pn-item-img">
+              <i *ngIf="!item.image" class="fa-solid {{ item.icone }}"></i>
+              <span class="pn-item-dispo"><i class="fa-solid fa-circle-check"></i>En stock</span>
+            </div>
+
+            <div class="pn-item-infos">
+              <div class="d-flex align-items-start justify-content-between gap-2">
+                <div>
+                  <div class="pn-item-titre">{{ item.titre }}</div>
+                  <div class="d-flex align-items-center gap-2 mt-1 flex-wrap">
+                    <span class="pn-item-cat">{{ item.categorie }}</span>
+                    <span class="pn-item-ref">{{ reference(item) }}</span>
+                    <span *ngIf="item.variante" class="pn-item-cat" style="background:#EFF6FF;color:#2563EB;">{{ item.variante }}</span>
+                  </div>
+                </div>
+                <button (click)="supprimer(item)" class="pn-item-remove" title="Supprimer">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </div>
+
+              <div class="d-flex align-items-center justify-content-between mt-3 flex-wrap gap-3">
+                <div class="d-flex align-items-center gap-3">
+                  <div class="panier-qty">
+                    <button (click)="decrementer(item)" class="qty-btn" [disabled]="item.quantite <= 1">
+                      <i class="fa-solid fa-minus" style="font-size:10px"></i>
+                    </button>
+                    <span class="fw-semibold text-center" style="min-width:24px;font-size:14px;">{{ item.quantite }}</span>
+                    <button (click)="incrementer(item)" class="qty-btn">
+                      <i class="fa-solid fa-plus" style="font-size:10px"></i>
+                    </button>
+                  </div>
+                  <span class="small" style="color:#9AA0A8;">{{ formatPrix(item.prix) }} / unité</span>
+                </div>
+
+                <div class="fw-bold" style="color:var(--accent);font-size:17px;">
+                  {{ formatPrix(item.prix * item.quantite) }}
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <a routerLink="/boutique" class="btn btn-outline-dark-ub d-inline-flex align-items-center gap-2 px-4 py-2">
+            <i class="fa-solid fa-arrow-left" style="color:var(--accent)"></i>
+            Continuer les achats
+          </a>
+        </div>
+      </div>
+
+      <!-- RÉSUMÉ COMMANDE -->
+      <div class="col-12 col-lg-4">
+        <div class="pn-summary-sticky">
+          <div class="card border-0 p-4" style="border-radius:20px;box-shadow:0 4px 24px -8px rgba(0,0,0,.08);">
+            <h5 class="font-spectral fw-bold mb-4" style="font-size:20px;">Récapitulatif</h5>
+
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+              <span class="small" style="color:#6B7480;">Nombre d'articles</span>
+              <span class="fw-semibold" style="color:#1B2430;">{{ nombreArticles }}</span>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+              <span class="small" style="color:#6B7480;">Sous-total</span>
+              <span class="fw-semibold" style="color:#1B2430;">{{ formatPrix(sousTotal) }}</span>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+              <span class="small" style="color:#6B7480;">Remise</span>
+              <span class="fw-semibold" style="color:#1B2430;">{{ formatPrix(remise) }}</span>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+              <span class="small" style="color:#6B7480;">TVA</span>
+              <span class="small fw-semibold" style="color:#22C55E;">Incluse</span>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom">
+              <span class="small" style="color:#6B7480;">Livraison</span>
+              <span class="small fw-semibold" [style.color]="fraisLivraison === 0 ? '#22C55E' : '#1B2430'">
+                <i class="fa-solid fa-circle-check me-1" *ngIf="fraisLivraison === 0"></i>
+                {{ fraisLivraison === 0 ? 'Gratuite' : formatPrix(fraisLivraison) }}
+              </span>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <span class="fw-bold" style="color:#1B2430;">Total TTC</span>
+              <span class="fw-bold font-spectral" style="font-size:22px;color:var(--accent);">
+                {{ formatPrix(total) }}
+              </span>
+            </div>
+
+            <button (click)="openCheckout()"
+                    class="btn btn-accent w-100 py-3 rounded-pill fw-semibold ub-ripple"
+                    style="font-size:15px;">
+              <i class="fa-solid fa-lock me-2"></i>
+              Passer la commande
+            </button>
+
+            <div class="d-flex align-items-center justify-content-center gap-3 pt-3">
+              <span class="small" style="color:#9AA0A8;">
+                <i class="fa-solid fa-shield-halved me-1" style="color:var(--accent)"></i>Paiement sécurisé
+              </span>
+              <span class="vr" style="height:14px;"></span>
+              <span class="small" style="color:#9AA0A8;">
+                <i class="fa-solid fa-truck-fast me-1" style="color:var(--accent)"></i>Livraison 24h
+              </span>
+            </div>
+
+            <div class="mt-4 pt-3 border-top">
+              <label class="small fw-semibold mb-2 d-block" style="color:#1B2430;">Code promotionnel</label>
+              <div class="d-flex gap-2">
+                <input type="text" class="form-control form-control-sm" placeholder="Entrez votre code"
+                       style="border-radius:10px;border-color:#ECEDEF;">
+                <button class="btn btn-sm btn-outline-dark-ub px-3" style="white-space:nowrap;">Appliquer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     CHECKOUT MODAL
+════════════════════════════════════════════════════════════════ -->
+<div *ngIf="isCheckoutOpen" class="ck-overlay" (click)="closeCheckout()">
+  <div class="ck-modal" (click)="$event.stopPropagation()">
+
+    <!-- ── En-tête modal ── -->
+    <div class="ck-header">
+      <div>
+        <h2 class="ck-title font-spectral">{{ etapeCheckout === 'livraison' ? 'Informations de livraison' : 'Finaliser la commande' }}</h2>
+        <p class="ck-subtitle">Veuillez compléter vos informations pour finaliser la commande</p>
+      </div>
+      <button *ngIf="!orderConfirmed" class="ck-close-btn" (click)="closeCheckout()" aria-label="Fermer">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- ── Stepper : Livraison → Paiement → Confirmation ── -->
+    <div class="ck-stepper">
+      <div class="ck-step" [class.active]="etapeCheckout==='livraison' && !orderConfirmed" [class.done]="etapeCheckout==='paiement' || orderConfirmed">
+        <span class="ck-step-num"><i class="fa-solid fa-check" *ngIf="etapeCheckout==='paiement' || orderConfirmed"></i><ng-container *ngIf="etapeCheckout==='livraison' && !orderConfirmed">1</ng-container></span>
+        <span class="ck-step-label">Livraison</span>
+      </div>
+      <span class="ck-step-sep" [class.done]="etapeCheckout==='paiement' || orderConfirmed"></span>
+      <div class="ck-step" [class.active]="etapeCheckout==='paiement' && !orderConfirmed" [class.done]="orderConfirmed">
+        <span class="ck-step-num"><i class="fa-solid fa-check" *ngIf="orderConfirmed"></i><ng-container *ngIf="!orderConfirmed">2</ng-container></span>
+        <span class="ck-step-label">Paiement</span>
+      </div>
+      <span class="ck-step-sep" [class.done]="orderConfirmed"></span>
+      <div class="ck-step" [class.active]="orderConfirmed">
+        <span class="ck-step-num">3</span>
+        <span class="ck-step-label">Confirmation</span>
+      </div>
+    </div>
+
+    <!-- ── CONFIRMATION ── -->
+    <div *ngIf="orderConfirmed" class="ck-body ck-confirmed">
+      <div class="ck-confirmed-icon">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+      <h3 class="font-spectral fw-bold mb-2" style="font-size:26px;color:#1B2430;">Commande confirmée !</h3>
+      <p style="color:#6B7480;max-width:420px;margin:0 auto 8px;">
+        Votre commande a été enregistrée avec succès.
+        <ng-container *ngIf="derniereCommandeEmail">
+          Un e-mail de confirmation avec votre facture{{ derniereCommandeContientDocuments ? ' et le lien de téléchargement de votre document' : '' }}
+          a été envoyé à <strong>{{ derniereCommandeEmail }}</strong>.
+        </ng-container>
+      </p>
+      <p class="fw-semibold" style="color:var(--accent);font-size:15px;">
+        Montant total : {{ formatPrix(montantCommande) }}
+      </p>
+      <p *ngIf="estConnecte" class="small" style="color:#6B7480;">
+        Retrouvez le suivi de cette commande dans
+        <a routerLink="/user/commandes" (click)="closeCheckout()" class="fw-semibold text-decoration-none" style="color:var(--accent);">
+          Mes commandes
+        </a>.
+      </p>
+      <p *ngIf="!estConnecte" class="small" style="color:#6B7480;">
+        Aucun compte n'a été créé — conservez l'e-mail reçu pour accéder à votre document.
+      </p>
+      <a *ngIf="estConnecte && derniereCommandeContientDocuments"
+         routerLink="/user/documents" (click)="closeCheckout()"
+         class="btn btn-accent px-5 py-3 rounded-pill fw-semibold mt-3 ub-ripple" style="font-size:15px;">
+        <i class="fa-solid fa-book me-2"></i>Voir mes documents
+      </a>
+      <button (click)="closeCheckout()"
+              [class.btn-accent]="!(estConnecte && derniereCommandeContientDocuments)"
+              [class.btn-outline-dark-ub]="estConnecte && derniereCommandeContientDocuments"
+              class="btn px-5 py-3 rounded-pill fw-semibold mt-3" style="font-size:15px;">
+        <i class="fa-solid fa-house me-2"></i>Retour au panier
+      </button>
+    </div>
+
+    <!-- ── FORMULAIRE ── -->
+    <form *ngIf="!orderConfirmed"
+          [formGroup]="checkoutForm"
+          (ngSubmit)="onSubmitOrder()"
+          novalidate>
+
+      <div class="ck-body">
+
+        <div class="alert alert-danger py-2 px-3" *ngIf="erreurCommande">
+          <i class="fa-solid fa-circle-exclamation me-2"></i>{{ erreurCommande }}
+        </div>
+
+        <div class="alert py-2 px-3" *ngIf="estConnecte" style="background:#F0FDF4;color:#16A34A;border:none;">
+          <i class="fa-solid fa-circle-check me-2"></i>
+          Connecté(e) — vos informations ont été pré-remplies et cette commande sera liée à votre compte.
+        </div>
+
+        <!-- ═══ Carte "Gagnez du temps" : compte / Google / Facebook / invité ═══ -->
+        <div class="ck-compte-card" *ngIf="etapeCheckout==='livraison' && !estConnecte && !compteCardMasquee">
+          <div class="ck-compte-header">
+            <div>
+              <div class="ck-compte-titre font-spectral">Gagnez du temps !</div>
+              <p class="ck-compte-desc">
+                Créez un compte pour enregistrer automatiquement vos informations et suivre vos commandes.
+              </p>
+            </div>
+            <button type="button" class="ck-compte-close" (click)="continuerInvite()" aria-label="Continuer en tant qu'invité">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <div class="ck-compte-actions" *ngIf="!afficherFormulaireCompte">
+            <button type="button" class="ck-btn-compte ck-btn-compte--principal" (click)="toggleFormulaireCompte()">
+              <i class="fa-solid fa-user-plus"></i>Créer un compte
+            </button>
+            <button type="button" class="ck-btn-compte ck-btn-compte--google" (click)="connexionGoogle()" [disabled]="oauthChargement !== null">
+              <i class="fab fa-google" *ngIf="oauthChargement !== 'google'"></i>
+              <i class="fa-solid fa-spinner fa-spin" *ngIf="oauthChargement === 'google'"></i>
+              Continuer avec Google
+            </button>
+            <button type="button" class="ck-btn-compte ck-btn-compte--facebook" (click)="connexionFacebook()" [disabled]="oauthChargement !== null">
+              <i class="fab fa-facebook-f" *ngIf="oauthChargement !== 'facebook'"></i>
+              <i class="fa-solid fa-spinner fa-spin" *ngIf="oauthChargement === 'facebook'"></i>
+              Continuer avec Facebook
+            </button>
+          </div>
+
+          <div class="alert py-2 px-3 mt-3 mb-0" *ngIf="oauthErreur" style="background:#FFFBEB;color:#92400E;border:none;">
+            <i class="fa-solid fa-circle-info me-2"></i>{{ oauthErreur }}
+          </div>
+
+          <button type="button" class="ck-lien-invite" *ngIf="!afficherFormulaireCompte" (click)="continuerInvite()">
+            Continuer en tant qu'invité
+          </button>
+
+          <!-- ── Mini-formulaire de création de compte (section déroulante) ── -->
+          <div class="ck-compte-form" *ngIf="afficherFormulaireCompte" [formGroup]="compteForm">
+            <div class="alert alert-danger py-2 px-3" *ngIf="compteErreur">
+              <i class="fa-solid fa-circle-exclamation me-2"></i>{{ compteErreur }}
+            </div>
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
+                <label class="ck-label">Prénom <span class="ck-required">*</span></label>
+                <input formControlName="prenom" type="text" class="ck-input" [class.is-invalid]="compteFieldInvalid('prenom')">
+                <div *ngIf="compteFieldInvalid('prenom')" class="ck-error">{{ compteFieldError('prenom') }}</div>
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="ck-label">Nom <span class="ck-required">*</span></label>
+                <input formControlName="nom" type="text" class="ck-input" [class.is-invalid]="compteFieldInvalid('nom')">
+                <div *ngIf="compteFieldInvalid('nom')" class="ck-error">{{ compteFieldError('nom') }}</div>
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="ck-label">Email <span class="ck-required">*</span></label>
+                <input formControlName="email" type="email" class="ck-input" [class.is-invalid]="compteFieldInvalid('email')">
+                <div *ngIf="compteFieldInvalid('email')" class="ck-error">{{ compteFieldError('email') }}</div>
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="ck-label">Téléphone <span class="ck-required">*</span></label>
+                <div class="ck-input-wrap">
+                  <span class="ck-phone-prefix">+216</span>
+                  <input formControlName="telephone" type="tel" maxlength="8" class="ck-input has-prefix" [class.is-invalid]="compteFieldInvalid('telephone')">
+                </div>
+                <div *ngIf="compteFieldInvalid('telephone')" class="ck-error">{{ compteFieldError('telephone') }}</div>
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="ck-label">Mot de passe <span class="ck-required">*</span></label>
+                <input formControlName="motDePasse" type="password" class="ck-input" [class.is-invalid]="compteFieldInvalid('motDePasse')">
+                <div *ngIf="compteFieldInvalid('motDePasse')" class="ck-error">{{ compteFieldError('motDePasse') }}</div>
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="ck-label">Confirmation <span class="ck-required">*</span></label>
+                <input formControlName="confirmation" type="password" class="ck-input" [class.is-invalid]="compteFieldInvalid('confirmation') || motsDePasseDifferents">
+                <div *ngIf="motsDePasseDifferents" class="ck-error">Les mots de passe ne correspondent pas.</div>
+              </div>
+            </div>
+            <div class="d-flex gap-2 mt-3">
+              <button type="button" class="btn btn-outline-dark-ub px-4 py-2 rounded-pill fw-semibold" (click)="toggleFormulaireCompte()">
+                Annuler
+              </button>
+              <button type="button" class="btn btn-accent px-4 py-2 rounded-pill fw-semibold ub-ripple" [disabled]="compteChargement" (click)="creerCompte()">
+                <span *ngIf="!compteChargement"><i class="fa-solid fa-check me-2"></i>Créer mon compte</span>
+                <span *ngIf="compteChargement"><i class="fa-solid fa-spinner fa-spin me-2"></i>Création...</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══ Étape 1 : Livraison ═══ -->
+        <ng-container *ngIf="etapeCheckout==='livraison'">
+
+        <!-- Section : Coordonnées -->
+        <div class="ck-section-label">
+          <i class="fa-solid fa-user me-2"></i>Coordonnées personnelles
+        </div>
+        <div class="row g-3">
+
+          <!-- Prénom -->
+          <div class="col-12 col-md-6">
+            <label class="ck-label">Prénom <span class="ck-required">*</span></label>
+            <input formControlName="prenom" type="text" placeholder="Ex : Mehdi"
+                   class="ck-input" [class.is-invalid]="fieldInvalid('prenom')">
+            <div *ngIf="fieldInvalid('prenom')" class="ck-error">
+              <i class="fa-solid fa-circle-exclamation me-1"></i>{{ getFieldError('prenom') }}
+            </div>
+          </div>
+
+          <!-- Nom -->
+          <div class="col-12 col-md-6">
+            <label class="ck-label">Nom <span class="ck-required">*</span></label>
+            <input formControlName="nom" type="text" placeholder="Ex : Ben Salem"
+                   class="ck-input" [class.is-invalid]="fieldInvalid('nom')">
+            <div *ngIf="fieldInvalid('nom')" class="ck-error">
+              <i class="fa-solid fa-circle-exclamation me-1"></i>{{ getFieldError('nom') }}
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="col-12 col-md-6">
+            <label class="ck-label">
+              Adresse e-mail
+              <span *ngIf="!estConnecte" class="ck-required">*</span>
+              <span *ngIf="estConnecte" style="color:#9AA0A8;font-weight:400;">(optionnel)</span>
+            </label>
+            <div class="ck-input-wrap">
+              <i class="fa-solid fa-envelope ck-input-icon"></i>
+              <input formControlName="email" type="email" placeholder="exemple@mail.com"
+                     class="ck-input has-icon" [class.is-invalid]="fieldInvalid('email')">
+            </div>
+            <div *ngIf="fieldInvalid('email')" class="ck-error">
+              <i class="fa-solid fa-circle-exclamation me-1"></i>{{ getFieldError('email') }}
+            </div>
+            <p *ngIf="!estConnecte" class="small mt-1 mb-0" style="color:#9AA0A8;">
+              Aucun compte ne sera créé — votre document et votre facture vous seront envoyés à cette adresse.
+            </p>
+          </div>
+
+          <!-- Téléphone principal -->
+          <div class="col-12 col-md-6">
+            <label class="ck-label">Téléphone principal <span class="ck-required">*</span></label>
+            <div class="ck-input-wrap">
+              <span class="ck-phone-prefix">+216</span>
+              <input formControlName="telephone" type="tel" placeholder="22 345 678" maxlength="8"
+                     class="ck-input has-prefix" [class.is-invalid]="fieldInvalid('telephone')">
+            </div>
+            <div *ngIf="fieldInvalid('telephone')" class="ck-error">
+              <i class="fa-solid fa-circle-exclamation me-1"></i>{{ getFieldError('telephone') }}
+            </div>
+          </div>
+
+          <!-- Téléphone secondaire -->
+          <div class="col-12 col-md-6">
+            <label class="ck-label">Téléphone secondaire <span style="color:#9AA0A8;font-weight:400;">(optionnel)</span></label>
+            <div class="ck-input-wrap">
+              <span class="ck-phone-prefix">+216</span>
+              <input formControlName="telephoneSecondaire" type="tel" placeholder="22 345 678" maxlength="8"
+                     class="ck-input has-prefix" [class.is-invalid]="fieldInvalid('telephoneSecondaire')">
+            </div>
+            <div *ngIf="fieldInvalid('telephoneSecondaire')" class="ck-error">
+              <i class="fa-solid fa-circle-exclamation me-1"></i>{{ getFieldError('telephoneSecondaire') }}
+            </div>
+          </div>
+
+          <!-- Entreprise -->
+          <div class="col-12 col-md-6">
+            <label class="ck-label">Entreprise <span style="color:#9AA0A8;font-weight:400;">(optionnel)</span></label>
+            <input formControlName="entreprise" type="text" placeholder="Ex : Cabinet Ben Salem"
+                   class="ck-input">
+          </div>
+
+        </div>
+
+        <!-- Section : Type de livraison (uniquement si le panier contient des fournitures scolaires) -->
+        <ng-container *ngIf="commandeContientFournitures">
+        <div class="ck-section-label mt-4">
+          <i class="fa-solid fa-truck me-2"></i>Type de livraison
+        </div>
+        <div class="row g-3">
+          <div class="col-12 col-sm-6">
+            <label class="ck-radio-card" [class.selected]="checkoutForm.get('typeLivraison')?.value === 'domicile'">
+              <input type="radio" formControlName="typeLivraison" value="domicile" class="ck-radio-input">
+              <div class="ck-radio-icon" style="background:#F4E7E8;">
+                <i class="fa-solid fa-house" style="color:var(--accent);"></i>
+              </div>
+              <div>
+                <div class="ck-radio-title">Livraison à domicile</div>
+                <div class="ck-radio-desc">Livré chez vous en 24–48h · +8,000 د.ت</div>
+              </div>
+              <i class="fa-solid fa-circle-check ck-radio-check"></i>
+            </label>
+          </div>
+          <div class="col-12 col-sm-6">
+            <label class="ck-radio-card" [class.selected]="checkoutForm.get('typeLivraison')?.value === 'retrait'">
+              <input type="radio" formControlName="typeLivraison" value="retrait" class="ck-radio-input">
+              <div class="ck-radio-icon" style="background:#EEF2FF;">
+                <i class="fa-solid fa-store" style="color:#4F46E5;"></i>
+              </div>
+              <div>
+                <div class="ck-radio-title">Retrait en magasin</div>
+                <div class="ck-radio-desc">Disponible immédiatement · Gratuit</div>
+              </div>
+              <i class="fa-solid fa-circle-check ck-radio-check"></i>
+            </label>
+          </div>
+        </div>
+        </ng-container>
+
+        <!-- Section : Adresse (uniquement si fournitures + livraison à domicile) -->
+        <ng-container *ngIf="commandeContientFournitures && checkoutForm.get('typeLivraison')?.value === 'domicile'">
+          <div class="ck-section-label mt-4">
+            <i class="fa-solid fa-map-pin me-2"></i>Adresse de livraison
+          </div>
+          <div class="row g-3">
+
+            <!-- Gouvernorat -->
+            <div class="col-12 col-md-6">
+              <label class="ck-label">Gouvernorat <span class="ck-required">*</span></label>
+              <app-searchable-select
+                formControlName="gouvernorat"
+                [options]="gouvernorats"
+                placeholder="Rechercher un gouvernorat…"
+                emptyMessage="Aucun gouvernorat trouvé"
+                [invalid]="fieldInvalid('gouvernorat')">
+              </app-searchable-select>
+              <div *ngIf="fieldInvalid('gouvernorat')" class="ck-error">
+                <i class="fa-solid fa-circle-exclamation me-1"></i>{{ getFieldError('gouvernorat') }}
+              </div>
+            </div>
+
+            <!-- Délégation -->
+            <div class="col-12 col-md-6">
+              <label class="ck-label">Délégation / Moâtamadiya <span class="ck-required">*</span></label>
+              <app-searchable-select
+                formControlName="delegation"
+                [options]="delegations"
+                [placeholder]="checkoutForm.get('gouvernorat')?.value ? 'Rechercher une délégation…' : 'Choisir un gouvernorat d\'abord'"
+                emptyMessage="Aucune délégation trouvée"
+                [invalid]="fieldInvalid('delegation')">
+              </app-searchable-select>
+              <div *ngIf="fieldInvalid('delegation')" class="ck-error">
+                <i class="fa-solid fa-circle-exclamation me-1"></i>{{ getFieldError('delegation') }}
+              </div>
+            </div>
+
+            <!-- Code postal -->
+            <div class="col-12 col-md-6">
+              <label class="ck-label">Code postal <span class="ck-required">*</span></label>
+              <input formControlName="codePostal" type="text" placeholder="Ex : 3000" inputmode="numeric"
+                     class="ck-input" maxlength="4" [class.is-invalid]="fieldInvalid('codePostal')">
+              <div *ngIf="fieldInvalid('codePostal')" class="ck-error">
+                <i class="fa-solid fa-circle-exclamation me-1"></i>{{ getFieldError('codePostal') }}
+              </div>
+            </div>
+
+            <!-- Téléphone (déjà saisi ci-dessus, rappelé ici pour le livreur) -->
+            <div class="col-12 col-md-6">
+              <label class="ck-label">Téléphone <span class="ck-required">*</span></label>
+              <input formControlName="telephone" type="tel" placeholder="22 345 678" maxlength="8"
+                     class="ck-input" [class.is-invalid]="fieldInvalid('telephone')">
+              <div *ngIf="fieldInvalid('telephone')" class="ck-error">
+                <i class="fa-solid fa-circle-exclamation me-1"></i>{{ getFieldError('telephone') }}
+              </div>
+            </div>
+
+            <!-- Adresse détaillée -->
+            <div class="col-12">
+              <label class="ck-label">Adresse détaillée <span class="ck-required">*</span></label>
+              <textarea formControlName="adresse" rows="3"
+                        placeholder="Résidence, immeuble, étage, numéro de rue, quartier, point de repère…"
+                        class="ck-input" [class.is-invalid]="fieldInvalid('adresse')"></textarea>
+              <div *ngIf="fieldInvalid('adresse')" class="ck-error">
+                <i class="fa-solid fa-circle-exclamation me-1"></i>{{ getFieldError('adresse') }}
+              </div>
+            </div>
+
+          </div>
+        </ng-container>
+
+        </ng-container><!-- /Étape 1 : Livraison -->
+
+        <!-- ═══ Étape 2 : Paiement ═══ -->
+        <ng-container *ngIf="etapeCheckout==='paiement'">
+
+        <!-- Section : Moyen de paiement -->
+        <div class="ck-section-label">
+          <i class="fa-solid fa-wallet me-2"></i>Moyen de paiement
+        </div>
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="ck-radio-card" [class.selected]="moyenPaiement === 'livraison'">
+              <input type="radio" formControlName="moyenPaiement" value="livraison" class="ck-radio-input">
+              <div class="ck-radio-icon" style="background:#F0FDF4;">
+                <span style="font-size:18px;">💵</span>
+              </div>
+              <div>
+                <div class="ck-radio-title">Paiement à la livraison</div>
+                <div class="ck-radio-desc">Payez en espèces à la réception</div>
+              </div>
+              <i class="fa-solid fa-circle-check ck-radio-check"></i>
+            </label>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="ck-radio-card" [class.selected]="moyenPaiement === 'carte'">
+              <input type="radio" formControlName="moyenPaiement" value="carte" class="ck-radio-input">
+              <div class="ck-radio-icon" style="background:#EFF6FF;">
+                <span style="font-size:18px;">💳</span>
+              </div>
+              <div>
+                <div class="ck-radio-title">Paiement en ligne</div>
+                <div class="ck-radio-desc">Carte bancaire Visa / Mastercard</div>
+              </div>
+              <i class="fa-solid fa-circle-check ck-radio-check"></i>
+            </label>
+          </div>
+        </div>
+
+        <!-- ── Panneau Paiement en ligne : formulaire + carte 3D interactive ── -->
+        <div class="ck-payment-fields" *ngIf="moyenPaiement === 'carte'">
+          <div class="ck-payment-panel ck-payment-panel--carte mt-3">
+            <div class="row g-4 align-items-start">
+
+              <!-- Carte bancaire 3D -->
+              <div class="col-12 col-md-5">
+                <div class="cc-card-scene">
+                  <div class="cc-card" [class.flipped]="carteFlipped">
+
+                    <!-- Face avant -->
+                    <div class="cc-card-face cc-card-front">
+                      <div class="d-flex align-items-start justify-content-between">
+                        <div class="cc-chip"></div>
+                        <i class="fab fa-cc-visa cc-brand-logo" *ngIf="carteMarque === 'visa'"></i>
+                        <i class="fab fa-cc-mastercard cc-brand-logo" *ngIf="carteMarque === 'mastercard'"></i>
+                      </div>
+                      <div class="cc-number">{{ checkoutForm.get('carteNumero')?.value || '•••• •••• •••• ••••' }}</div>
+                      <div class="d-flex align-items-end justify-content-between">
+                        <div class="cc-holder">
+                          <div class="cc-field-label">Titulaire</div>
+                          <div class="cc-uppercase">{{ (checkoutForm.get('carteNom')?.value || 'NOM DU TITULAIRE') | uppercase }}</div>
+                        </div>
+                        <div class="cc-expiry">
+                          <div class="cc-field-label">Exp.</div>
+                          <div>{{ checkoutForm.get('carteExpiration')?.value || 'MM/AA' }}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Face arrière -->
+                    <div class="cc-card-face cc-card-back">
+                      <div class="cc-magnetic-strip"></div>
+                      <div class="cc-cvv-strip">
+                        <span class="cc-cvv-value">{{ checkoutForm.get('carteCvv')?.value || '•••' }}</span>
+                      </div>
+                    </div>
+
+                  </div>
+                </div>
+                <div class="text-center mt-3">
+                  <span class="ck-security-badge">
+                    <i class="fa-solid fa-lock"></i> Paiement chiffré et sécurisé
+                  </span>
+                </div>
+              </div>
+
+              <!-- Formulaire carte -->
+              <div class="col-12 col-md-7">
+                <div class="row g-3">
+
+                  <div class="col-12">
+                    <label class="ck-label">Numéro de carte <span class="ck-required">*</span></label>
+                    <div class="ck-input-wrap">
+                      <input formControlName="carteNumero" type="text" inputmode="numeric"
+                             placeholder="0000 0000 0000 0000" maxlength="19"
+                             (input)="onCarteNumeroInput($event)"
+                             class="ck-input has-icon-right ck-mono" [class.is-invalid]="fieldInvalid('carteNumero')">
+                      <i class="fab fa-cc-visa ck-card-brand" *ngIf="carteMarque === 'visa'"></i>
+                      <i class="fab fa-cc-mastercard ck-card-brand" *ngIf="carteMarque === 'mastercard'"></i>
+                    </div>
+                    <div *ngIf="fieldInvalid('carteNumero')" class="ck-error">
+                      <i class="fa-solid fa-circle-exclamation me-1"></i>{{ getFieldError('carteNumero') }}
+                    </div>
+                  </div>
+
+                  <div class="col-12">
+                    <label class="ck-label">Nom du titulaire <span class="ck-required">*</span></label>
+                    <input formControlName="carteNom" type="text" placeholder="Ex : MEHDI BEN SALEM"
+                           class="ck-input ck-uppercase" [class.is-invalid]="fieldInvalid('carteNom')">
+                    <div *ngIf="fieldInvalid('carteNom')" class="ck-error">
+                      <i class="fa-solid fa-circle-exclamation me-1"></i>{{ getFieldError('carteNom') }}
+                    </div>
+                  </div>
+
+                  <div class="col-6">
+                    <label class="ck-label">Date d'expiration <span class="ck-required">*</span></label>
+                    <input formControlName="carteExpiration" type="text" inputmode="numeric"
+                           placeholder="MM/AA" maxlength="5"
+                           (input)="onCarteExpirationInput($event)"
+                           class="ck-input ck-mono" [class.is-invalid]="fieldInvalid('carteExpiration')">
+                    <div *ngIf="fieldInvalid('carteExpiration')" class="ck-error">
+                      <i class="fa-solid fa-circle-exclamation me-1"></i>{{ getFieldError('carteExpiration') }}
+                    </div>
+                  </div>
+
+                  <div class="col-6">
+                    <label class="ck-label">
+                      CVV <span class="ck-required">*</span>
+                      <span class="ck-cvv-hint" title="Les 3 chiffres au dos de la carte"><i class="fa-regular fa-circle-question"></i></span>
+                    </label>
+                    <input formControlName="carteCvv" type="text" inputmode="numeric"
+                           placeholder="•••" maxlength="3"
+                           (focus)="onCvvFocus()" (blur)="onCvvBlur()"
+                           class="ck-input ck-mono" [class.is-invalid]="fieldInvalid('carteCvv')">
+                    <div *ngIf="fieldInvalid('carteCvv')" class="ck-error">
+                      <i class="fa-solid fa-circle-exclamation me-1"></i>{{ getFieldError('carteCvv') }}
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Section : Commentaire -->
+        <div class="mt-4">
+          <label class="ck-label">Commentaire <span style="color:#9AA0A8;font-weight:400;">(optionnel)</span></label>
+          <textarea formControlName="commentaire" class="ck-input ck-textarea" rows="3"
+                    placeholder="Instructions particulières pour la livraison, remarques…"></textarea>
+        </div>
+
+        <!-- Récapitulatif complet -->
+        <div class="ck-section-label mt-4">
+          <i class="fa-solid fa-receipt me-2"></i>Récapitulatif de la commande
+        </div>
+        <div class="ck-summary">
+          <div class="ck-summary-produits">
+            <div *ngFor="let item of items; trackBy: trackById" class="ck-summary-ligne">
+              <span>{{ item.titre }} <span style="color:#9AA0A8;">× {{ item.quantite }}</span></span>
+              <span class="fw-semibold">{{ formatPrix(item.prix * item.quantite) }}</span>
+            </div>
+          </div>
+          <div class="ck-summary-ligne">
+            <span>Sous-total</span>
+            <span>{{ formatPrix(sousTotal) }}</span>
+          </div>
+          <div class="ck-summary-ligne">
+            <span>Livraison</span>
+            <span>{{ fraisLivraison === 0 ? 'Gratuite' : formatPrix(fraisLivraison) }}</span>
+          </div>
+          <div class="ck-summary-ligne">
+            <span>TVA</span>
+            <span style="color:#22C55E;">Incluse</span>
+          </div>
+          <div class="ck-summary-ligne ck-summary-total">
+            <span>Total TTC</span>
+            <span>{{ formatPrix(total) }}</span>
+          </div>
+          <div class="ck-summary-ligne">
+            <span>Mode de paiement</span>
+            <span class="fw-semibold">{{ moyenPaiementLabel }}</span>
+          </div>
+          <div class="ck-summary-ligne" *ngIf="commandeContientFournitures">
+            <span>Adresse</span>
+            <span class="fw-semibold text-end">
+              {{ checkoutForm.get('typeLivraison')?.value === 'retrait'
+                  ? 'Retrait en magasin'
+                  : ((checkoutForm.get('adresse')?.value || '—') + ', ' + (checkoutForm.get('delegation')?.value || '') + ', ' + (checkoutForm.get('gouvernorat')?.value || '')) }}
+            </span>
+          </div>
+          <div class="ck-summary-ligne" *ngIf="!commandeContientFournitures">
+            <span>Livraison</span>
+            <span class="fw-semibold text-end">Aucune — documents numériques uniquement</span>
+          </div>
+          <div class="ck-summary-ligne">
+            <span>Téléphone</span>
+            <span class="fw-semibold">{{ checkoutForm.get('telephone')?.value || '—' }}</span>
+          </div>
+        </div>
+
+        </ng-container><!-- /Étape 2 : Paiement -->
+
+      </div><!-- /ck-body -->
+
+      <!-- ── Pied modal : boutons adaptés à l'étape en cours ── -->
+      <div class="ck-footer" *ngIf="etapeCheckout==='livraison'">
+        <button type="button" (click)="closeCheckout()" class="btn btn-outline-dark-ub px-4 py-3 fw-semibold">
+          <i class="fa-solid fa-arrow-left me-2" style="color:var(--accent)"></i>
+          Retour au panier
+        </button>
+        <button type="button" (click)="validerEtapeLivraison()" class="btn btn-accent px-5 py-3 rounded-pill fw-semibold" style="font-size:15px;">
+          Suivre
+          <i class="fa-solid fa-arrow-right ms-2"></i>
+        </button>
+      </div>
+
+      <div class="ck-footer" *ngIf="etapeCheckout==='paiement'">
+        <button type="button" (click)="etapePrecedente()" class="btn btn-outline-dark-ub px-4 py-3 fw-semibold">
+          <i class="fa-solid fa-arrow-left me-2" style="color:var(--accent)"></i>
+          Retour
+        </button>
+        <button type="submit" class="btn btn-accent px-5 py-3 rounded-pill fw-semibold" style="font-size:15px;"
+                [disabled]="chargementCommande">
+          <span *ngIf="!chargementCommande">
+            <i class="fa-solid fa-check me-2"></i>
+            Confirmer la commande
+          </span>
+          <span *ngIf="chargementCommande">
+            <i class="fa-solid fa-spinner fa-spin me-2"></i>
+            Enregistrement...
+          </span>
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

@@ -1,0 +1,81 @@
+.ub-footer {
+  background: linear-gradient(165deg, #4A121C 0%, #2E0B12 100%);
+  color: #C9AEB3;
+}
+
+/* ── Liens navigation / ressources ── */
+.ub-footer-link {
+  color: #C9AEB3;
+  text-decoration: none;
+  transition: color .18s ease, transform .18s ease;
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+}
+.ub-footer-link:hover {
+  color: #fff;
+  transform: translateX(3px);
+}
+
+/* ── Réseaux sociaux ── */
+.ub-footer-social {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.07);
+  color: #E4CBCF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .2s ease, transform .2s ease, color .2s ease;
+}
+.ub-footer-social:hover {
+  background: #fff;
+  color: var(--accent-dark);
+  transform: translateY(-3px);
+}
+
+/* ── Newsletter ── */
+.ub-footer-newsletter-input {
+  background: rgba(255,255,255,.06) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255,255,255,.14) !important;
+  border-radius: 11px 0 0 11px !important;
+  transition: border-color .18s ease, background .18s ease;
+}
+.ub-footer-newsletter-input::placeholder { color: #B69199; }
+.ub-footer-newsletter-input:focus {
+  background: rgba(255,255,255,.1) !important;
+  border-color: rgba(255,255,255,.32) !important;
+  box-shadow: none;
+}
+
+/* ── Moyens de paiement ── */
+.ub-footer-payments {
+  border-top: 1px solid rgba(255,255,255,.1);
+}
+.ub-payment-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.07);
+  color: #E4CBCF;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.ub-payment-chip i { font-size: 15px; }
+
+/* ── Bas de page ── */
+.ub-footer-bottom {
+  border-top: 1px solid rgba(255,255,255,.1);
+  font-size: 13px;
+  color: #A98890;
+}
+.ub-footer-legal {
+  color: #A98890;
+  text-decoration: none;
+  transition: color .18s ease;
+}
+.ub-footer-legal:hover { color: #fff; }

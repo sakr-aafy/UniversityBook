@@ -1,0 +1,71 @@
+.ub-pay-table-card {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 12px 48px -20px rgba(0, 0, 0, .12);
+  overflow: hidden;
+}
+.ub-pay-table-card thead tr { background: #FAFBFC; }
+
+.ub-methode-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #3C444E;
+  background: #F0F1F4;
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.ub-statut-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+
+.ub-facture-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .5);
+  z-index: 1060;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.ub-facture-modal {
+  background: #fff;
+  border-radius: 20px;
+  padding: 28px;
+  width: 100%;
+  max-width: 620px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 64px -16px rgba(0, 0, 0, .3);
+}
+
+.ub-facture-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #F0F1F4;
+}
+
+@media print {
+  body * { visibility: hidden; }
+  .ub-facture-modal, .ub-facture-modal * { visibility: visible; }
+  .ub-facture-modal {
+    position: absolute;
+    inset: 0;
+    box-shadow: none;
+    max-height: none;
+    overflow: visible;
+  }
+  .ub-facture-noprint { display: none !important; }
+}

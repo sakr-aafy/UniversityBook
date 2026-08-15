@@ -1,0 +1,120 @@
+<footer class="ub-footer">
+  <div class="container-xl px-4" style="padding-top:clamp(48px,6vw,72px);">
+    <div class="row g-5">
+
+      <!-- Colonne 1 : Brand -->
+      <div class="col-12 col-md-6 col-lg-3">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="d-flex align-items-center justify-content-center rounded-circle"
+               style="width:46px;height:46px;background:linear-gradient(150deg,#9A2A3A,#7A1C2A);">
+            <i class="fa-solid fa-graduation-cap text-white fs-5"></i>
+          </div>
+          <div>
+            <div class="font-spectral fw-bold text-white fs-5">University Book</div>
+            <div class="text-uppercase" style="font-size:9px;letter-spacing:2.4px;color:#76808B;">
+              Portail Académique
+            </div>
+          </div>
+        </div>
+        <p class="small mb-4" style="color:#8A939D;line-height:1.65;max-width:300px;">
+          Le portail de référence pour accéder aux ressources, documents
+          et services universitaires en Tunisie.
+        </p>
+        <div class="d-flex gap-2">
+          <a href="#" aria-label="Facebook" class="ub-footer-social">
+            <i class="fab fa-facebook-f"></i>
+          </a>
+          <a href="#" aria-label="Instagram" class="ub-footer-social">
+            <i class="fab fa-instagram"></i>
+          </a>
+          <a href="#" aria-label="LinkedIn" class="ub-footer-social">
+            <i class="fab fa-linkedin-in"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Colonne 2 : Navigation -->
+      <div class="col-6 col-md-3 col-lg-2">
+        <div class="fw-bold text-white mb-3 small" style="letter-spacing:.3px;">Navigation</div>
+        <div class="d-flex flex-column gap-3 small">
+          <a routerLink="/" class="ub-footer-link">
+            <i class="fa-solid fa-house me-2" style="color:var(--accent);font-size:11px"></i>Accueil
+          </a>
+          <a routerLink="/boutique" class="ub-footer-link">
+            <i class="fa-solid fa-shop me-2" style="color:var(--accent);font-size:11px"></i>Boutique
+          </a>
+          <a routerLink="/boutique" class="ub-footer-link">
+            <i class="fa-solid fa-file-invoice me-2" style="color:var(--accent);font-size:11px"></i>Document payant
+          </a>
+          <a routerLink="/contact" class="ub-footer-link">
+            <i class="fa-solid fa-file me-2" style="color:var(--accent);font-size:11px"></i>Documents gratuits
+          </a>
+          <a routerLink="/contact" class="ub-footer-link">
+            <i class="fa-solid fa-newspaper me-2" style="color:var(--accent);font-size:11px"></i>Actualités
+          </a>
+        </div>
+      </div>
+
+      <!-- Colonne 3 : Ressources -->
+      <div class="col-6 col-md-3 col-lg-2">
+        <div class="fw-bold text-white mb-3 small" style="letter-spacing:.3px;">Ressources</div>
+        <div class="d-flex flex-column gap-3 small">
+          <a routerLink="/user/dashboard" class="ub-footer-link">Mon compte</a>
+          <a routerLink="/panier" class="ub-footer-link">Panier</a>
+          <a routerLink="/contact" class="ub-footer-link">Aide &amp; FAQ</a>
+          <a routerLink="/contact" class="ub-footer-link">Assistance</a>
+          <a href="#" class="ub-footer-link">Mentions légales</a>
+        </div>
+      </div>
+
+      <!-- Colonne 4 : Newsletter + Contact -->
+      <div class="col-12 col-md-6 col-lg-4">
+        <div class="fw-bold text-white mb-3 small" style="letter-spacing:.3px;">Restez informé</div>
+        <p class="small mb-3" style="color:#8A939D;line-height:1.6;">
+          Recevez les actualités et nouveautés du portail.
+        </p>
+        <div class="input-group mb-4">
+          <input type="email"
+                 class="form-control border-0 small ub-footer-newsletter-input"
+                 placeholder="Votre e-mail">
+          <button class="btn btn-accent px-3 ub-ripple" style="border-radius:0 11px 11px 0;">
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+        <div class="d-flex flex-column gap-2 small">
+          <span style="color:#8A939D;">
+            <i class="fa-regular fa-envelope me-2" style="color:var(--accent)"></i>
+            contact@universitybook.tn
+          </span>
+          <span style="color:#8A939D;">
+            <i class="fa-solid fa-phone me-2" style="color:var(--accent)"></i>
+            +216 21 717 222
+          </span>
+          <span style="color:#8A939D;">
+            <i class="fa-solid fa-location-dot me-2" style="color:var(--accent)"></i>
+            Avenue de l'Université, Tunis
+          </span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Moyens de paiement -->
+    <div class="ub-footer-payments d-flex align-items-center flex-wrap gap-3 pt-4 mt-4">
+      <span class="small fw-semibold" style="color:#76808B;">Moyens de paiement :</span>
+      <span class="ub-payment-chip"><i class="fa-brands fa-cc-visa"></i></span>
+      <span class="ub-payment-chip"><i class="fa-brands fa-cc-mastercard"></i></span>
+      <span class="ub-payment-chip"><i class="fa-solid fa-money-bill-wave"></i> À la livraison</span>
+    </div>
+
+    <!-- Bas footer -->
+    <div class="ub-footer-bottom d-flex align-items-center justify-content-between flex-wrap gap-3 py-4 mt-3">
+      <span>© 2026 University Book. Tous droits réservés.</span>
+      <div class="d-flex gap-4">
+        <a href="#" class="ub-footer-legal">Confidentialité</a>
+        <a href="#" class="ub-footer-legal">Conditions d'utilisation</a>
+        <a href="#" class="ub-footer-legal">Cookies</a>
+      </div>
+    </div>
+  </div>
+</footer>

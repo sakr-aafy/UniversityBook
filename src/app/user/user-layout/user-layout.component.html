@@ -1,0 +1,64 @@
+<div class="ub-dashboard" [class.sidebar-open]="sidebarOpen">
+
+  <!-- SIDEBAR -->
+  <aside class="ub-sidebar">
+    <div class="ub-sidebar-header">
+      <a routerLink="/" class="d-flex align-items-center gap-2 text-decoration-none">
+       
+        
+      </a>
+      <button class="btn-close btn-close-white d-lg-none" (click)="closeSidebar()" aria-label="Fermer"></button>
+    </div>
+
+    <div class="ub-sidebar-user">
+      <div class="ub-avatar">
+        <img *ngIf="photoUrl" [src]="photoUrl" alt="Photo de profil">
+        <i *ngIf="!photoUrl" class="fa-solid fa-circle-user"></i>
+      </div>
+      <div>
+        <p class="mb-0 fw-semibold text-white">{{ currentUser?.nom }}</p>
+        <p class="mb-0 small text-white-50">{{ currentUser?.email }}</p>
+      </div>
+    </div>
+
+    <nav class="ub-sidebar-nav">
+      <a *ngFor="let item of menuItems"
+         [routerLink]="item.route"
+         routerLinkActive="active"
+         (click)="closeSidebar()"
+         class="ub-sidebar-link">
+        <i class="fa-solid" [ngClass]="item.icon"></i>
+        <span>{{ item.label }}</span>
+        <span class="ub-sidebar-badge" *ngIf="item.compteurCle && compteurs[item.compteurCle] > 0">
+          {{ compteurs[item.compteurCle] }}
+        </span>
+      </a>
+
+      <button class="ub-sidebar-link ub-sidebar-logout" (click)="logout()">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span>Déconnexion</span>
+      </button>
+    </nav>
+  </aside>
+
+  <!-- OVERLAY MOBILE -->
+  <div class="ub-sidebar-overlay d-lg-none" *ngIf="sidebarOpen" (click)="closeSidebar()"></div>
+
+  <!-- CONTENU -->
+  <div class="ub-dashboard-main">
+    <header class="ub-dashboard-topbar d-lg-none">
+      <button class="btn btn-outline-dark-ub" (click)="toggleSidebar()" aria-label="Menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <span class="font-spectral fw-bold">Mon espace</span>
+      <a routerLink="/" class="btn btn-sm btn-outline-dark-ub" aria-label="Accueil">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </header>
+
+    <div class="ub-dashboard-content">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+
+</div>

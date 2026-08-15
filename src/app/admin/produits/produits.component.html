@@ -1,0 +1,267 @@
+<div class="p-4 p-lg-5">
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <h1 class="font-spectral fw-bold mb-0" style="font-size:24px;">Produits</h1>
+    <button class="btn btn-accent rounded-pill px-4" (click)="ouvrirAjout()">
+      <i class="fa-solid fa-plus me-2"></i>Ajouter un produit
+    </button>
+  </div>
+
+  <div class="alert alert-danger py-2 px-3" *ngIf="erreur">{{ erreur }}</div>
+  <div class="alert alert-success py-2 px-3" *ngIf="succes">{{ succes }}</div>
+
+  <!-- ══════════════ Formulaire ══════════════ -->
+  <div class="ad-form-wrap mb-4" *ngIf="formulaireOuvert">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h2 class="fw-bold mb-0" style="font-size:17px;">{{ modeEdition ? 'Modifier le produit' : 'Nouveau produit' }}</h2>
+      <button class="btn btn-outline-dark-ub btn-sm" (click)="annuler()"><i class="fa-solid fa-xmark me-1"></i>Fermer</button>
+    </div>
+
+    <form (ngSubmit)="enregistrer()">
+
+      <!-- Informations -->
+      <div class="ad-section">
+        <h3 class="ad-section-titre"><i class="fa-solid fa-circle-info me-2"></i>Informations</h3>
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label ub-label">Nom du produit *</label>
+            <input type="text" class="form-control ub-input" [(ngModel)]="produitEnCours.titre" name="titre" required>
+          </div>
+          <div class="col-12">
+            <label class="form-label ub-label">Description</label>
+            <textarea class="form-control ub-input" rows="3" [(ngModel)]="produitEnCours.description" name="description"></textarea>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label ub-label d-flex align-items-center justify-content-between">
+              Catégorie
+              <button type="button" class="btn btn-link btn-sm p-0 ad-lien-categories" (click)="ouvrirGestionCategories()">
+                <i class="fa-solid fa-gear me-1"></i>Gérer les catégories
+              </button>
+            </label>
+            <select class="form-select ub-input" [(ngModel)]="produitEnCours.categorie" name="categorie" (ngModelChange)="onCategorieChange()">
+              <option value="">Sélectionner…</option>
+              <option *ngFor="let cat of categories" [value]="cat.nom">{{ cat.nom }}</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label ub-label">Sous-catégorie</label>
+            <select class="form-select ub-input" [(ngModel)]="produitEnCours.sousCategorie" name="sousCategorie"
+                    [disabled]="sousCategoriesDisponibles.length === 0">
+              <option value="">Sélectionner…</option>
+              <option *ngFor="let sc of sousCategoriesDisponibles" [value]="sc.nom">{{ sc.nom }}</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label ub-label">Type</label>
+            <input type="text" class="form-control ub-input" placeholder="Cahiers, Stylos, Cartables..."
+                   [(ngModel)]="produitEnCours.type" name="type">
+          </div>
+        </div>
+      </div>
+
+      <!-- Images -->
+      <div class="ad-section">
+        <h3 class="ad-section-titre"><i class="fa-solid fa-images me-2"></i>Images</h3>
+
+        <label class="ub-label">Image de couverture</label>
+        <app-file-drop-zone *ngIf="!imageApercu && !imageExistante"
+          accept=".jpg,.jpeg,.png,.webp" icone="fa-image"
+          label="Glissez-déposez une image de couverture" sousLabel="JPEG, PNG ou WEBP"
+          (filesSelected)="onImageSelectionnee($event)" (erreur)="onErreurUpload($event)">
+        </app-file-drop-zone>
+        <div class="ad-image-apercu" *ngIf="imageApercu || imageExistante">
+          <img [src]="imageApercu || fichierUrl(imageExistante)" alt="Aperçu">
+          <button type="button" class="ad-image-supprimer" (click)="supprimerImage()" title="Supprimer">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <label class="ub-label mt-3 d-block">Galerie (plusieurs images)</label>
+        <app-file-drop-zone
+          accept=".jpg,.jpeg,.png,.webp" [multiple]="true" icone="fa-images"
+          label="Glissez-déposez plusieurs images" sousLabel="JPEG, PNG ou WEBP — jusqu'à 8 images"
+          (filesSelected)="onImagesGalerieSelectionnees($event)" (erreur)="onErreurUpload($event)">
+        </app-file-drop-zone>
+        <div class="ad-galerie" *ngIf="galerie.length > 0">
+          <div class="ad-galerie-item" *ngFor="let item of galerie; let i = index">
+            <img [src]="item.fichier ? item.url : fichierUrl(item.url)" alt="">
+            <button type="button" class="ad-image-supprimer" (click)="retirerImageGalerie(i)" title="Retirer">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stock -->
+      <div class="ad-section">
+        <h3 class="ad-section-titre"><i class="fa-solid fa-boxes-stacked me-2"></i>Stock</h3>
+        <div class="row g-3">
+          <div class="col-12 col-md-4">
+            <label class="form-label ub-label">Quantité en stock</label>
+            <input type="number" min="0" class="form-control ub-input" [(ngModel)]="produitEnCours.stock" name="stock">
+          </div>
+          <div class="col-12 col-md-4 d-flex align-items-end">
+            <div class="d-flex align-items-center gap-2">
+              <input type="checkbox" class="form-check-input ub-check" id="nouveaute" [(ngModel)]="produitEnCours.nouveaute" name="nouveaute">
+              <label class="form-check-label small" for="nouveaute">Nouveauté</label>
+            </div>
+          </div>
+          <div class="col-12 col-md-4 d-flex align-items-end">
+            <div class="d-flex align-items-center gap-2">
+              <input type="checkbox" class="form-check-input ub-check" id="populaire" [(ngModel)]="produitEnCours.populaire" name="populaire">
+              <label class="form-check-label small" for="populaire">Populaire / Best-seller</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Promotion -->
+      <div class="ad-section">
+        <h3 class="ad-section-titre"><i class="fa-solid fa-tag me-2"></i>Prix &amp; promotion</h3>
+        <div class="row g-3">
+          <div class="col-12 col-md-4">
+            <label class="form-label ub-label">Prix (DT) *</label>
+            <input type="number" step="0.001" min="0" class="form-control ub-input" [(ngModel)]="produitEnCours.prix" name="prix" required>
+          </div>
+          <div class="col-12 col-md-4 d-flex align-items-end">
+            <div class="d-flex align-items-center gap-2">
+              <input type="checkbox" class="form-check-input ub-check" id="enPromotion" [(ngModel)]="enPromotion" (change)="onPromotionChange()">
+              <label class="form-check-label small" for="enPromotion">En promotion</label>
+            </div>
+          </div>
+          <div class="col-12 col-md-4" *ngIf="enPromotion">
+            <label class="form-label ub-label">Ancien prix (DT)</label>
+            <input type="number" step="0.001" min="0" class="form-control ub-input" [(ngModel)]="produitEnCours.ancienPrix" name="ancienPrix">
+          </div>
+          <div class="col-12">
+            <label class="form-label ub-label">Badge (optionnel)</label>
+            <input type="text" class="form-control ub-input" placeholder="Nouveau, Best-seller..." [(ngModel)]="produitEnCours.badge" name="badge">
+          </div>
+        </div>
+      </div>
+
+      <!-- Variantes -->
+      <div class="ad-section">
+        <h3 class="ad-section-titre"><i class="fa-solid fa-shapes me-2"></i>Variantes</h3>
+
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <span class="small fw-semibold text-secondary">Couleurs</span>
+          <button type="button" class="btn btn-outline-dark-ub btn-sm" (click)="ajouterCouleur()">
+            <i class="fa-solid fa-plus me-1"></i>Ajouter une couleur
+          </button>
+        </div>
+        <div class="ad-variante-ligne" *ngFor="let couleur of produitEnCours.couleurs; let i = index; trackBy: trackByIndex">
+          <input type="text" class="form-control ub-input" placeholder="Nom (ex. Bleu)" [(ngModel)]="couleur.nom" [name]="'couleurNom'+i">
+          <input type="color" class="form-control form-control-color ub-input" [(ngModel)]="couleur.hex" [name]="'couleurHex'+i">
+          <input type="number" min="0" class="form-control ub-input" placeholder="Stock" [(ngModel)]="couleur.stock" [name]="'couleurStock'+i">
+          <button type="button" class="btn btn-outline-dark-ub btn-sm" (click)="retirerCouleur(i)"><i class="fa-solid fa-trash"></i></button>
+        </div>
+
+        <div class="d-flex align-items-center justify-content-between mb-2 mt-4">
+          <span class="small fw-semibold text-secondary">Formats</span>
+          <button type="button" class="btn btn-outline-dark-ub btn-sm" (click)="ajouterFormat()">
+            <i class="fa-solid fa-plus me-1"></i>Ajouter un format
+          </button>
+        </div>
+        <div class="ad-variante-ligne" *ngFor="let format of produitEnCours.formats; let i = index; trackBy: trackByIndex">
+          <input type="text" class="form-control ub-input" placeholder="Nom (ex. A4)" [(ngModel)]="format.nom" [name]="'formatNom'+i">
+          <input type="number" step="0.001" class="form-control ub-input" placeholder="Écart de prix" [(ngModel)]="format.prixDelta" [name]="'formatDelta'+i">
+          <input type="number" min="0" class="form-control ub-input" placeholder="Stock" [(ngModel)]="format.stock" [name]="'formatStock'+i">
+          <button type="button" class="btn btn-outline-dark-ub btn-sm" (click)="retirerFormat(i)"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>
+
+      <!-- SKU / Code-barres -->
+      <div class="ad-section">
+        <h3 class="ad-section-titre"><i class="fa-solid fa-barcode me-2"></i>SKU &amp; code-barres</h3>
+        <div class="row g-3">
+          <div class="col-12 col-md-4">
+            <label class="form-label ub-label">Marque</label>
+            <input type="text" class="form-control ub-input" [(ngModel)]="produitEnCours.marque" name="marque">
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label ub-label">SKU</label>
+            <input type="text" class="form-control ub-input" [(ngModel)]="produitEnCours.sku" name="sku">
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label ub-label">Code-barres</label>
+            <input type="text" class="form-control ub-input" [(ngModel)]="produitEnCours.codeBarres" name="codeBarres">
+          </div>
+        </div>
+      </div>
+
+      <div class="ad-progress" *ngIf="enregistrement">
+        <div class="ad-progress-bar" [style.width.%]="progression"></div>
+      </div>
+
+      <div class="d-flex gap-2 mt-3">
+        <button type="submit" class="btn btn-accent rounded-pill px-4" [disabled]="enregistrement">
+          <span *ngIf="!enregistrement">Enregistrer</span>
+          <span *ngIf="enregistrement">{{ progression }}%</span>
+        </button>
+        <button type="button" class="btn btn-outline-dark-ub rounded-pill px-4" (click)="annuler()">Annuler</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Recherche -->
+  <div class="d-flex flex-wrap gap-2 mb-4" *ngIf="!formulaireOuvert">
+    <div class="input-group" style="max-width:320px;">
+      <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-magnifying-glass text-secondary"></i></span>
+      <input type="text" class="form-control border-start-0 ps-0" placeholder="Rechercher un produit..."
+             [(ngModel)]="recherche" (keyup.enter)="rechercher()">
+    </div>
+    <button class="btn btn-outline-dark-ub btn-sm" (click)="rechercher()">Rechercher</button>
+  </div>
+
+  <div class="d-flex justify-content-center py-5" *ngIf="chargement">
+    <i class="fa-solid fa-spinner fa-spin fa-2x" style="color:var(--accent)"></i>
+  </div>
+
+  <ng-container *ngIf="!chargement && !formulaireOuvert">
+    <p class="text-secondary" *ngIf="produits.length === 0">Aucun produit dans le catalogue.</p>
+
+    <div class="row g-3">
+      <div class="col-12 col-sm-6 col-lg-4" *ngFor="let produit of produits; trackBy: trackById">
+        <div class="card border-0 h-100" style="border-radius:16px;box-shadow:0 8px 32px -16px rgba(0,0,0,.12);overflow:hidden;">
+          <div class="ub-prod-image">
+            <img *ngIf="produit.image" [src]="imageUrl(produit)" [alt]="produit.titre">
+            <i *ngIf="!produit.image" class="fa-solid fa-box"></i>
+          </div>
+          <div class="p-3">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <span class="ub-badge">{{ produit.categorie || 'Sans catégorie' }}</span>
+              <span class="ub-badge ub-badge-accent" *ngIf="produit.nouveaute">Nouveau</span>
+              <span class="ub-badge ub-badge-accent" *ngIf="produit.populaire">Populaire</span>
+            </div>
+            <h3 class="fw-semibold mb-1" style="font-size:15px;">{{ produit.titre }}</h3>
+            <p class="fw-semibold small mb-1" style="color:var(--accent)">
+              {{ produit.prix | number:'1.3-3' }} DT
+              <span class="text-secondary text-decoration-line-through ms-1" *ngIf="produit.ancienPrix" style="font-weight:400;">
+                {{ produit.ancienPrix | number:'1.3-3' }} DT
+              </span>
+            </p>
+            <p class="text-secondary small mb-3">Stock : {{ produit.stock }}</p>
+            <div class="d-flex gap-2">
+              <button class="btn btn-outline-dark-ub btn-sm flex-grow-1" (click)="ouvrirEdition(produit)">
+                <i class="fa-regular fa-pen-to-square me-1"></i>Modifier
+              </button>
+              <button class="btn btn-outline-dark-ub btn-sm" (click)="supprimer(produit)" title="Supprimer">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex justify-content-center align-items-center gap-3 mt-4" *ngIf="totalPages > 1">
+      <button class="btn btn-sm btn-outline-dark-ub" [disabled]="page <= 1" (click)="pagePrecedente()">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      <span class="small">Page {{ page }} / {{ totalPages }}</span>
+      <button class="btn btn-sm btn-outline-dark-ub" [disabled]="page >= totalPages" (click)="pageSuivante()">
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+  </ng-container>
+</div>

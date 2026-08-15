@@ -1,0 +1,410 @@
+<div class="p-4 p-lg-5">
+  <h1 class="font-spectral fw-bold mb-4" style="font-size:24px;">Mon profil</h1>
+
+  <div class="d-flex justify-content-center py-5" *ngIf="chargement">
+    <i class="fa-solid fa-spinner fa-spin fa-2x" style="color:var(--accent)"></i>
+  </div>
+
+  <div class="alert alert-danger" *ngIf="erreur && !chargement">{{ erreur }}</div>
+
+  <ng-container *ngIf="profil && !chargement">
+
+    <!-- Bannière -->
+    <div class="ub-profil-banniere mb-4">
+      <div class="ub-profil-banniere-avatar">
+        <img *ngIf="profil.photo" [src]="photoActuelleUrl" alt="Photo de profil">
+        <i *ngIf="!profil.photo" class="fa-solid fa-circle-user"></i>
+      </div>
+      <div class="flex-grow-1">
+        <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+          <h2 class="fw-bold text-white mb-0" style="font-size:22px;">{{ profil.prenom }} {{ profil.nom }}</h2>
+          <span class="ub-badge-premium" [class.ub-badge-standard]="!estClientPremium">
+            <i class="fa-solid" [class.fa-crown]="estClientPremium" [class.fa-user]="!estClientPremium"></i>
+            {{ estClientPremium ? 'Client Premium' : 'Client' }}
+          </span>
+        </div>
+        <div class="d-flex align-items-center gap-3 flex-wrap mb-2" style="color:rgba(255,255,255,.85);font-size:13.5px;">
+          <span><i class="fa-regular fa-envelope me-2"></i>{{ profil.email }}</span>
+          <span><i class="fa-solid fa-phone me-2"></i>{{ profil.telephone || '—' }}</span>
+          <span><i class="fa-regular fa-calendar me-2"></i>Membre depuis {{ profil.dateInscription | date:'MMMM yyyy' }}</span>
+        </div>
+        <div class="d-flex align-items-center gap-3 flex-wrap" style="color:rgba(255,255,255,.75);font-size:12.5px;" *ngIf="stats">
+          <span><i class="fa-solid fa-bag-shopping me-1"></i>{{ stats.totalCommandes }} commande{{ stats.totalCommandes > 1 ? 's' : '' }}</span>
+          <span><i class="fa-solid fa-book me-1"></i>{{ stats.documentsAchetes }} document{{ stats.documentsAchetes > 1 ? 's' : '' }}</span>
+          <span><i class="fa-solid fa-heart me-1"></i>{{ stats.favoris }} favori{{ stats.favoris > 1 ? 's' : '' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="row g-3 mb-4" *ngIf="stats">
+      <div class="col-6 col-lg-3">
+        <div class="ub-stat-card">
+          <div class="ub-stat-icon" style="background:#FDF2F3;color:var(--accent);"><i class="fa-solid fa-bag-shopping"></i></div>
+          <div><p class="ub-stat-value">{{ stats.totalCommandes }}</p><p class="ub-stat-label">Commandes</p></div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="ub-stat-card">
+          <div class="ub-stat-icon" style="background:#EFF6FF;color:#2563EB;"><i class="fa-solid fa-book"></i></div>
+          <div><p class="ub-stat-value">{{ stats.documentsAchetes }}</p><p class="ub-stat-label">Documents</p></div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="ub-stat-card">
+          <div class="ub-stat-icon" style="background:#ECFDF5;color:#16A34A;"><i class="fa-solid fa-wallet"></i></div>
+          <div><p class="ub-stat-value">{{ stats.totalAchats | number:'1.3-3' }} DT</p><p class="ub-stat-label">Montant dépensé</p></div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="ub-stat-card">
+          <div class="ub-stat-icon" style="background:#FDF2F8;color:#DB2777;"><i class="fa-solid fa-heart"></i></div>
+          <div><p class="ub-stat-value">{{ stats.favoris }}</p><p class="ub-stat-label">Favoris</p></div>
+        </div>
+      </div>
+    </div>
+
+  <div class="row g-4">
+
+    <!-- Informations personnelles -->
+    <div class="col-12">
+      <div class="ub-profil-card">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div class="ub-section-titre mb-0">Informations personnelles</div>
+          <button class="btn btn-outline-dark-ub btn-sm" (click)="ouvrirDialogInfos()">
+            <i class="fa-solid fa-pen me-2"></i>Modifier
+          </button>
+        </div>
+
+        <div class="d-flex align-items-center gap-3 mb-4">
+          <div class="ub-avatar-lg">
+            <img *ngIf="profil.photo" [src]="photoActuelleUrl" alt="Photo de profil">
+            <i *ngIf="!profil.photo" class="fa-solid fa-circle-user"></i>
+          </div>
+          <div>
+            <p class="fw-bold mb-0" style="font-size:17px;">{{ profil.prenom }} {{ profil.nom }}</p>
+            <p class="text-secondary small mb-0">{{ profil.email }}</p>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-6 col-md-3">
+            <p class="ub-view-label">Téléphone principal</p>
+            <p class="ub-view-value">{{ profil.telephone || '—' }}</p>
+          </div>
+          <div class="col-6 col-md-3">
+            <p class="ub-view-label">Téléphone secondaire</p>
+            <p class="ub-view-value">{{ profil.telephoneSecondaire || '—' }}</p>
+          </div>
+          <div class="col-6 col-md-3">
+            <p class="ub-view-label">Date de naissance</p>
+            <p class="ub-view-value">{{ profil.dateNaissance ? (profil.dateNaissance | date:'dd/MM/yyyy') : '—' }}</p>
+          </div>
+          <div class="col-6 col-md-3">
+            <p class="ub-view-label">Genre</p>
+            <p class="ub-view-value">{{ profil.genre || '—' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sécurité -->
+    <div class="col-12 col-lg-5">
+      <div class="ub-profil-card h-100">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <div class="ub-section-titre mb-0">Sécurité</div>
+        </div>
+        <p class="text-secondary small mb-3">Modifiez régulièrement votre mot de passe pour protéger votre compte.</p>
+        <button class="btn btn-outline-dark-ub" (click)="ouvrirDialogMotDePasse()">
+          <i class="fa-solid fa-lock me-2"></i>Modifier le mot de passe
+        </button>
+      </div>
+    </div>
+
+    <!-- Historique des connexions -->
+    <div class="col-12 col-lg-7">
+      <div class="ub-profil-card h-100">
+        <div class="ub-section-titre">Historique des connexions</div>
+        <div class="ub-connexion-row">
+          <span><i class="fa-solid fa-right-to-bracket me-2" style="color:var(--accent)"></i>Dernière connexion</span>
+          <strong>{{ profil.derniereConnexion ? (profil.derniereConnexion | date:'dd/MM/yyyy HH:mm') : '—' }}</strong>
+        </div>
+        <div class="ub-connexion-row">
+          <span><i class="fa-solid fa-calendar-plus me-2" style="color:var(--accent)"></i>Date de création du compte</span>
+          <strong>{{ profil.dateInscription | date:'dd/MM/yyyy' }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- Adresses -->
+    <div class="col-12">
+      <div class="ub-profil-card">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div class="ub-section-titre mb-0">Adresses</div>
+          <button class="btn btn-accent btn-sm ub-ripple" (click)="ouvrirAjoutAdresse()">
+            <i class="fa-solid fa-plus me-2"></i>Ajouter une adresse
+          </button>
+        </div>
+
+        <p class="text-secondary small mb-0" *ngIf="adresses.length === 0">Aucune adresse enregistrée.</p>
+
+        <div class="row g-3">
+          <div class="col-12 col-md-6" *ngFor="let adresse of adresses; trackBy: trackByAdresseId">
+            <div class="ub-adresse-card">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="fw-bold small">{{ adresse.libelle || 'Adresse' }}</span>
+                <span class="ub-badge-defaut" *ngIf="adresse.parDefaut"><i class="fa-solid fa-star me-1"></i>Par défaut</span>
+              </div>
+              <p class="mb-1 small">{{ adresse.ligne1 }}<span *ngIf="adresse.ligne2">, {{ adresse.ligne2 }}</span></p>
+              <p class="mb-3 small text-secondary">
+                <span *ngIf="adresse.delegation">{{ adresse.delegation }}, </span>{{ adresse.codePostal }} {{ adresse.gouvernorat || adresse.ville }}, {{ adresse.pays }}
+              </p>
+              <div class="d-flex gap-2">
+                <button class="btn btn-outline-dark-ub btn-sm" (click)="ouvrirEditionAdresse(adresse)">
+                  <i class="fa-solid fa-pen me-1"></i>Modifier
+                </button>
+                <button class="btn btn-outline-dark-ub btn-sm ub-btn-danger-outline" (click)="supprimerAdresse(adresse)">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+                <button class="btn btn-outline-dark-ub btn-sm ms-auto" *ngIf="!adresse.parDefaut" (click)="definirParDefaut(adresse)">
+                  Définir par défaut
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Historique d'activité -->
+    <div class="col-12">
+      <div class="ub-profil-card">
+        <div class="ub-section-titre">Historique d'activité</div>
+
+        <div class="d-flex justify-content-center py-4" *ngIf="chargementActivites">
+          <i class="fa-solid fa-spinner fa-spin" style="color:var(--accent)"></i>
+        </div>
+
+        <p class="text-secondary small mb-0" *ngIf="!chargementActivites && activites.length === 0">
+          Aucune activité récente.
+        </p>
+
+        <div class="ub-timeline" *ngIf="!chargementActivites && activites.length > 0">
+          <div class="ub-timeline-step" *ngFor="let activite of activites; let last = last" [class.last]="last">
+            <span class="ub-timeline-dot" [style.background]="couleurActivite(activite.type).fond" [style.color]="couleurActivite(activite.type).couleur">
+              <i class="fa-solid {{ iconeActivite(activite.type) }}"></i>
+            </span>
+            <div class="ub-timeline-content">
+              <p class="fw-semibold mb-0">{{ activite.description }}</p>
+              <p class="small text-secondary mb-0">{{ activite.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  </ng-container>
+
+  <!-- ══════════════ Dialogue : Informations personnelles ══════════════ -->
+  <div class="ub-profil-overlay" *ngIf="dialogInfosOuvert" (click)="fermerDialogInfos()">
+    <div class="ub-profil-dialog" (click)="$event.stopPropagation()">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h3 class="fw-bold mb-0" style="font-size:18px;">Modifier mes informations</h3>
+        <button class="ub-dialog-close" (click)="fermerDialogInfos()" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="alert alert-danger py-2 px-3" *ngIf="erreurInfos">{{ erreurInfos }}</div>
+
+      <form (ngSubmit)="enregistrerInfos()">
+        <div class="d-flex align-items-center gap-3 mb-4">
+          <div class="ub-avatar-lg">
+            <img *ngIf="photoApercu" [src]="photoApercu" alt="Aperçu photo">
+            <img *ngIf="!photoApercu && photoActuelleUrl" [src]="photoActuelleUrl" alt="Photo de profil">
+            <i *ngIf="!photoApercu && !photoActuelleUrl" class="fa-solid fa-circle-user"></i>
+          </div>
+          <div>
+            <label for="photo" class="btn btn-outline-dark-ub btn-sm px-3">
+              <i class="fa-solid fa-camera me-2"></i>Changer la photo
+            </label>
+            <input type="file" id="photo" accept="image/png,image/jpeg,image/webp" class="d-none" (change)="onPhotoSelectionnee($event)">
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label ub-label">Nom *</label>
+            <input type="text" class="form-control ub-input" [(ngModel)]="nom" name="nom" required>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label ub-label">Prénom</label>
+            <input type="text" class="form-control ub-input" [(ngModel)]="prenom" name="prenom">
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label ub-label">Téléphone principal</label>
+            <input type="tel" class="form-control ub-input" [(ngModel)]="telephone" name="telephone">
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label ub-label">Téléphone secondaire</label>
+            <input type="tel" class="form-control ub-input" [(ngModel)]="telephoneSecondaire" name="telephoneSecondaire">
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label ub-label">Adresse e-mail *</label>
+            <input type="email" class="form-control ub-input" [(ngModel)]="email" name="email" required>
+          </div>
+          <div class="col-12 col-md-3">
+            <label class="form-label ub-label">Date de naissance</label>
+            <input type="date" class="form-control ub-input" [(ngModel)]="dateNaissance" name="dateNaissance">
+          </div>
+          <div class="col-12 col-md-3">
+            <label class="form-label ub-label">Genre</label>
+            <select class="form-select ub-input" [(ngModel)]="genre" name="genre">
+              <option value="">—</option>
+              <option value="Homme">Homme</option>
+              <option value="Femme">Femme</option>
+              <option value="Autre">Autre</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+          <button type="button" class="btn btn-outline-dark-ub flex-grow-1" (click)="fermerDialogInfos()">Annuler</button>
+          <button type="submit" class="btn btn-accent flex-grow-1 ub-ripple" [disabled]="enregistrement">
+            <span *ngIf="!enregistrement"><i class="fa-solid fa-floppy-disk me-2"></i>Enregistrer</span>
+            <span *ngIf="enregistrement"><i class="fa-solid fa-spinner fa-spin me-2"></i>Enregistrement...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══════════════ Dialogue : Mot de passe ══════════════ -->
+  <div class="ub-profil-overlay" *ngIf="dialogMotDePasseOuvert" (click)="fermerDialogMotDePasse()">
+    <div class="ub-profil-dialog" style="max-width:440px;" (click)="$event.stopPropagation()">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h3 class="fw-bold mb-0" style="font-size:18px;">Modifier le mot de passe</h3>
+        <button class="ub-dialog-close" (click)="fermerDialogMotDePasse()" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="alert alert-danger py-2 px-3" *ngIf="erreurMotDePasse">{{ erreurMotDePasse }}</div>
+      <div class="alert alert-success py-2 px-3" *ngIf="succesMotDePasse">{{ succesMotDePasse }}</div>
+
+      <form (ngSubmit)="changerMotDePasse()">
+        <div class="mb-3">
+          <label class="form-label ub-label">Ancien mot de passe</label>
+          <div class="ub-input-eye-wrap">
+            <input [type]="showAncien ? 'text' : 'password'" class="form-control ub-input" [(ngModel)]="ancienMotDePasse" name="ancienMotDePasse">
+            <button type="button" class="ub-eye-btn" (click)="showAncien = !showAncien">
+              <i class="fa-solid" [class.fa-eye]="!showAncien" [class.fa-eye-slash]="showAncien"></i>
+            </button>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label ub-label">Nouveau mot de passe</label>
+          <div class="ub-input-eye-wrap">
+            <input [type]="showNouveau ? 'text' : 'password'" class="form-control ub-input" [(ngModel)]="nouveauMotDePasse" name="nouveauMotDePasse">
+            <button type="button" class="ub-eye-btn" (click)="showNouveau = !showNouveau">
+              <i class="fa-solid" [class.fa-eye]="!showNouveau" [class.fa-eye-slash]="showNouveau"></i>
+            </button>
+          </div>
+          <div class="ub-strength-meter" *ngIf="nouveauMotDePasse">
+            <span class="ub-strength-bar" [class.ub-strength-ok]="motDePasseFort"></span>
+          </div>
+          <p class="small mt-1 mb-0" [style.color]="motDePasseFort ? '#16A34A' : '#9AA0A8'" *ngIf="nouveauMotDePasse">
+            <i class="fa-solid" [class.fa-circle-check]="motDePasseFort" [class.fa-circle-xmark]="!motDePasseFort"></i>
+            8 caractères min., majuscule, minuscule, chiffre et caractère spécial
+          </p>
+        </div>
+        <div class="mb-3">
+          <label class="form-label ub-label">Confirmation</label>
+          <div class="ub-input-eye-wrap">
+            <input [type]="showConfirmation ? 'text' : 'password'" class="form-control ub-input"
+                   [class.ub-input-err]="confirmationMotDePasse && !motsDePasseCorrespondent"
+                   [class.ub-input-ok]="motsDePasseCorrespondent"
+                   [(ngModel)]="confirmationMotDePasse" name="confirmationMotDePasse">
+            <button type="button" class="ub-eye-btn" (click)="showConfirmation = !showConfirmation">
+              <i class="fa-solid" [class.fa-eye]="!showConfirmation" [class.fa-eye-slash]="showConfirmation"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+          <button type="button" class="btn btn-outline-dark-ub flex-grow-1" (click)="fermerDialogMotDePasse()">Annuler</button>
+          <button type="submit" class="btn btn-accent flex-grow-1 ub-ripple" [disabled]="chargementMotDePasse">
+            <span *ngIf="!chargementMotDePasse"><i class="fa-solid fa-lock me-2"></i>Modifier</span>
+            <span *ngIf="chargementMotDePasse"><i class="fa-solid fa-spinner fa-spin me-2"></i>Enregistrement...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══════════════ Dialogue : Adresse ══════════════ -->
+  <div class="ub-profil-overlay" *ngIf="dialogAdresseOuvert" (click)="fermerDialogAdresse()">
+    <div class="ub-profil-dialog" style="max-width:480px;" (click)="$event.stopPropagation()">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h3 class="fw-bold mb-0" style="font-size:18px;">{{ adresseEnEdition._id ? "Modifier l'adresse" : 'Ajouter une adresse' }}</h3>
+        <button class="ub-dialog-close" (click)="fermerDialogAdresse()" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="alert alert-danger py-2 px-3" *ngIf="erreurAdresse">{{ erreurAdresse }}</div>
+
+      <form (ngSubmit)="enregistrerAdresse()">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label ub-label">Libellé</label>
+            <input type="text" class="form-control ub-input" [(ngModel)]="adresseEnEdition.libelle" name="libelle" placeholder="Ex : Domicile, Bureau…">
+          </div>
+          <div class="col-12">
+            <label class="form-label ub-label">Adresse *</label>
+            <input type="text" class="form-control ub-input" [(ngModel)]="adresseEnEdition.ligne1" name="ligne1" required>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label ub-label">Gouvernorat</label>
+            <app-searchable-select
+              [ngModel]="adresseEnEdition.gouvernorat"
+              (ngModelChange)="onGouvernoratAdresseChange($event)"
+              [options]="gouvernorats"
+              name="gouvernorat"
+              placeholder="Rechercher un gouvernorat…"
+              emptyMessage="Aucun gouvernorat trouvé">
+            </app-searchable-select>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label ub-label">Délégation / Moâtamadiya</label>
+            <app-searchable-select
+              [(ngModel)]="adresseEnEdition.delegation"
+              [options]="delegationsDisponibles"
+              name="delegation"
+              [placeholder]="adresseEnEdition.gouvernorat ? 'Rechercher une délégation…' : 'Choisir un gouvernorat d\'abord'"
+              emptyMessage="Aucune délégation trouvée">
+            </app-searchable-select>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label ub-label">Code postal</label>
+            <input type="text" class="form-control ub-input" [(ngModel)]="adresseEnEdition.codePostal" name="codePostal" maxlength="4">
+          </div>
+          <div class="col-12">
+            <label class="form-label ub-label">Pays</label>
+            <input type="text" class="form-control ub-input" [(ngModel)]="adresseEnEdition.pays" name="pays">
+          </div>
+          <div class="col-12">
+            <label class="d-flex align-items-center gap-2" style="cursor:pointer;">
+              <input type="checkbox" class="ub-check" [(ngModel)]="adresseEnEdition.parDefaut" name="parDefaut">
+              <span class="small fw-semibold">Définir comme adresse par défaut</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+          <button type="button" class="btn btn-outline-dark-ub flex-grow-1" (click)="fermerDialogAdresse()">Annuler</button>
+          <button type="submit" class="btn btn-accent flex-grow-1 ub-ripple" [disabled]="chargementAdresse">
+            <span *ngIf="!chargementAdresse"><i class="fa-solid fa-floppy-disk me-2"></i>Enregistrer</span>
+            <span *ngIf="chargementAdresse"><i class="fa-solid fa-spinner fa-spin me-2"></i>Enregistrement...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

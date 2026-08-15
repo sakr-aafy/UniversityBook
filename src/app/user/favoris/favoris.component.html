@@ -1,0 +1,59 @@
+<div class="p-4 p-lg-5">
+  <h1 class="font-spectral fw-bold mb-4" style="font-size:24px;">Mes favoris</h1>
+
+  <div class="d-flex justify-content-center py-5" *ngIf="chargement">
+    <i class="fa-solid fa-spinner fa-spin fa-2x" style="color:var(--accent)"></i>
+  </div>
+
+  <div class="alert alert-danger" *ngIf="erreur && !chargement">{{ erreur }}</div>
+
+  <ng-container *ngIf="!chargement && !erreur">
+    <p class="text-secondary" *ngIf="favoris.length === 0">Vous n'avez aucun produit en favoris.</p>
+
+    <div class="row g-3">
+      <div class="col-12 col-sm-6 col-lg-4" *ngFor="let favori of favoris; trackBy: trackById">
+        <div class="ub-fav-card" [class.ub-fav-card-retrait]="estEnRetrait(favori)">
+          <div class="ub-fav-image">
+            <img *ngIf="favori.image" [src]="favori.image" [alt]="favori.titre">
+            <i *ngIf="!favori.image" class="fa-solid fa-heart"></i>
+            <span class="ub-fav-dispo"><i class="fa-solid fa-circle-check me-1"></i>Disponible</span>
+          </div>
+          <div class="p-3">
+            <span class="ub-badge mb-2 d-inline-block">{{ favori.categorie }}</span>
+            <h3 class="fw-semibold mb-1" style="font-size:15px;">{{ favori.titre }}</h3>
+            <p class="fw-semibold small mb-3" style="color:var(--accent)">{{ favori.prix | number:'1.3-3' }} د.ت</p>
+            <div class="d-flex gap-2">
+              <button class="btn btn-accent btn-sm flex-grow-1" (click)="ajouterAuPanier(favori)">
+                <i class="fa-solid fa-cart-plus me-1"></i>Ajouter
+              </button>
+              <button class="btn btn-outline-dark-ub btn-sm" title="Voir" (click)="voir(favori)">
+                <i class="fa-regular fa-eye"></i>
+              </button>
+              <button class="btn btn-outline-dark-ub btn-sm" title="Retirer des favoris" (click)="retirer(favori)">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Détail favori -->
+  <div *ngIf="favoriDetail" class="ub-fav-overlay" (click)="fermerDetail()">
+    <div class="ub-fav-modal" (click)="$event.stopPropagation()">
+      <button class="ub-fav-modal-close" (click)="fermerDetail()" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+      <div class="ub-fav-image ub-fav-image-lg">
+        <img *ngIf="favoriDetail.image" [src]="favoriDetail.image" [alt]="favoriDetail.titre">
+        <i *ngIf="!favoriDetail.image" class="fa-solid fa-heart"></i>
+      </div>
+      <h3 class="fw-bold mt-3 mb-2" style="font-size:18px;">{{ favoriDetail.titre }}</h3>
+      <span class="ub-badge mb-3 d-inline-block">{{ favoriDetail.categorie }}</span>
+      <p class="fw-bold" style="color:var(--accent);font-size:20px;">{{ favoriDetail.prix | number:'1.3-3' }} د.ت</p>
+      <p class="small text-secondary">Ajouté aux favoris le {{ favoriDetail.createdAt | date:'dd/MM/yyyy' }}</p>
+      <button class="btn btn-accent w-100 mt-2" (click)="ajouterAuPanier(favoriDetail)">
+        <i class="fa-solid fa-cart-plus me-1"></i>Ajouter au panier
+      </button>
+    </div>
+  </div>
+</div>

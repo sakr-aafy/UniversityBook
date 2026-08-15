@@ -1,0 +1,216 @@
+@keyframes ub-anim-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ub-anim-in {
+  opacity: 0;
+  animation: ub-anim-in .5s cubic-bezier(.16,.84,.44,1) both;
+}
+
+.ub-welcome-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  box-shadow: 0 12px 48px -16px rgba(0, 0, 0, .1);
+}
+
+.ub-avatar-lg {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #F0F1F4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.ub-avatar-lg img { width: 100%; height: 100%; object-fit: cover; }
+.ub-avatar-lg i { font-size: 34px; color: #9AA0A8; }
+
+.ub-stat-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 8px 32px -16px rgba(0, 0, 0, .12);
+  height: 100%;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.ub-stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px -16px rgba(0, 0, 0, .18);
+}
+
+.ub-stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.ub-stat-value {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0;
+  line-height: 1.2;
+  color: #1B2430;
+}
+
+.ub-stat-label {
+  font-size: 12px;
+  color: #6B7480;
+  margin: 0;
+}
+
+.ub-recap-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px 18px;
+  box-shadow: 0 8px 28px -18px rgba(0, 0, 0, .12);
+  height: 100%;
+}
+.ub-recap-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  color: #9AA2AB;
+  margin-bottom: 8px;
+}
+.ub-recap-value {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #1B2430;
+}
+
+.ub-panel-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 24px;
+  height: 100%;
+  box-shadow: 0 12px 48px -16px rgba(0, 0, 0, .1);
+}
+
+.ub-badge {
+  background: #F0F1F4;
+  color: #3C444E;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.ub-activite-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.ub-activite-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 4px;
+  border-bottom: 1px solid #F0F1F4;
+}
+.ub-activite-item:last-child { border-bottom: none; }
+
+.ub-activite-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.min-w-0 { min-width: 0; }
+
+/* ── Mini graphique donut (SVG pur) ── */
+.ub-chart-wrap {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.ub-chart-svg {
+  width: 130px;
+  height: 130px;
+  flex-shrink: 0;
+  transform: rotate(-90deg);
+}
+
+.ub-chart-segment {
+  transition: stroke-dasharray .8s cubic-bezier(.16,.84,.44,1);
+}
+
+.ub-chart-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-width: 140px;
+}
+
+.ub-chart-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #3C444E;
+}
+
+.ub-chart-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Raccourcis rapides ── */
+.ub-shortcut-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 88px;
+  border-radius: 14px;
+  background: #FAFBFC;
+  border: 1px solid #F0F1F4;
+  color: #3C444E;
+  text-decoration: none;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: center;
+  padding: 8px;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease, color .2s ease;
+}
+.ub-shortcut-btn i {
+  font-size: 20px;
+  color: var(--accent);
+}
+.ub-shortcut-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px -16px rgba(140,36,51,.35);
+  border-color: #EBD3D5;
+  color: var(--accent);
+}

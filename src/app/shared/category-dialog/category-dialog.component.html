@@ -1,0 +1,143 @@
+<div class="cd-overlay" *ngIf="ouvert" (click)="fermer()">
+  <div class="cd-dialog" (click)="$event.stopPropagation()">
+
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h3 class="fw-bold mb-0" style="font-size:18px;">
+        Gestion des catégories — {{ typeActif === 'documents' ? '📚 Documents' : '🎒 Fournitures scolaires' }}
+      </h3>
+      <button class="cd-close" (click)="fermer()" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="alert alert-danger py-2 px-3" *ngIf="erreur">{{ erreur }}</div>
+
+    <!-- Formulaire -->
+    <div class="cd-form-card mb-4" *ngIf="formulaireOuvert">
+      <h4 class="fw-bold mb-3" style="font-size:15px;">{{ modeEdition ? 'Modifier la catégorie' : 'Nouvelle catégorie' }}</h4>
+      <form (ngSubmit)="enregistrer()">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label cd-label">Nom *</label>
+            <input type="text" class="form-control cd-input" [(ngModel)]="categorieEnCours.nom" name="nom" required>
+          </div>
+          <div class="col-12">
+            <label class="form-label cd-label">Description</label>
+            <textarea class="form-control cd-input" rows="2" [(ngModel)]="categorieEnCours.description" name="description"></textarea>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label cd-label">Icône (classe Font Awesome)</label>
+            <div class="d-flex align-items-center gap-2">
+              <span class="cd-icone-apercu" [style.background]="categorieEnCours.couleur">
+                <i class="fa-solid" [ngClass]="categorieEnCours.icone || 'fa-tag'"></i>
+              </span>
+              <input type="text" class="form-control cd-input" placeholder="fa-book, fa-pen..."
+                     [(ngModel)]="categorieEnCours.icone" name="icone">
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label cd-label">Couleur</label>
+            <input type="color" class="form-control form-control-color cd-input" [(ngModel)]="categorieEnCours.couleur" name="couleur">
+          </div>
+          <div class="col-12">
+            <label class="form-label cd-label">Image (optionnelle)</label>
+            <input type="file" class="form-control cd-input" accept="image/png,image/jpeg,image/webp" (change)="onImageSelectionnee($event)">
+          </div>
+          <div class="col-12" *ngIf="modeEdition">
+            <label class="d-flex align-items-center gap-2" style="cursor:pointer;">
+              <input type="checkbox" class="cd-check" [(ngModel)]="categorieActifEnCours" name="actif">
+              <span class="small fw-semibold">Catégorie active</span>
+            </label>
+          </div>
+        </div>
+        <div class="d-flex gap-2 mt-3">
+          <button type="submit" class="btn btn-accent rounded-pill px-4 btn-sm">Enregistrer</button>
+          <button type="button" class="btn btn-outline-dark-ub rounded-pill px-4 btn-sm" (click)="annulerFormulaire()">Annuler</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3" *ngIf="!formulaireOuvert">
+      <p class="text-secondary small mb-0" *ngIf="categories.length > 1">
+        <i class="fa-solid fa-arrows-up-down me-1"></i>Glissez-déposez pour réordonner.
+      </p>
+      <button class="btn btn-accent rounded-pill px-4 btn-sm ms-auto" (click)="ouvrirAjout()">
+        <i class="fa-solid fa-plus me-2"></i>Ajouter une catégorie
+      </button>
+    </div>
+
+    <div class="d-flex justify-content-center py-4" *ngIf="chargement">
+      <i class="fa-solid fa-spinner fa-spin" style="color:var(--accent)"></i>
+    </div>
+
+    <ng-container *ngIf="!chargement && !formulaireOuvert">
+      <p class="text-secondary small" *ngIf="categories.length === 0">Aucune catégorie pour ce type.</p>
+
+      <div class="cd-liste">
+        <div class="cd-carte-wrap" *ngFor="let categorie of categories; let i = index; trackBy: trackById">
+          <div class="cd-carte"
+               draggable="true" (dragstart)="onDragStart(i)" (dragover)="onDragOver($event)" (drop)="onDrop(i)"
+               [class.cd-carte-inactive]="!categorie.actif">
+            <span class="cd-carte-icone" [style.background]="categorie.couleur || '#F0F1F4'">
+              <img *ngIf="categorie.image" [src]="imageUrl(categorie)" [alt]="categorie.nom">
+              <i *ngIf="!categorie.image" class="fa-solid" [ngClass]="categorie.icone || 'fa-tag'"></i>
+            </span>
+            <div class="flex-grow-1 min-w-0">
+              <p class="fw-semibold mb-0 text-truncate">{{ categorie.nom }}</p>
+              <p class="text-secondary small mb-0 text-truncate">{{ categorie.description || 'Aucune description' }}</p>
+            </div>
+            <span class="cd-badge" [class.cd-badge-off]="!categorie.actif">{{ categorie.actif ? 'Active' : 'Désactivée' }}</span>
+            <div class="d-flex gap-1">
+              <button class="btn btn-outline-dark-ub btn-sm" (click)="ouvrirEdition(categorie)" title="Modifier">
+                <i class="fa-regular fa-pen-to-square"></i>
+              </button>
+              <button class="btn btn-outline-dark-ub btn-sm" (click)="basculerActif(categorie)" [title]="categorie.actif ? 'Désactiver' : 'Activer'">
+                <i class="fa-solid" [class.fa-eye-slash]="categorie.actif" [class.fa-eye]="!categorie.actif"></i>
+              </button>
+              <button class="btn btn-outline-dark-ub btn-sm" (click)="supprimer(categorie)" title="Supprimer">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Bascule sous-catégories -->
+          <button type="button" class="btn btn-outline-dark-ub btn-sm w-100 mt-2" (click)="toggleSousCategories(categorie._id)">
+            <i class="fa-solid" [class.fa-chevron-down]="sousCategorieOuverte !== categorie._id" [class.fa-chevron-up]="sousCategorieOuverte === categorie._id"></i>
+            Sous-catégories ({{ sousCategoriesDe(categorie._id).length }})
+          </button>
+
+          <div class="cd-sous-panel" *ngIf="sousCategorieOuverte === categorie._id">
+            <div class="cd-sous-item" *ngFor="let sc of sousCategoriesDe(categorie._id); trackBy: trackByIdSous"
+                 [class.cd-sous-item-inactive]="!sc.actif">
+              <span class="flex-grow-1 small fw-semibold text-truncate">{{ sc.nom }}</span>
+              <span class="cd-badge cd-badge-sm" [class.cd-badge-off]="!sc.actif">{{ sc.actif ? 'Active' : 'Désactivée' }}</span>
+              <button type="button" class="btn btn-outline-dark-ub btn-sm" (click)="ouvrirEditionSous(sc)" title="Modifier">
+                <i class="fa-regular fa-pen-to-square"></i>
+              </button>
+              <button type="button" class="btn btn-outline-dark-ub btn-sm" (click)="basculerActifSous(sc)" [title]="sc.actif ? 'Désactiver' : 'Activer'">
+                <i class="fa-solid" [class.fa-eye-slash]="sc.actif" [class.fa-eye]="!sc.actif"></i>
+              </button>
+              <button type="button" class="btn btn-outline-dark-ub btn-sm" (click)="supprimerSous(sc)" title="Supprimer">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+
+            <p class="text-secondary small mb-2" *ngIf="sousCategoriesDe(categorie._id).length === 0 && !sousFormulaireOuvert">
+              Aucune sous-catégorie.
+            </p>
+
+            <form class="d-flex gap-2 mt-2" *ngIf="sousFormulaireOuvert" (ngSubmit)="enregistrerSous(categorie._id)">
+              <input type="text" class="form-control cd-input" placeholder="Nom de la sous-catégorie"
+                     [(ngModel)]="sousNomEnCours" name="sousNom" required>
+              <button type="submit" class="btn btn-accent btn-sm px-3">{{ sousModeEdition ? 'Modifier' : 'Ajouter' }}</button>
+              <button type="button" class="btn btn-outline-dark-ub btn-sm px-3" (click)="annulerSous()">Annuler</button>
+            </form>
+
+            <button type="button" class="btn btn-link btn-sm p-0 mt-2 cd-lien" *ngIf="!sousFormulaireOuvert" (click)="ouvrirAjoutSous(categorie._id)">
+              <i class="fa-solid fa-plus me-1"></i>Ajouter une sous-catégorie
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+  </div>
+</div>

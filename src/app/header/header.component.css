@@ -1,0 +1,285 @@
+/* ── Navbar sticky premium ── */
+.ub-navbar {
+  transition: box-shadow .25s ease, padding .25s ease;
+  z-index: 1030;
+}
+.ub-navbar.scrolled {
+  box-shadow: 0 8px 28px -16px rgba(27,36,48,.18);
+}
+
+/* ── Liens de nav avec soulignement animé ── */
+.nav-link {
+  position: relative;
+  transition: color .18s ease;
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 2px;
+  width: 0;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+  transition: width .22s ease;
+}
+.nav-link:hover {
+  color: var(--accent) !important;
+}
+.nav-link:hover::after,
+.nav-link.ub-active::after {
+  width: 100%;
+}
+
+/* ── Dropdowns ── */
+.dropdown-menu {
+  opacity: 0;
+  transform: translateY(-6px);
+  visibility: hidden;
+  transition: opacity .18s ease, transform .18s ease, visibility .18s;
+  display: block !important;
+  pointer-events: none;
+}
+.dropdown-menu.show {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+  pointer-events: auto;
+}
+.dropdown-item {
+  transition: background .15s ease, color .15s ease, padding-left .15s ease;
+}
+.dropdown-item:hover {
+  background: #FDF2F3;
+  color: var(--accent);
+  padding-left: 18px;
+}
+
+/* ── Mega-menu Boutique (colonnes Documents / Fournitures, catégories dynamiques) ── */
+.dropdown-menu.ub-mega-menu {
+  display: flex !important;
+  gap: 8px;
+  min-width: 480px;
+  align-items: flex-start;
+}
+.ub-mega-col {
+  flex: 1 1 0;
+  min-width: 220px;
+  list-style: none;
+}
+.ub-mega-col-titre {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #9AA0A8;
+  padding: 6px 10px 10px;
+}
+
+/* ── Drawer mobile : mêmes en-têtes de section que le mega-menu desktop ── */
+.ub-mobile-domaine-titre {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: #9AA0A8;
+  padding: 10px 0 6px;
+}
+
+/* ── Panier ── */
+.ub-cart-link {
+  transition: opacity .15s ease;
+}
+.ub-cart-link:hover { opacity: .8; }
+
+.ub-cart-icon-wrap {
+  display: inline-flex;
+}
+
+.ub-cart-badge {
+  background: var(--accent);
+  font-size: 9.5px;
+  font-weight: 800;
+  min-width: 18px;
+  padding: 3px 4px;
+  box-shadow: 0 2px 6px -1px rgba(140,36,51,.5);
+}
+
+@keyframes ub-cart-bump {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.28); }
+  60%  { transform: scale(.92); }
+  100% { transform: scale(1); }
+}
+.ub-cart-icon-wrap.bump {
+  animation: ub-cart-bump .45s cubic-bezier(.34,1.56,.64,1);
+}
+.ub-cart-icon-wrap.bump .ub-cart-badge {
+  animation: ub-cart-bump .45s cubic-bezier(.34,1.56,.64,1);
+}
+
+/* ── Barre de recherche déroulante ── */
+.ub-search-collapse {
+  box-shadow: 0 12px 28px -20px rgba(27,36,48,.2);
+}
+
+/* ── Boutons ronds (recherche / hamburger) ── */
+.btn-outline-secondary {
+  transition: border-color .18s ease, color .18s ease, transform .18s ease;
+}
+.btn-outline-secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+/* ── Icônes Favoris / Notifications ── */
+.ub-icon-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: #3C444E;
+  text-decoration: none;
+  border-radius: 50%;
+  transition: background .18s ease, color .18s ease;
+}
+.ub-icon-link:hover {
+  background: #FDF2F3;
+  color: var(--accent);
+}
+
+.ub-icon-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 9.5px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px -1px rgba(140,36,51,.5);
+}
+
+/* ── Backdrop pour fermer les panneaux ── */
+.ub-dropdown-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1025;
+}
+
+/* ── Panneau déroulant générique (notifications / menu utilisateur) ── */
+@keyframes ub-dropdown-in {
+  from { opacity: 0; transform: translateY(-8px) scale(.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.ub-dropdown-panel {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 320px;
+  max-width: 90vw;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 24px 56px -20px rgba(20,24,32,.28);
+  border: 1px solid #F0F1F4;
+  z-index: 1030;
+  animation: ub-dropdown-in .18s cubic-bezier(.16,.84,.44,1);
+  overflow: hidden;
+}
+
+.ub-lien-discret {
+  border: none;
+  background: none;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ub-notif-list {
+  max-height: 320px;
+  overflow-y: auto;
+  padding-bottom: 6px;
+}
+.ub-notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background .15s ease;
+}
+.ub-notif-item:hover { background: #FAFBFC; }
+.ub-notif-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+/* ── Avatar + menu utilisateur ── */
+.ub-avatar-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: none;
+  background: transparent;
+  padding: 4px 8px 4px 4px;
+  border-radius: 999px;
+  transition: background .18s ease;
+}
+.ub-avatar-btn:hover { background: #F7F8FA; }
+
+.ub-avatar-sm {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #FDF2F3;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.ub-avatar-sm img { width: 100%; height: 100%; object-fit: cover; }
+
+.ub-user-panel {
+  width: 220px;
+  padding: 8px;
+}
+.ub-user-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #3C444E;
+  text-align: left;
+  transition: background .15s ease, color .15s ease;
+}
+.ub-user-menu-item i { width: 16px; color: var(--accent); }
+.ub-user-menu-item:hover { background: #FDF2F3; color: var(--accent); }
+.ub-user-menu-danger:hover { background: #FEF2F2; color: #DC2626; }
+.ub-user-menu-danger:hover i { color: #DC2626; }
+.ub-user-menu-sep {
+  height: 1px;
+  background: #F0F1F4;
+  margin: 6px 4px;
+}

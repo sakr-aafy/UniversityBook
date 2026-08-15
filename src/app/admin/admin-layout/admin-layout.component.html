@@ -1,0 +1,70 @@
+<div class="ub-dashboard" [class.sidebar-open]="sidebarOpen">
+
+  <!-- SIDEBAR -->
+  <aside class="ub-sidebar">
+    <div class="ub-sidebar-header">
+      <a routerLink="/" class="d-flex align-items-center gap-2 text-decoration-none">
+        <svg width="36" height="36" viewBox="0 0 60 60" fill="none">
+          <circle cx="30" cy="30" r="29" fill="url(#ub_grad_admin)"/>
+          <path d="M30 16 L44 21.5 L30 27 L16 21.5 Z" fill="#fff"/>
+          <path d="M21.5 24.2 V31 c0 2.6 3.8 4.4 8.5 4.4 s8.5-1.8 8.5-4.4 V24.2"
+                stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <defs>
+            <linearGradient id="ub_grad_admin" x1="8" y1="6" x2="52" y2="54" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#9A2A3A"/>
+              <stop offset="1" stop-color="#6E1726"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </a>
+      <button class="btn-close btn-close-white d-lg-none" (click)="closeSidebar()" aria-label="Fermer"></button>
+    </div>
+
+    <a class="ub-sidebar-user" routerLink="/admin/profil" (click)="closeSidebar()" title="Mon profil">
+      <div class="ub-avatar">
+        <i class="fa-solid fa-user-shield"></i>
+      </div>
+      <div>
+        <p class="mb-0 fw-semibold text-white">Administrateur</p>
+        <p class="mb-0 small text-white-50">{{ currentUser?.email }}</p>
+      </div>
+    </a>
+
+    <nav class="ub-sidebar-nav">
+      <a *ngFor="let item of menuItems"
+         [routerLink]="item.route"
+         routerLinkActive="active"
+         (click)="closeSidebar()"
+         class="ub-sidebar-link">
+        <i class="fa-solid" [ngClass]="item.icon"></i>
+        <span>{{ item.label }}</span>
+      </a>
+
+      <button class="ub-sidebar-link ub-sidebar-logout" (click)="logout()">
+        <i class="fa-solid fa-right-from-bracket"></i>
+        <span>Déconnexion</span>
+      </button>
+    </nav>
+  </aside>
+
+  <!-- OVERLAY MOBILE -->
+  <div class="ub-sidebar-overlay d-lg-none" *ngIf="sidebarOpen" (click)="closeSidebar()"></div>
+
+  <!-- CONTENU -->
+  <div class="ub-dashboard-main">
+    <header class="ub-dashboard-topbar d-lg-none">
+      <button class="btn btn-outline-dark-ub" (click)="toggleSidebar()" aria-label="Menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <span class="font-spectral fw-bold">Espace admin</span>
+      <a routerLink="/" class="btn btn-sm btn-outline-dark-ub" aria-label="Accueil">
+        <i class="fa-solid fa-house"></i>
+      </a>
+    </header>
+
+    <div class="ub-dashboard-content">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+
+</div>

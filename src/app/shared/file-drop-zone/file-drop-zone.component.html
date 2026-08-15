@@ -1,0 +1,9 @@
+<div class="uss-drop-zone" [class.survole]="survole"
+     (dragenter)="onDragEnter($event)" (dragover)="onDragOver($event)"
+     (dragleave)="onDragLeave($event)" (drop)="onDrop($event)"
+     (click)="fileInput.click()">
+  <input #fileInput type="file" [accept]="accept" [multiple]="multiple" class="d-none" (change)="onFichierSelectionne($event)">
+  <i class="fa-solid {{ icone }} uss-drop-icon"></i>
+  <p class="uss-drop-label">{{ label }}</p>
+  <p class="uss-drop-sous-label" *ngIf="sousLabel">{{ sousLabel }}</p>
+</div>

@@ -1,0 +1,893 @@
+/* ── Ligne article hover ── */
+:host .border-bottom:hover {
+  background: #FAFBFC;
+  transition: background .15s;
+}
+
+/* ── Overlay ── */
+.ck-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 14, 20, .55);
+  backdrop-filter: blur(3px);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: ck-fade-in .18s ease;
+}
+
+@keyframes ck-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Panel modal ── */
+.ck-modal {
+  background: #fff;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 760px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 32px 80px -16px rgba(0, 0, 0, .28);
+  animation: ck-slide-up .22s ease;
+  overflow: hidden;
+}
+
+@keyframes ck-slide-up {
+  from { transform: translateY(24px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* ── En-tête ── */
+.ck-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 28px 32px 20px;
+  border-bottom: 1px solid #F0F1F4;
+  flex-shrink: 0;
+}
+
+.ck-title {
+  font-size: clamp(20px, 2.5vw, 26px);
+  font-weight: 700;
+  color: #1B2430;
+  margin: 0 0 4px;
+}
+
+.ck-subtitle {
+  font-size: 14px;
+  color: #6B7480;
+  margin: 0;
+}
+
+.ck-close-btn {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid #ECEDEF;
+  background: #F7F8FA;
+  color: #5A626C;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s, color .15s;
+}
+.ck-close-btn:hover {
+  background: #FDF2F3;
+  color: var(--accent);
+  border-color: #EBD3D5;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   STEPPER (Livraison → Paiement → Confirmation)
+═══════════════════════════════════════════════════════════════ */
+.ck-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 16px 32px;
+  border-bottom: 1px solid #F0F1F4;
+  flex-shrink: 0;
+}
+.ck-step {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.ck-step-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12.5px;
+  font-weight: 800;
+  background: #F0F1F4;
+  color: #9AA2AB;
+  transition: all .25s cubic-bezier(.16,.84,.44,1);
+}
+.ck-step-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #9AA2AB;
+  white-space: nowrap;
+  transition: color .25s;
+}
+.ck-step.active .ck-step-num {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(140,36,51,.14);
+}
+.ck-step.active .ck-step-label { color: #1B2430; }
+.ck-step.done .ck-step-num { background: #16A34A; color: #fff; }
+.ck-step.done .ck-step-label { color: #16A34A; }
+.ck-step-sep {
+  width: 32px;
+  height: 2px;
+  background: #F0F1F4;
+  border-radius: 1px;
+  transition: background .3s;
+}
+.ck-step-sep.done { background: #16A34A; }
+@media (max-width: 480px) {
+  .ck-stepper { padding: 14px 16px; gap: 3px; }
+  .ck-step-label { display: none; }
+  .ck-step-sep { width: 20px; }
+}
+
+/* ── Corps scrollable ── */
+.ck-body {
+  overflow-y: auto;
+  padding: 28px 32px;
+  flex: 1;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CARTE "GAGNEZ DU TEMPS" (compte / Google / Facebook / invité)
+═══════════════════════════════════════════════════════════════ */
+.ck-compte-card {
+  background: linear-gradient(150deg, #FDF2F3 0%, #F8ECEC 100%);
+  border: 1px solid #F0DCDD;
+  border-radius: 18px;
+  padding: 22px;
+  margin-bottom: 28px;
+  animation: ub-fade-up .35s ease both;
+}
+.ck-compte-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.ck-compte-titre {
+  font-size: 19px;
+  font-weight: 700;
+  color: #1B2430;
+  margin-bottom: 4px;
+}
+.ck-compte-desc {
+  font-size: 13.5px;
+  color: #6B7480;
+  margin: 0;
+  max-width: 460px;
+}
+.ck-compte-close {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255,255,255,.6);
+  color: #9AA2AB;
+  font-size: 13px;
+  transition: background .15s, color .15s;
+}
+.ck-compte-close:hover { background: #fff; color: var(--accent); }
+
+.ck-compte-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+.ck-btn-compte {
+  flex: 1 1 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  height: 46px;
+  border-radius: 12px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .15s, box-shadow .15s, background .15s;
+}
+.ck-btn-compte:disabled { opacity: .6; cursor: not-allowed; }
+.ck-btn-compte--principal {
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 10px 22px -10px rgba(140,36,51,.5);
+}
+.ck-btn-compte--principal:hover:not(:disabled) { background: var(--accent-dark); transform: translateY(-1px); }
+.ck-btn-compte--google {
+  border: 1.5px solid #E4E7EC;
+  background: #fff;
+  color: #1B2430;
+}
+.ck-btn-compte--google:hover:not(:disabled) { border-color: #C4CBD2; background: #FAFBFC; }
+.ck-btn-compte--google i.fa-google { color: #EA4335; }
+.ck-btn-compte--facebook {
+  border: none;
+  background: #1877F2;
+  color: #fff;
+}
+.ck-btn-compte--facebook:hover:not(:disabled) { background: #145FC4; transform: translateY(-1px); }
+
+.ck-lien-invite {
+  display: block;
+  margin: 12px auto 0;
+  border: none;
+  background: none;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #6B7480;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.ck-lien-invite:hover { color: var(--accent); }
+
+.ck-compte-form {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(140,36,51,.12);
+  animation: ub-fade-up .25s ease both;
+}
+
+@media (max-width: 480px) {
+  .ck-compte-card { padding: 16px; }
+  .ck-btn-compte { flex: 1 1 100%; }
+}
+
+/* ── Section label ── */
+.ck-section-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: #9AA2AB;
+  margin-bottom: 14px;
+}
+
+/* ── Labels ── */
+.ck-label {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #1B2430;
+  margin-bottom: 7px;
+}
+.ck-required {
+  color: var(--accent);
+  margin-left: 2px;
+}
+
+/* ── Inputs ── */
+.ck-input {
+  width: 100%;
+  height: 46px;
+  padding: 0 14px;
+  border: 1.5px solid #E4E7EC;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #1B2430;
+  background: #FAFBFC;
+  transition: border-color .18s, box-shadow .18s, background .18s;
+  outline: none;
+  appearance: none;
+}
+.ck-input::placeholder { color: #B0B8C1; }
+.ck-input:focus {
+  border-color: var(--accent);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(140, 36, 51, .10);
+}
+.ck-input.is-invalid {
+  border-color: #E53E3E;
+  background: #FFF5F5;
+}
+.ck-input.is-invalid:focus {
+  box-shadow: 0 0 0 3px rgba(229, 62, 62, .12);
+}
+.ck-textarea {
+  height: auto;
+  padding: 12px 14px;
+  resize: vertical;
+  min-height: 90px;
+}
+.ck-select {
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+/* ── Input avec icône ou préfixe ── */
+.ck-input-wrap {
+  position: relative;
+}
+.ck-input-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9AA0A8;
+  font-size: 14px;
+  pointer-events: none;
+}
+.ck-input.has-icon { padding-left: 40px; }
+
+.ck-phone-prefix {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #5A626C;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.ck-input.has-prefix { padding-left: 56px; }
+
+/* ── Select arrow ── */
+.ck-select-wrap {
+  position: relative;
+}
+.ck-select-arrow {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9AA0A8;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+/* ── Messages d'erreur ── */
+.ck-error {
+  margin-top: 5px;
+  font-size: 12.5px;
+  color: #E53E3E;
+  font-weight: 500;
+}
+
+/* ── Radio cards ── */
+.ck-radio-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1.5px solid #E4E7EC;
+  border-radius: 14px;
+  background: #FAFBFC;
+  cursor: pointer;
+  transition: border-color .18s, background .18s, box-shadow .18s;
+  position: relative;
+  width: 100%;
+  margin: 0;
+}
+.ck-radio-card:hover {
+  border-color: #C9A4A9;
+  background: #fff;
+}
+.ck-radio-card.selected {
+  border-color: var(--accent);
+  background: #FDF5F5;
+  box-shadow: 0 0 0 3px rgba(140, 36, 51, .08);
+}
+.ck-radio-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.ck-radio-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 16px;
+}
+.ck-radio-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #1B2430;
+  line-height: 1.3;
+}
+.ck-radio-desc {
+  font-size: 12px;
+  color: #9AA0A8;
+  margin-top: 2px;
+}
+.ck-radio-check {
+  margin-left: auto;
+  color: #D0D5DD;
+  font-size: 18px;
+  transition: color .18s;
+  flex-shrink: 0;
+}
+.ck-radio-card.selected .ck-radio-check {
+  color: var(--accent);
+}
+
+/* ── Récap mini ── */
+.ck-recap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24px;
+  padding: 14px 18px;
+  background: #F7F8FA;
+  border-radius: 14px;
+  border: 1px solid #ECEDEF;
+}
+
+/* ── Pied modal ── */
+.ck-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 32px;
+  border-top: 1px solid #F0F1F4;
+  flex-shrink: 0;
+}
+
+/* ── Confirmation ── */
+.ck-confirmed {
+  text-align: center;
+  padding: 48px 32px;
+}
+.ck-confirmed-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #ECFDF5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  font-size: 36px;
+  color: #16A34A;
+}
+
+/* ── Champs conditionnels paiement ── */
+.ck-payment-fields {
+  animation: ck-slide-up .22s ease;
+}
+
+.ck-section-label--carte   { color: #2563EB; }
+.ck-section-label--virement { color: #D97706; }
+
+.ck-payment-panel {
+  border-radius: 16px;
+  padding: 20px;
+  margin-top: 4px;
+}
+.ck-payment-panel--carte {
+  background: #F0F7FF;
+  border: 1.5px solid #BFDBFE;
+}
+.ck-payment-panel--virement {
+  background: #FFFBF0;
+  border: 1.5px solid #FDE68A;
+}
+
+/* Padding droit pour icône de marque */
+.ck-input.has-icon-right { padding-right: 48px; }
+
+/* Logo de marque carte (Visa / MC) */
+.ck-card-brand {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 26px;
+  line-height: 1;
+  pointer-events: none;
+}
+.fa-cc-visa        { color: #1a1f71; }
+.fa-cc-mastercard  { color: #EB001B; }
+
+/* Nom porteur en majuscules */
+.ck-uppercase { text-transform: uppercase; letter-spacing: .5px; }
+
+/* Police monospace pour RIB/IBAN */
+.ck-mono { font-family: 'Courier New', Courier, monospace; letter-spacing: .5px; }
+
+/* Tooltip CVV */
+.ck-cvv-hint {
+  font-size: 13px;
+  color: #9AA0A8;
+  margin-left: 5px;
+  cursor: help;
+  font-weight: 400;
+}
+
+/* Badge sécurité SSL */
+.ck-security-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 16px;
+  background: #ECFDF5;
+  color: #166534;
+  border: 1px solid #BBF7D0;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+/* Bloc coordonnées bancaires */
+.ck-bank-info {
+  padding: 16px 18px;
+  background: #fff8ed;
+  border: 1.5px solid #FDE68A;
+  border-radius: 14px;
+  font-size: 13.5px;
+}
+.ck-bank-info-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: #B45309;
+  margin-bottom: 10px;
+}
+.ck-bank-info-row {
+  display: flex;
+  gap: 8px;
+  color: #6B7480;
+  line-height: 1.9;
+  flex-wrap: wrap;
+}
+.ck-bank-info-row strong { color: #1B2430; font-weight: 600; }
+
+/* ── La <form> doit hériter du flex du modal ── */
+.ck-modal > form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── Responsive mobile ── */
+@media (max-width: 576px) {
+  .ck-modal {
+    border-radius: 20px 20px 0 0;
+    max-height: 96vh;
+    align-self: flex-end;
+  }
+  .ck-overlay {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .ck-header,
+  .ck-body,
+  .ck-footer {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  .ck-footer {
+    flex-direction: column-reverse;
+  }
+  .ck-footer .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ARTICLES DU PANIER (colonne gauche) — cartes premium
+═══════════════════════════════════════════════════════════════ */
+.pn-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@keyframes ub-fade-up {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.pn-item-card {
+  display: flex;
+  gap: 20px;
+  background: #fff;
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 4px 24px -12px rgba(27,36,48,.1);
+  border: 1px solid #F0F1F4;
+  transition: box-shadow .2s ease, transform .2s ease;
+  animation: ub-fade-up .35s ease both;
+}
+.pn-item-card:hover {
+  box-shadow: 0 16px 36px -16px rgba(27,36,48,.18);
+  transform: translateY(-2px);
+}
+
+.pn-item-visuel {
+  position: relative;
+  flex-shrink: 0;
+  width: 120px;
+  height: 120px;
+  border-radius: 14px;
+  background: linear-gradient(150deg, #FDF2F3, #F4E7E8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  color: var(--accent);
+  overflow: hidden;
+}
+.pn-item-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 14px;
+}
+
+.pn-item-dispo {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #ECFDF5;
+  color: #166534;
+  font-size: 10.5px;
+  font-weight: 700;
+  border: 1px solid #BBF7D0;
+}
+
+.pn-item-infos {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.pn-item-titre {
+  font-size: 15.5px;
+  font-weight: 700;
+  color: #1B2430;
+  line-height: 1.4;
+}
+
+.pn-item-cat {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #F4E7E8;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.pn-item-ref {
+  font-size: 11.5px;
+  color: #9AA0A8;
+}
+
+.pn-item-remove {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  background: #F7F8FA;
+  color: #9AA2AB;
+  font-size: 13px;
+  transition: all .15s;
+}
+.pn-item-remove:hover {
+  background: #FDF2F3;
+  color: var(--accent);
+}
+
+.panier-qty {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RÉSUMÉ DE COMMANDE — sticky au défilement (desktop)
+═══════════════════════════════════════════════════════════════ */
+@media (min-width: 992px) {
+  .pn-summary-sticky {
+    position: sticky;
+    top: 96px;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RÉCAPITULATIF ÉTENDU (dans la modale checkout)
+═══════════════════════════════════════════════════════════════ */
+.ck-summary {
+  background: #F7F8FA;
+  border: 1px solid #ECEDEF;
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-top: 4px;
+}
+.ck-summary-produits {
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px dashed #E4E7EC;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ck-summary-ligne {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13.5px;
+  color: #6B7480;
+  padding: 5px 0;
+}
+.ck-summary-total {
+  font-size: 16px;
+  font-weight: 800;
+  color: #1B2430;
+  padding-top: 10px;
+  margin-top: 4px;
+  border-top: 1px solid #E4E7EC;
+}
+.ck-summary-total span:last-child {
+  color: var(--accent);
+  font-family: 'Spectral', serif;
+  font-size: 19px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   CARTE BANCAIRE 3D INTERACTIVE
+═══════════════════════════════════════════════════════════════ */
+.cc-card-scene {
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto;
+  aspect-ratio: 1.586 / 1;
+  perspective: 1200px;
+}
+
+.cc-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform .6s cubic-bezier(.16,.84,.44,1);
+}
+.cc-card.flipped {
+  transform: rotateY(180deg);
+}
+
+.cc-card-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  padding: 22px;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 20px 44px -16px rgba(27,36,48,.4);
+  color: #fff;
+}
+
+.cc-card-front {
+  background: linear-gradient(135deg, #3A0D16 0%, #8C2433 55%, #6E1726 100%);
+  background-size: 220% 220%;
+}
+
+.cc-card-back {
+  background: linear-gradient(135deg, #1B2430 0%, #2E3A4A 100%);
+  transform: rotateY(180deg);
+  padding: 0;
+  justify-content: flex-start;
+}
+
+.cc-chip {
+  width: 42px;
+  height: 32px;
+  border-radius: 6px;
+  background: linear-gradient(150deg, #F4D9A0, #C9A24B);
+}
+
+.cc-brand-logo {
+  font-size: 30px;
+  color: #fff;
+}
+
+.cc-number {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: clamp(16px, 4.4vw, 21px);
+  letter-spacing: 2px;
+  font-weight: 600;
+}
+
+.cc-field-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  color: rgba(255,255,255,.6);
+  margin-bottom: 3px;
+}
+
+.cc-holder {
+  font-size: 13.5px;
+  font-weight: 600;
+  max-width: 68%;
+}
+
+.cc-expiry {
+  font-size: 13.5px;
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.cc-magnetic-strip {
+  width: 100%;
+  height: 44px;
+  background: #0C0F14;
+  margin-top: 22px;
+}
+
+.cc-cvv-strip {
+  margin: 18px 22px 0 auto;
+  width: calc(100% - 66px);
+  height: 34px;
+  background: #fff;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 12px;
+}
+.cc-cvv-value {
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 700;
+  font-size: 14px;
+  color: #1B2430;
+  letter-spacing: 2px;
+}
+
+@media (max-width: 767.98px) {
+  .cc-card-scene { max-width: 300px; }
+}
