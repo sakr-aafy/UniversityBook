@@ -185,6 +185,18 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.searchOpen = !this.searchOpen;
   }
 
+  /** Valeur saisie dans la barre de recherche du header — distincte de
+   *  boutique.component.ts#recherche : c'est le paramètre d'URL `q` qui fait le lien entre les
+   *  deux (voir lancerRecherche), la Boutique reprend la saisie à l'arrivée sur la page. */
+  rechercheHeader: string = '';
+
+  lancerRecherche(): void {
+    const q = this.rechercheHeader.trim();
+    this.searchOpen = false;
+    this.closeMenu();
+    this.router.navigate(['/boutique'], q ? { queryParams: { q } } : {});
+  }
+
   closeMenu(): void {
     this.menuOpen = false;
   }

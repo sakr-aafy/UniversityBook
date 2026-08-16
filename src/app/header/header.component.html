@@ -5,10 +5,10 @@
 
       <!-- Gauche : email + téléphone -->
       <div class="d-flex align-items-center gap-3">
-        <a href="mailto:contact@universitybook.tn"
+        <a href="mailto:universitybooktn@gmail.com"
            class="d-flex align-items-center gap-2 text-decoration-none text-dark small">
           <i class="fa-regular fa-envelope" style="color:var(--accent)"></i>
-          contact@universitybook.tn
+          universitybooktn@gmail.com
         </a>
         <span class="vr"></span>
         <a href="tel:+21621717222"
@@ -68,20 +68,7 @@
 
     <!-- LOGO -->
     <a class="navbar-brand d-flex align-items-center gap-2" routerLink="/">
-      <svg width="48" height="48" viewBox="0 0 60 60" fill="none">
-        <circle cx="30" cy="30" r="29" fill="url(#ub_grad)"/>
-        <path d="M30 16 L44 21.5 L30 27 L16 21.5 Z" fill="#fff"/>
-        <path d="M21.5 24.2 V31 c0 2.6 3.8 4.4 8.5 4.4 s8.5-1.8 8.5-4.4 V24.2"
-              stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>
-        <path d="M44 21.5 V30" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>
-        <circle cx="44" cy="31.4" r="1.6" fill="#F4D9A0"/>
-        <defs>
-          <linearGradient id="ub_grad" x1="8" y1="6" x2="52" y2="54" gradientUnits="userSpaceOnUse">
-            <stop stop-color="#9A2A3A"/>
-            <stop offset="1" stop-color="#6E1726"/>
-          </linearGradient>
-        </defs>
-      </svg>
+      <img src="assets/logo.png" alt="University Book" height="44" style="width:auto;">
       <span class="font-spectral fw-bold fs-5">University Book</span>
     </a>
 
@@ -309,9 +296,11 @@
         <i class="fa-solid fa-magnifying-glass ub-field-icon"></i>
         <input type="text"
                class="ub-field-input"
-               placeholder="Rechercher un document, un cours, un code juridique…">
+               placeholder="Rechercher un document, un cours, un code juridique…"
+               [(ngModel)]="rechercheHeader"
+               (keyup.enter)="lancerRecherche()">
       </div>
-      <button class="btn btn-accent px-4 rounded-pill fw-semibold">Rechercher</button>
+      <button class="btn btn-accent px-4 rounded-pill fw-semibold" (click)="lancerRecherche()">Rechercher</button>
     </div>
   </div>
 </div>
