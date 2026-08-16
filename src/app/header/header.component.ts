@@ -110,6 +110,20 @@ export class HeaderComponent implements OnInit, OnDestroy {
     return `${categorieNom}::${sousCategorieNom}`;
   }
 
+  /** trackBy indispensables ici : categoriesFournituresArbre est un getter qui reconstruit un
+   *  tableau (et des objets) neufs à chaque cycle de détection de changements Angular — sans
+   *  trackBy, *ngFor compare par référence, conclut que "tout" a changé à chaque passage de
+   *  souris, et détruit/recrée tous les nœuds DOM du mega-menu en continu (flyouts instables,
+   *  clics qui semblent ne pas répondre). categoriesDocuments (dérivé d'un .filter() sur un
+   *  tableau stable) est moins touché mais suit le même principe par cohérence. */
+  trackByNom(_: number, item: { nom: string }): string {
+    return item.nom;
+  }
+
+  trackByStr(_: number, item: string): string {
+    return item;
+  }
+
   ngOnInit(): void {
     this.updateMobile();
     this.cartSub = this.cartService.items$.subscribe(() => {

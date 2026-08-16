@@ -35,7 +35,23 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
   ) {}
 
   recherche: string = '';
-  domaineActif: Domaine = 'documents';
+  /** Domaine explicitement choisi (clic sur un onglet, lien du Header, query param `domaine`) —
+   *  `null` tant qu'aucun choix explicite n'a été fait, auquel cas `domaineActif` calcule un
+   *  repli dynamique (voir le getter ci-dessous) plutôt que de figer "Documents" par défaut,
+   *  qui peut être vide alors que Fournitures a du contenu publié (ou l'inverse). */
+  private domaineChoisi: Domaine | null = null;
+
+  get domaineActif(): Domaine {
+    if (this.domaineChoisi) return this.domaineChoisi;
+    if (!this.catalogueService.chargement
+        && this.catalogueService.produits.filter(p => p.domaine === 'documents').length === 0
+        && this.catalogueService.produits.some(p => p.domaine === 'fournitures')) {
+      return 'fournitures';
+    }
+    return 'documents';
+  }
+  set domaineActif(d: Domaine) { this.domaineChoisi = d; }
+
   categorieActive: string = 'Tous';
   sousCategorieActive: string = '';
   sousSousCategorieActive: string = '';

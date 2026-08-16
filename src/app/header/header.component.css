@@ -74,6 +74,10 @@
   letter-spacing: .05em;
   color: #9AA0A8;
   padding: 6px 10px 10px;
+  transition: color .15s ease;
+}
+a.ub-mega-col-titre:hover {
+  color: var(--accent);
 }
 
 /* ── Drawer mobile : mêmes en-têtes de section que le mega-menu desktop ── */
@@ -84,6 +88,9 @@
   letter-spacing: .05em;
   color: #9AA0A8;
   padding: 10px 0 6px;
+}
+a.ub-mobile-domaine-titre:active {
+  color: var(--accent);
 }
 
 /* ── Panier ── */

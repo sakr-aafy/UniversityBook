@@ -369,22 +369,30 @@
 
           <!-- Email -->
           <div class="col-12 col-md-6">
-            <label class="ck-label">
+            <label class="ck-label ck-label-row">
               Adresse e-mail
-              <span *ngIf="!estConnecte" class="ck-required">*</span>
-              <span *ngIf="estConnecte" style="color:#9AA0A8;font-weight:400;">(optionnel)</span>
+              <span class="ck-tag" [class.ck-tag-required]="emailRequisPourCommande">
+                {{ emailRequisPourCommande ? 'Requis' : 'Optionnel' }}
+              </span>
             </label>
             <div class="ck-input-wrap">
               <i class="fa-solid fa-envelope ck-input-icon"></i>
               <input formControlName="email" type="email" placeholder="exemple@mail.com"
-                     class="ck-input has-icon" [class.is-invalid]="fieldInvalid('email')">
+                     class="ck-input has-icon has-icon-right" [class.is-invalid]="fieldInvalid('email')">
+              <i class="fa-solid fa-circle-check ck-input-valid-icon"
+                 *ngIf="!fieldInvalid('email') && checkoutForm.get('email')?.value"></i>
             </div>
             <div *ngIf="fieldInvalid('email')" class="ck-error">
               <i class="fa-solid fa-circle-exclamation me-1"></i>{{ getFieldError('email') }}
             </div>
-            <p *ngIf="!estConnecte" class="small mt-1 mb-0" style="color:#9AA0A8;">
+            <div *ngIf="emailRequisPourCommande" class="ck-hint">
+              <i class="fa-solid fa-circle-info"></i>
               Aucun compte ne sera créé — votre document et votre facture vous seront envoyés à cette adresse.
-            </p>
+            </div>
+            <div *ngIf="!estConnecte && !emailRequisPourCommande" class="ck-hint">
+              <i class="fa-solid fa-circle-info"></i>
+              Utile pour recevoir votre facture — votre commande sera confirmée par téléphone.
+            </div>
           </div>
 
           <!-- Téléphone principal -->
@@ -413,50 +421,7 @@
             </div>
           </div>
 
-          <!-- Entreprise -->
-          <div class="col-12 col-md-6">
-            <label class="ck-label">Entreprise <span style="color:#9AA0A8;font-weight:400;">(optionnel)</span></label>
-            <input formControlName="entreprise" type="text" placeholder="Ex : Cabinet Ben Salem"
-                   class="ck-input">
-          </div>
-
         </div>
-
-        <!-- Section : Type de livraison (uniquement si le panier contient des fournitures scolaires) -->
-        <ng-container *ngIf="commandeContientFournitures">
-        <div class="ck-section-label mt-4">
-          <i class="fa-solid fa-truck me-2"></i>Type de livraison
-        </div>
-        <div class="row g-3">
-          <div class="col-12 col-sm-6">
-            <label class="ck-radio-card" [class.selected]="checkoutForm.get('typeLivraison')?.value === 'domicile'">
-              <input type="radio" formControlName="typeLivraison" value="domicile" class="ck-radio-input">
-              <div class="ck-radio-icon" style="background:#F4E7E8;">
-                <i class="fa-solid fa-house" style="color:var(--accent);"></i>
-              </div>
-              <div>
-                <div class="ck-radio-title">Livraison à domicile</div>
-                <div class="ck-radio-desc">Livré chez vous en 24–48h · +8,000 د.ت</div>
-              </div>
-              <i class="fa-solid fa-circle-check ck-radio-check"></i>
-            </label>
-          </div>
-          <div class="col-12 col-sm-6">
-            <label class="ck-radio-card" [class.selected]="checkoutForm.get('typeLivraison')?.value === 'retrait'">
-              <input type="radio" formControlName="typeLivraison" value="retrait" class="ck-radio-input">
-              <div class="ck-radio-icon" style="background:#EEF2FF;">
-                <i class="fa-solid fa-store" style="color:#4F46E5;"></i>
-              </div>
-              <div>
-                <div class="ck-radio-title">Retrait en magasin</div>
-                <div class="ck-radio-desc">Disponible immédiatement · Gratuit</div>
-              </div>
-              <i class="fa-solid fa-circle-check ck-radio-check"></i>
-            </label>
-          </div>
-        </div>
-        </ng-container>
-
         <!-- Section : Adresse (uniquement si fournitures + livraison à domicile) -->
         <ng-container *ngIf="commandeContientFournitures && checkoutForm.get('typeLivraison')?.value === 'domicile'">
           <div class="ck-section-label mt-4">
@@ -494,39 +459,45 @@
               </div>
             </div>
 
-            <!-- Code postal -->
-            <div class="col-12 col-md-6">
-              <label class="ck-label">Code postal <span class="ck-required">*</span></label>
-              <input formControlName="codePostal" type="text" placeholder="Ex : 3000" inputmode="numeric"
-                     class="ck-input" maxlength="4" [class.is-invalid]="fieldInvalid('codePostal')">
-              <div *ngIf="fieldInvalid('codePostal')" class="ck-error">
-                <i class="fa-solid fa-circle-exclamation me-1"></i>{{ getFieldError('codePostal') }}
-              </div>
-            </div>
-
-            <!-- Téléphone (déjà saisi ci-dessus, rappelé ici pour le livreur) -->
-            <div class="col-12 col-md-6">
-              <label class="ck-label">Téléphone <span class="ck-required">*</span></label>
-              <input formControlName="telephone" type="tel" placeholder="22 345 678" maxlength="8"
-                     class="ck-input" [class.is-invalid]="fieldInvalid('telephone')">
-              <div *ngIf="fieldInvalid('telephone')" class="ck-error">
-                <i class="fa-solid fa-circle-exclamation me-1"></i>{{ getFieldError('telephone') }}
-              </div>
-            </div>
-
-            <!-- Adresse détaillée -->
-            <div class="col-12">
-              <label class="ck-label">Adresse détaillée <span class="ck-required">*</span></label>
-              <textarea formControlName="adresse" rows="3"
-                        placeholder="Résidence, immeuble, étage, numéro de rue, quartier, point de repère…"
-                        class="ck-input" [class.is-invalid]="fieldInvalid('adresse')"></textarea>
-              <div *ngIf="fieldInvalid('adresse')" class="ck-error">
-                <i class="fa-solid fa-circle-exclamation me-1"></i>{{ getFieldError('adresse') }}
-              </div>
-            </div>
-
           </div>
         </ng-container>
+
+        <!-- Section : Type de livraison (uniquement si le panier contient des fournitures scolaires) -->
+        <ng-container *ngIf="commandeContientFournitures">
+        <div class="ck-section-label mt-4">
+          <i class="fa-solid fa-truck me-2"></i>Type de livraison
+        </div>
+        <div class="row g-3">
+          <div class="col-12 col-sm-6">
+            <label class="ck-radio-card" [class.selected]="checkoutForm.get('typeLivraison')?.value === 'domicile'">
+              <input type="radio" formControlName="typeLivraison" value="domicile" class="ck-radio-input">
+              <div class="ck-radio-icon" style="background:#F4E7E8;">
+                <i class="fa-solid fa-house" style="color:var(--accent);"></i>
+              </div>
+              <div>
+                <div class="ck-radio-title">Livraison à domicile</div>
+                <div class="ck-radio-desc">Livré chez vous en 24–48h · +8,000 د.ت</div>
+              </div>
+              <i class="fa-solid fa-circle-check ck-radio-check"></i>
+            </label>
+          </div>
+          <div class="col-12 col-sm-6">
+            <label class="ck-radio-card" [class.selected]="checkoutForm.get('typeLivraison')?.value === 'retrait'">
+              <input type="radio" formControlName="typeLivraison" value="retrait" class="ck-radio-input">
+              <div class="ck-radio-icon" style="background:#EEF2FF;">
+                <i class="fa-solid fa-store" style="color:#4F46E5;"></i>
+              </div>
+              <div>
+                <div class="ck-radio-title">Retrait en magasin</div>
+                <div class="ck-radio-desc">Disponible immédiatement · Gratuit</div>
+              </div>
+              <i class="fa-solid fa-circle-check ck-radio-check"></i>
+            </label>
+          </div>
+        </div>
+        </ng-container>
+
+        
 
         </ng-container><!-- /Étape 1 : Livraison -->
 
@@ -716,7 +687,7 @@
             <span class="fw-semibold text-end">
               {{ checkoutForm.get('typeLivraison')?.value === 'retrait'
                   ? 'Retrait en magasin'
-                  : ((checkoutForm.get('adresse')?.value || '—') + ', ' + (checkoutForm.get('delegation')?.value || '') + ', ' + (checkoutForm.get('gouvernorat')?.value || '')) }}
+                  : ((checkoutForm.get('delegation')?.value || '—') + ', ' + (checkoutForm.get('gouvernorat')?.value || '')) }}
             </span>
           </div>
           <div class="ck-summary-ligne" *ngIf="!commandeContientFournitures">

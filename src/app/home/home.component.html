@@ -149,7 +149,7 @@
       
       <!-- Carte catégorie (gauche) -->
       <div class="col-12 col-lg-4">
-        <a [routerLink]="cat.lien" class="cat-card-lottie" [style.background]="cat.gradient">
+        <a [routerLink]="cat.lien" [queryParams]="{domaine: cat.key}" class="cat-card-lottie" [style.background]="cat.gradient">
           <span class="cat-card-lottie-blob cat-card-lottie-blob-1"></span>
           <span class="cat-card-lottie-blob cat-card-lottie-blob-2"></span>
 
@@ -172,7 +172,7 @@
         <div class="d-flex align-items-center justify-content-between mb-3">
           <h4 class="fw-bold mb-0" style="font-size:19px;color:#1B2430;">{{ cat.carouselTitre }}</h4>
           <div class="d-flex align-items-center gap-3">
-            <a [routerLink]="cat.lien" class="small fw-semibold d-none d-lg-inline-flex align-items-center gap-1"
+            <a [routerLink]="cat.lien" [queryParams]="{domaine: cat.key}" class="small fw-semibold d-none d-lg-inline-flex align-items-center gap-1"
                style="color:var(--accent);">
               Voir tout
               <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i>
@@ -189,7 +189,7 @@
         </div>
 
         <div class="cat-carousel-track" #track>
-          <div class="cat-carousel-card" *ngFor="let p of cat.produits" (click)="ouvrirCategorie(cat.lien)">
+          <div class="cat-carousel-card" *ngFor="let p of produitsDe(cat); trackBy: trackById" (click)="ouvrirCategorie(cat.key)">
             <div class="cat-carousel-visuel" [style.background]="p.iconeBg">
               <span *ngIf="p.badge" class="produit-badge"
                     [class.badge-bestseller]="p.badge === 'Best-seller'"
@@ -203,7 +203,8 @@
                       aria-label="Ajouter au comparateur">
                 <i class="fa-solid fa-check" *ngIf="estDansComparateur(p.id)"></i>
               </button>
-              <i class="fa-solid {{ p.icone }} cat-carousel-icon"></i>
+              <img *ngIf="p.images && p.images.length > 0" [src]="p.images[0]" [alt]="p.titre" class="cat-carousel-img">
+              <i *ngIf="!p.images || p.images.length === 0" class="fa-solid {{ p.icone }} cat-carousel-icon"></i>
             </div>
             <div class="cat-carousel-body">
               <h4 class="cat-carousel-titre">{{ p.titre }}</h4>

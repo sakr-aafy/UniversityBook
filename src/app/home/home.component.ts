@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CartService } from '../services/cart.service';
 import { CompareService } from '../services/compare.service';
+import { CatalogueService, Domaine, Produit } from '../services/catalogue.service';
 
 interface HeroGalleryImage {
   /** Emplacement attendu pour une future photo grand format. */
@@ -17,18 +18,8 @@ interface HeroStat {
   label: string;
 }
 
-interface CarouselProduit {
-  id: number;
-  titre: string;
-  prix: number;
-  ancienPrix?: number;
-  icone: string;
-  iconeBg: string;
-  badge?: string;
-}
-
 interface CategorieSection {
-  key: string;
+  key: Domaine;
   titre: string;
   description: string;
   icone: string;
@@ -39,7 +30,6 @@ interface CategorieSection {
   ctaLabel: string;
   lien: string;
   carouselTitre: string;
-  produits: CarouselProduit[];
 }
 
 interface Avantage {
@@ -58,6 +48,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(
     private cartService: CartService,
     private compareService: CompareService,
+    public catalogueService: CatalogueService,
     private router: Router
   ) {}
 
@@ -106,15 +97,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       lottiePath: 'assets/images/Back.json',
       ctaLabel: 'Voir la boutique',
       lien: '/boutique',
-      carouselTitre: 'Nos meilleures fournitures',
-      produits: [
-        { id: 101, titre: 'Cartable premium multi-poches', prix: 89.900, ancienPrix: 109.900, icone: 'fa-backpack', iconeBg: '#FDF2F3', badge: '-18%' },
-        { id: 102, titre: 'Trousse complète 40 pièces', prix: 24.500, icone: 'fa-pen-ruler', iconeBg: '#EFF6FF' },
-        { id: 103, titre: 'Calculatrice scientifique', prix: 45.000, icone: 'fa-calculator', iconeBg: '#EDF7F0', badge: 'Nouveau' },
-        { id: 104, titre: 'Kit de géométrie précision', prix: 18.900, icone: 'fa-drafting-compass', iconeBg: '#FFF7ED' },
-        { id: 105, titre: 'Lot de classeurs A4', prix: 21.000, icone: 'fa-folder-open', iconeBg: '#F5F3FF' },
-        { id: 106, titre: 'Ordinateur portable étudiant', prix: 1290.000, icone: 'fa-laptop', iconeBg: '#EFF6FF', badge: 'Best-seller' }
-      ]
+      carouselTitre: 'Nos meilleures fournitures'
     },
     {
       key: 'documents',
@@ -126,17 +109,24 @@ export class HomeComponent implements OnInit, OnDestroy {
       lottiePath: 'assets/images/Document.json',
       ctaLabel: 'Voir les documents',
       lien: '/boutique',
-      carouselTitre: 'Documents les plus populaires',
-      produits: [
-        { id: 201, titre: 'Code du travail – Édition 2026', prix: 28.500, icone: 'fa-scale-balanced', iconeBg: '#FDF2F3', badge: 'Nouveau' },
-        { id: 202, titre: 'Examens corrigés Droit Sfax', prix: 14.000, icone: 'fa-file-lines', iconeBg: '#EFF6FF', badge: 'Best-seller' },
-        { id: 203, titre: 'Manuel de sémiologie médicale', prix: 32.000, icone: 'fa-stethoscope', iconeBg: '#EDF7F0' },
-        { id: 204, titre: 'Comptabilité générale IHEC S2', prix: 22.000, icone: 'fa-chart-line', iconeBg: '#FFF7ED' },
-        { id: 205, titre: 'Micro-économie FSEG Tunis L1', prix: 0, icone: 'fa-briefcase', iconeBg: '#F5F3FF', badge: 'Gratuit' },
-        { id: 206, titre: 'Électronique numérique ISET', prix: 19.000, icone: 'fa-gears', iconeBg: '#FDF2F3' }
-      ]
+      carouselTitre: 'Documents les plus populaires'
     }
   ];
+
+  /** Produits réels affichés dans le carrousel d'une section (remplace les listes codées en dur
+   * précédentes, ids 101-206 factices non reliés au catalogue) — les 6 premiers du domaine
+   * correspondant, nouveautés/best-sellers d'abord, alimentés par CatalogueService (donc par tout
+   * produit caisse publié via "Ajouter sur Site Internet", voir syncProduitSite.js côté backend). */
+  produitsDe(cat: CategorieSection): Produit[] {
+    return this.catalogueService.produits
+      .filter(p => p.domaine === cat.key)
+      .sort((a, b) => (+!!b.populaire - +!!a.populaire) || (+!!b.nouveaute - +!!a.nouveaute))
+      .slice(0, 6);
+  }
+
+  trackById(_index: number, item: Produit): number {
+    return item.id;
+  }
 
   pourquoiNous: Avantage[] = [
     { icone: 'fa-book-open-reader', titre: 'Sélection rigoureuse', description: 'Documents et fournitures choisis pour accompagner votre réussite universitaire.' },
@@ -155,6 +145,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   ];
 
   ngOnInit(): void {
+    // Recharge le catalogue à chaque visite de l'accueil (même principe que
+    // boutique.component.ts#ngOnInit) : reflète les produits publiés/dépubliés côté admin ou
+    // caisse sans qu'aucun code n'ait besoin d'être changé.
+    this.catalogueService.actualiser();
     this.demarrerGalerieAutoplay();
   }
 
@@ -207,7 +201,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     return v.toFixed(3).replace('.', ',') + ' د.ت';
   }
 
-  ajouterPanier(p: CarouselProduit, categorie: string): void {
+  ajouterPanier(p: Produit, categorie: string): void {
     this.cartService.ajouter({
       id: p.id,
       titre: p.titre,
@@ -217,15 +211,15 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
-  ouvrirCategorie(lien: string): void {
-    this.router.navigateByUrl(lien);
+  ouvrirCategorie(domaine: Domaine): void {
+    this.router.navigate(['/boutique'], { queryParams: { domaine } });
   }
 
   estDansComparateur(id: number): boolean {
     return this.compareService.estDansComparateur(id);
   }
 
-  toggleComparaison(p: CarouselProduit, categorie: string, event: Event): void {
+  toggleComparaison(p: Produit, categorie: string, event: Event): void {
     event.stopPropagation();
     this.compareService.toggle({
       id: p.id,

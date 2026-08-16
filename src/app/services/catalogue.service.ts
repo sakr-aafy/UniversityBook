@@ -220,7 +220,11 @@ export class CatalogueService {
       nouveaute: p.nouveaute,
       populaire: p.populaire,
       ancienPrix: p.ancienPrix,
-      disponible: p.disponible !== false && (p.stock === undefined || p.stock > 0),
+      // Le backend est la seule source de vérité pour la disponibilité (même logique que
+      // mapDocument juste en dessous) — le stock n'est qu'informatif ici : un produit publié
+      // depuis la caisse doit rester achetable même si son stock caisse n'a pas encore été
+      // renseigné/reçu, tant que rien ne l'a explicitement marqué indisponible.
+      disponible: p.disponible !== false,
       note: p.note,
       nombreAvis: p.nombreAvis,
       marque: p.marque || undefined,

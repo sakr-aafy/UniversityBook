@@ -49,7 +49,7 @@ export class PanierComponent implements OnInit, OnDestroy {
   /** Champs du formulaire unique (checkoutForm, inchangé) validés avant de passer à l'étape Paiement. */
   private readonly champsEtapeLivraison = [
     'prenom', 'nom', 'email', 'telephone', 'telephoneSecondaire',
-    'typeLivraison', 'adresse', 'gouvernorat', 'delegation', 'codePostal'
+    'typeLivraison', 'gouvernorat', 'delegation'
   ];
 
   // ── Carte "Gagnez du temps" : création de compte / connexion sociale au-dessus du formulaire ──
@@ -81,12 +81,9 @@ export class PanierComponent implements OnInit, OnDestroy {
       email:                ['', [Validators.email]],
       telephone:           ['', [Validators.required, Validators.pattern(/^[0-9]{8}$/)]],
       telephoneSecondaire: ['', [Validators.pattern(/^[0-9]{8}$/)]],
-      entreprise:          [''],
       /* ── Adresse ── */
-      adresse:       ['', [Validators.required, Validators.minLength(5)]],
       gouvernorat:   ['', Validators.required],
       delegation:    ['', Validators.required],
-      codePostal:    ['', [Validators.required, Validators.pattern(/^[0-9]{4}$/)]],
       /* ── Options ── */
       typeLivraison: ['domicile', Validators.required],
       moyenPaiement: ['livraison', Validators.required],
@@ -169,6 +166,13 @@ export class PanierComponent implements OnInit, OnDestroy {
     return this.items.some(i => !i.estDocument);
   }
 
+  /** Une commande sans compte contenant un document numérique n'a aucun autre moyen de le
+   * recevoir que par e-mail (aucun compte créé, donc pas d'espace « Mes Documents ») — l'e-mail
+   * n'est donc obligatoire que dans ce cas précis, jamais pour une commande 100% fournitures. */
+  get emailRequisPourCommande(): boolean {
+    return !this.estConnecte && this.items.some(i => i.estDocument);
+  }
+
   formatPrix(v: number): string {
     return v.toFixed(3).replace('.', ',') + ' د.ت';
   }
@@ -215,9 +219,11 @@ export class PanierComponent implements OnInit, OnDestroy {
     this.oauthChargement = null;
     this.compteForm.reset();
 
-    // E-mail obligatoire uniquement pour un achat sans compte (voir orders.controller.js#create).
+    // E-mail obligatoire uniquement pour un achat sans compte contenant un document numérique
+    // (seul moyen de le recevoir sans compte créé — voir orders.controller.js#create) ; optionnel
+    // pour une commande 100% fournitures scolaires, le téléphone suffisant pour la livraison.
     const emailCtrl = this.checkoutForm.get('email')!;
-    emailCtrl.setValidators(this.estConnecte ? [Validators.email] : [Validators.required, Validators.email]);
+    emailCtrl.setValidators(this.emailRequisPourCommande ? [Validators.required, Validators.email] : [Validators.email]);
     emailCtrl.updateValueAndValidity({ emitEvent: false });
 
     if (this.estConnecte) {
@@ -247,8 +253,6 @@ export class PanierComponent implements OnInit, OnDestroy {
           this.delegations = delegationsPourGouvernorat(adresseParDefaut.gouvernorat);
         }
         this.checkoutForm.patchValue({
-          adresse: adresseParDefaut.ligne1 || '',
-          codePostal: adresseParDefaut.codePostal || '',
           gouvernorat: adresseParDefaut.gouvernorat || '',
           delegation: adresseParDefaut.delegation || ''
         });
@@ -399,10 +403,8 @@ export class PanierComponent implements OnInit, OnDestroy {
     // ni pour un retrait en magasin.
     const adresseRequise = typeLivraison !== 'retrait' && this.commandeContientFournitures;
     const champsAdresse: [string, ValidatorFn[]][] = [
-      ['adresse', [Validators.required, Validators.minLength(5)]],
       ['gouvernorat', [Validators.required]],
       ['delegation', [Validators.required]],
-      ['codePostal', [Validators.required, Validators.pattern(/^[0-9]{4}$/)]],
     ];
     for (const [nom, validateurs] of champsAdresse) {
       const ctrl = this.checkoutForm.get(nom);
@@ -514,7 +516,6 @@ export class PanierComponent implements OnInit, OnDestroy {
       const msgs: Record<string, string> = {
         telephone: 'Numéro à 8 chiffres requis (ex : 22 345 678).',
         telephoneSecondaire: 'Numéro à 8 chiffres requis (ex : 22 345 678).',
-        codePostal: 'Code postal à 4 chiffres requis (ex : 3000).',
         carteNumero: 'Numéro de carte incomplet (16 chiffres requis).',
         carteExpiration: 'Format attendu : MM/AA.',
         carteCvv: 'CVV à 3 chiffres requis.',
@@ -551,7 +552,7 @@ export class PanierComponent implements OnInit, OnDestroy {
       valeurs.typeLivraison === 'retrait'
         ? 'Retrait en magasin'
         : this.commandeContientFournitures
-          ? `${valeurs.adresse}, ${valeurs.delegation}, ${valeurs.codePostal} ${valeurs.gouvernorat}`
+          ? `${valeurs.delegation}, ${valeurs.gouvernorat}`
           : '';
 
     this.derniereCommandeEmail = valeurs.email || this.authService.currentUser?.email || '';

@@ -110,9 +110,13 @@
             [class.show]="openMenu==='boutique'">
 
           <li class="ub-mega-col" *ngIf="categoriesDocuments.length > 0">
-            <div class="ub-mega-col-titre"><i class="fa-solid fa-book me-2"></i>Documents numériques</div>
+            <a class="ub-mega-col-titre d-block text-decoration-none"
+               [routerLink]="['/boutique']" [queryParams]="{domaine:'documents'}"
+               (click)="fermerMegaMenu()">
+              <i class="fa-solid fa-book me-2"></i>Documents numériques
+            </a>
             <ul class="list-unstyled mb-0">
-              <li *ngFor="let cat of categoriesDocuments" class="dropdown-submenu position-relative"
+              <li *ngFor="let cat of categoriesDocuments; trackBy: trackByNom" class="dropdown-submenu position-relative"
                   (mouseenter)="openSub(cat._id)" (mouseleave)="closeSub()">
                 <a class="dropdown-item rounded-3 d-flex justify-content-between align-items-center"
                    style="font-size:14.5px;font-weight:500;"
@@ -125,7 +129,7 @@
                 <ul class="dropdown-menu border-0 shadow-lg p-2" *ngIf="cat.sousCategories.length > 0"
                     style="top:-11px;left:100%;border-top:3px solid var(--accent)!important;border-radius:12px;min-width:230px;"
                     [class.show]="boutiqueSub===cat._id">
-                  <li *ngFor="let sc of cat.sousCategories">
+                  <li *ngFor="let sc of cat.sousCategories; trackBy: trackByNom">
                     <a class="dropdown-item rounded-3" style="font-size:14.5px"
                        [routerLink]="['/boutique']" [queryParams]="{domaine:'documents', categorie: cat.nom, sousCategorie: sc.nom}"
                        (click)="fermerMegaMenu()">
@@ -138,9 +142,13 @@
           </li>
 
           <li class="ub-mega-col" *ngIf="categoriesFournituresArbre.length > 0">
-            <div class="ub-mega-col-titre"><i class="fa-solid fa-box me-2"></i>Fournitures scolaires</div>
+            <a class="ub-mega-col-titre d-block text-decoration-none"
+               [routerLink]="['/boutique']" [queryParams]="{domaine:'fournitures'}"
+               (click)="fermerMegaMenu()">
+              <i class="fa-solid fa-box me-2"></i>Fournitures scolaires
+            </a>
             <ul class="list-unstyled mb-0">
-              <li *ngFor="let cat of categoriesFournituresArbre" class="dropdown-submenu position-relative"
+              <li *ngFor="let cat of categoriesFournituresArbre; trackBy: trackByNom" class="dropdown-submenu position-relative"
                   (mouseenter)="openSub(cat.nom)" (mouseleave)="closeSub()">
                 <a class="dropdown-item rounded-3 d-flex justify-content-between align-items-center"
                    style="font-size:14.5px;font-weight:500;"
@@ -153,7 +161,7 @@
                 <ul class="dropdown-menu border-0 shadow-lg p-2" *ngIf="cat.sousCategories.length > 0"
                     style="top:-11px;left:100%;border-top:3px solid var(--accent)!important;border-radius:12px;min-width:230px;"
                     [class.show]="boutiqueSub===cat.nom">
-                  <li *ngFor="let sc of cat.sousCategories" class="dropdown-submenu position-relative"
+                  <li *ngFor="let sc of cat.sousCategories; trackBy: trackByNom" class="dropdown-submenu position-relative"
                       (mouseenter)="openSubSub(cleSousCategorie(cat.nom, sc.nom))" (mouseleave)="closeSubSub()">
                     <a class="dropdown-item rounded-3 d-flex justify-content-between align-items-center" style="font-size:14.5px"
                        [style.color]="boutiqueSubSub===cleSousCategorie(cat.nom, sc.nom) ? 'var(--accent)' : 'inherit'"
@@ -165,7 +173,7 @@
                     <ul class="dropdown-menu border-0 shadow-lg p-2" *ngIf="sc.sousSousCategories.length > 0"
                         style="top:-11px;left:100%;border-top:3px solid var(--accent)!important;border-radius:12px;min-width:210px;"
                         [class.show]="boutiqueSubSub===cleSousCategorie(cat.nom, sc.nom)">
-                      <li *ngFor="let ssc of sc.sousSousCategories">
+                      <li *ngFor="let ssc of sc.sousSousCategories; trackBy: trackByStr">
                         <a class="dropdown-item rounded-3" style="font-size:14.5px"
                            [routerLink]="['/boutique']" [queryParams]="{domaine:'fournitures', categorie: cat.nom, sousCategorie: sc.nom, sousSousCategorie: ssc}"
                            (click)="fermerMegaMenu()">
@@ -338,11 +346,12 @@
 
           <!-- Catégories réelles (Documents numériques) : aucun contenu codé en dur — voir
                le mega-menu desktop pour le détail du câblage CatalogueService. -->
-          <div class="ub-mobile-domaine-titre" *ngIf="categoriesDocuments.length > 0">
+          <a class="ub-mobile-domaine-titre d-block text-decoration-none" *ngIf="categoriesDocuments.length > 0"
+             [routerLink]="['/boutique']" [queryParams]="{domaine:'documents'}" (click)="closeMenu()">
             <i class="fa-solid fa-book me-2"></i>Documents numériques
-          </div>
+          </a>
           <div class="accordion" *ngIf="categoriesDocuments.length > 0">
-            <div class="accordion-item border-0 border-bottom" *ngFor="let cat of categoriesDocuments">
+            <div class="accordion-item border-0 border-bottom" *ngFor="let cat of categoriesDocuments; trackBy: trackByNom">
               <h2 class="accordion-header">
                 <ng-container *ngIf="cat.sousCategories.length > 0; else lienSimpleDoc">
                   <button class="accordion-button collapsed bg-white fw-500 ps-2 shadow-none small"
@@ -358,7 +367,7 @@
               </h2>
               <div [id]="'sub-' + cat._id" class="accordion-collapse collapse" *ngIf="cat.sousCategories.length > 0">
                 <div class="accordion-body ps-4 py-1">
-                  <a class="d-block py-2 small text-secondary" *ngFor="let sc of cat.sousCategories"
+                  <a class="d-block py-2 small text-secondary" *ngFor="let sc of cat.sousCategories; trackBy: trackByNom"
                      [routerLink]="['/boutique']" [queryParams]="{domaine:'documents', categorie: cat.nom, sousCategorie: sc.nom}"
                      (click)="closeMenu()">{{ sc.nom }}</a>
                 </div>
@@ -367,11 +376,12 @@
           </div>
 
           <!-- Catégories réelles (Fournitures scolaires) -->
-          <div class="ub-mobile-domaine-titre mt-2" *ngIf="categoriesFournituresArbre.length > 0">
+          <a class="ub-mobile-domaine-titre d-block text-decoration-none mt-2" *ngIf="categoriesFournituresArbre.length > 0"
+             [routerLink]="['/boutique']" [queryParams]="{domaine:'fournitures'}" (click)="closeMenu()">
             <i class="fa-solid fa-box me-2"></i>Fournitures scolaires
-          </div>
+          </a>
           <div class="accordion" *ngIf="categoriesFournituresArbre.length > 0">
-            <div class="accordion-item border-0 border-bottom" *ngFor="let cat of categoriesFournituresArbre; let ci = index">
+            <div class="accordion-item border-0 border-bottom" *ngFor="let cat of categoriesFournituresArbre; trackBy: trackByNom; let ci = index">
               <h2 class="accordion-header">
                 <ng-container *ngIf="cat.sousCategories.length > 0; else lienSimpleFourn">
                   <button class="accordion-button collapsed bg-white fw-500 ps-2 shadow-none small"
@@ -387,7 +397,7 @@
               </h2>
               <div [id]="'sub-f-' + ci" class="accordion-collapse collapse" *ngIf="cat.sousCategories.length > 0">
                 <div class="accordion-body ps-4 py-1">
-                  <ng-container *ngFor="let sc of cat.sousCategories; let si = index">
+                  <ng-container *ngFor="let sc of cat.sousCategories; trackBy: trackByNom; let si = index">
                     <ng-container *ngIf="sc.sousSousCategories.length > 0; else lienSimpleSousFourn">
                       <button class="d-flex justify-content-between align-items-center w-100 py-2 small text-secondary bg-white border-0"
                               type="button" data-bs-toggle="collapse" [attr.data-bs-target]="'#subsub-f-' + ci + '-' + si">
@@ -396,7 +406,7 @@
                       </button>
                       <div [id]="'subsub-f-' + ci + '-' + si" class="accordion-collapse collapse">
                         <div class="ps-3 py-1">
-                          <a class="d-block py-2 small text-secondary" *ngFor="let ssc of sc.sousSousCategories"
+                          <a class="d-block py-2 small text-secondary" *ngFor="let ssc of sc.sousSousCategories; trackBy: trackByStr"
                              [routerLink]="['/boutique']" [queryParams]="{domaine:'fournitures', categorie: cat.nom, sousCategorie: sc.nom, sousSousCategorie: ssc}"
                              (click)="closeMenu()">{{ ssc }}</a>
                         </div>
