@@ -137,14 +137,14 @@
             </ul>
           </li>
 
-          <li class="ub-mega-col" *ngIf="categoriesFournitures.length > 0">
+          <li class="ub-mega-col" *ngIf="categoriesFournituresArbre.length > 0">
             <div class="ub-mega-col-titre"><i class="fa-solid fa-box me-2"></i>Fournitures scolaires</div>
             <ul class="list-unstyled mb-0">
-              <li *ngFor="let cat of categoriesFournitures" class="dropdown-submenu position-relative"
-                  (mouseenter)="openSub(cat._id)" (mouseleave)="closeSub()">
+              <li *ngFor="let cat of categoriesFournituresArbre" class="dropdown-submenu position-relative"
+                  (mouseenter)="openSub(cat.nom)" (mouseleave)="closeSub()">
                 <a class="dropdown-item rounded-3 d-flex justify-content-between align-items-center"
                    style="font-size:14.5px;font-weight:500;"
-                   [style.color]="boutiqueSub===cat._id ? 'var(--accent)' : 'inherit'"
+                   [style.color]="boutiqueSub===cat.nom ? 'var(--accent)' : 'inherit'"
                    [routerLink]="['/boutique']" [queryParams]="{domaine:'fournitures', categorie: cat.nom}"
                    (click)="fermerMegaMenu()">
                   {{ cat.nom }}
@@ -152,26 +152,40 @@
                 </a>
                 <ul class="dropdown-menu border-0 shadow-lg p-2" *ngIf="cat.sousCategories.length > 0"
                     style="top:-11px;left:100%;border-top:3px solid var(--accent)!important;border-radius:12px;min-width:230px;"
-                    [class.show]="boutiqueSub===cat._id">
-                  <li *ngFor="let sc of cat.sousCategories">
-                    <a class="dropdown-item rounded-3" style="font-size:14.5px"
+                    [class.show]="boutiqueSub===cat.nom">
+                  <li *ngFor="let sc of cat.sousCategories" class="dropdown-submenu position-relative"
+                      (mouseenter)="openSubSub(cleSousCategorie(cat.nom, sc.nom))" (mouseleave)="closeSubSub()">
+                    <a class="dropdown-item rounded-3 d-flex justify-content-between align-items-center" style="font-size:14.5px"
+                       [style.color]="boutiqueSubSub===cleSousCategorie(cat.nom, sc.nom) ? 'var(--accent)' : 'inherit'"
                        [routerLink]="['/boutique']" [queryParams]="{domaine:'fournitures', categorie: cat.nom, sousCategorie: sc.nom}"
                        (click)="fermerMegaMenu()">
                       {{ sc.nom }}
+                      <i class="fa-solid fa-chevron-right text-secondary ms-2" style="font-size:11px" *ngIf="sc.sousSousCategories.length > 0"></i>
                     </a>
+                    <ul class="dropdown-menu border-0 shadow-lg p-2" *ngIf="sc.sousSousCategories.length > 0"
+                        style="top:-11px;left:100%;border-top:3px solid var(--accent)!important;border-radius:12px;min-width:210px;"
+                        [class.show]="boutiqueSubSub===cleSousCategorie(cat.nom, sc.nom)">
+                      <li *ngFor="let ssc of sc.sousSousCategories">
+                        <a class="dropdown-item rounded-3" style="font-size:14.5px"
+                           [routerLink]="['/boutique']" [queryParams]="{domaine:'fournitures', categorie: cat.nom, sousCategorie: sc.nom, sousSousCategorie: ssc}"
+                           (click)="fermerMegaMenu()">
+                          {{ ssc }}
+                        </a>
+                      </li>
+                    </ul>
                   </li>
                 </ul>
               </li>
             </ul>
           </li>
 
-          <li *ngIf="categoriesDocuments.length === 0 && categoriesFournitures.length === 0" class="px-3 py-2 small text-secondary">
+          <li *ngIf="categoriesDocuments.length === 0 && categoriesFournituresArbre.length === 0" class="px-3 py-2 small text-secondary">
             Aucune catégorie pour le moment.
           </li>
         </ul>
       </div>
-
-      <a routerLink="/contact" class="nav-link fw-semibold text-secondary py-2">Documents Gratuits</a>
+      <a routerLink="/boutique" [queryParams]="{domaine:'documents', payant:'1'}" class="nav-link fw-semibold text-secondary py-2">Documents Payants</a>
+      <a routerLink="/boutique" [queryParams]="{domaine:'documents', gratuit:'1'}" class="nav-link fw-semibold text-secondary py-2">Documents Gratuits</a>
       <a routerLink="/contact" class="nav-link fw-semibold text-secondary py-2">Contact</a>
     </div>
 
@@ -353,15 +367,15 @@
           </div>
 
           <!-- Catégories réelles (Fournitures scolaires) -->
-          <div class="ub-mobile-domaine-titre mt-2" *ngIf="categoriesFournitures.length > 0">
+          <div class="ub-mobile-domaine-titre mt-2" *ngIf="categoriesFournituresArbre.length > 0">
             <i class="fa-solid fa-box me-2"></i>Fournitures scolaires
           </div>
-          <div class="accordion" *ngIf="categoriesFournitures.length > 0">
-            <div class="accordion-item border-0 border-bottom" *ngFor="let cat of categoriesFournitures">
+          <div class="accordion" *ngIf="categoriesFournituresArbre.length > 0">
+            <div class="accordion-item border-0 border-bottom" *ngFor="let cat of categoriesFournituresArbre; let ci = index">
               <h2 class="accordion-header">
                 <ng-container *ngIf="cat.sousCategories.length > 0; else lienSimpleFourn">
                   <button class="accordion-button collapsed bg-white fw-500 ps-2 shadow-none small"
-                          type="button" data-bs-toggle="collapse" [attr.data-bs-target]="'#sub-' + cat._id">
+                          type="button" data-bs-toggle="collapse" [attr.data-bs-target]="'#sub-f-' + ci">
                     {{ cat.nom }}
                   </button>
                 </ng-container>
@@ -371,24 +385,45 @@
                      (click)="closeMenu()">{{ cat.nom }}</a>
                 </ng-template>
               </h2>
-              <div [id]="'sub-' + cat._id" class="accordion-collapse collapse" *ngIf="cat.sousCategories.length > 0">
+              <div [id]="'sub-f-' + ci" class="accordion-collapse collapse" *ngIf="cat.sousCategories.length > 0">
                 <div class="accordion-body ps-4 py-1">
-                  <a class="d-block py-2 small text-secondary" *ngFor="let sc of cat.sousCategories"
-                     [routerLink]="['/boutique']" [queryParams]="{domaine:'fournitures', categorie: cat.nom, sousCategorie: sc.nom}"
-                     (click)="closeMenu()">{{ sc.nom }}</a>
+                  <ng-container *ngFor="let sc of cat.sousCategories; let si = index">
+                    <ng-container *ngIf="sc.sousSousCategories.length > 0; else lienSimpleSousFourn">
+                      <button class="d-flex justify-content-between align-items-center w-100 py-2 small text-secondary bg-white border-0"
+                              type="button" data-bs-toggle="collapse" [attr.data-bs-target]="'#subsub-f-' + ci + '-' + si">
+                        {{ sc.nom }}
+                        <i class="fa-solid fa-chevron-down" style="font-size:10px"></i>
+                      </button>
+                      <div [id]="'subsub-f-' + ci + '-' + si" class="accordion-collapse collapse">
+                        <div class="ps-3 py-1">
+                          <a class="d-block py-2 small text-secondary" *ngFor="let ssc of sc.sousSousCategories"
+                             [routerLink]="['/boutique']" [queryParams]="{domaine:'fournitures', categorie: cat.nom, sousCategorie: sc.nom, sousSousCategorie: ssc}"
+                             (click)="closeMenu()">{{ ssc }}</a>
+                        </div>
+                      </div>
+                    </ng-container>
+                    <ng-template #lienSimpleSousFourn>
+                      <a class="d-block py-2 small text-secondary"
+                         [routerLink]="['/boutique']" [queryParams]="{domaine:'fournitures', categorie: cat.nom, sousCategorie: sc.nom}"
+                         (click)="closeMenu()">{{ sc.nom }}</a>
+                    </ng-template>
+                  </ng-container>
                 </div>
               </div>
             </div>
           </div>
 
-          <p *ngIf="categoriesDocuments.length === 0 && categoriesFournitures.length === 0" class="small text-secondary py-2 mb-0">
+          <p *ngIf="categoriesDocuments.length === 0 && categoriesFournituresArbre.length === 0" class="small text-secondary py-2 mb-0">
             Aucune catégorie pour le moment.
           </p>
         </div>
       </div>
     </div>
 
-    <a routerLink="/contact" (click)="closeMenu()" class="d-block py-3 fw-semibold border-bottom">
+    <a routerLink="/boutique" [queryParams]="{domaine:'documents', payant:'1'}" (click)="closeMenu()" class="d-block py-3 fw-semibold border-bottom">
+      <i class="fa-solid fa-file-invoice me-2" style="color:var(--accent)"></i>Documents Payants
+    </a>
+    <a routerLink="/boutique" [queryParams]="{domaine:'documents', gratuit:'1'}" (click)="closeMenu()" class="d-block py-3 fw-semibold border-bottom">
       <i class="fa-solid fa-file me-2" style="color:var(--accent)"></i>Documents Gratuits
     </a>
     <a routerLink="/contact" (click)="closeMenu()" class="d-block py-3 fw-semibold">

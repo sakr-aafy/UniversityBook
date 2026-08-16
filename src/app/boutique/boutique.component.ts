@@ -38,9 +38,11 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
   domaineActif: Domaine = 'documents';
   categorieActive: string = 'Tous';
   sousCategorieActive: string = '';
+  sousSousCategorieActive: string = '';
   typeActif: string = 'Tous';
   triActif: string = 'defaut';
   filtreGratuit: boolean = false;
+  filtrePayant: boolean = false;
   filtresOuverts: boolean = false;
 
   // ── Filtres avancés (prix / disponibilité / promotions) ──
@@ -104,6 +106,18 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
     return [...set];
   }
 
+  /** Sous-sous-catégories présentes pour la sous-catégorie actuellement sélectionnée — même
+   *  principe que sousCategoriesActives, un niveau plus bas. */
+  get sousSousCategoriesActives(): string[] {
+    if (!this.sousCategorieActive) return [];
+    const set = new Set<string>();
+    this.produits
+      .filter(p => p.domaine === this.domaineActif && p.categorie === this.categorieActive
+        && p.sousCategorie === this.sousCategorieActive && p.sousSousCategorie)
+      .forEach(p => set.add(p.sousSousCategorie as string));
+    return [...set];
+  }
+
   /** Types présents dans le catalogue pour le domaine actif. */
   get typesActifs(): string[] {
     const set = new Set<string>();
@@ -134,11 +148,17 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
     if (this.sousCategorieActive) {
       res = res.filter(p => p.sousCategorie === this.sousCategorieActive);
     }
+    if (this.sousSousCategorieActive) {
+      res = res.filter(p => p.sousSousCategorie === this.sousSousCategorieActive);
+    }
     if (this.typeActif !== 'Tous') {
       res = res.filter(p => p.type === this.typeActif);
     }
     if (this.filtreGratuit) {
       res = res.filter(p => p.gratuit);
+    }
+    if (this.filtrePayant) {
+      res = res.filter(p => !p.gratuit);
     }
     if (this.prixMin !== null) {
       res = res.filter(p => p.prix >= (this.prixMin as number));
@@ -182,8 +202,10 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
     this.domaineActif = d;
     this.categorieActive = 'Tous';
     this.sousCategorieActive = '';
+    this.sousSousCategorieActive = '';
     this.typeActif = 'Tous';
     this.filtreGratuit = false;
+    this.filtrePayant = false;
     this.resetPage();
   }
 
@@ -264,11 +286,18 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
   filtrerCategorie(cat: string): void {
     this.categorieActive = cat;
     this.sousCategorieActive = '';
+    this.sousSousCategorieActive = '';
     this.resetPage();
   }
 
   filtrerSousCategorie(sc: string): void {
     this.sousCategorieActive = this.sousCategorieActive === sc ? '' : sc;
+    this.sousSousCategorieActive = '';
+    this.resetPage();
+  }
+
+  filtrerSousSousCategorie(ssc: string): void {
+    this.sousSousCategorieActive = this.sousSousCategorieActive === ssc ? '' : ssc;
     this.resetPage();
   }
 
@@ -338,9 +367,11 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
     this.recherche = '';
     this.categorieActive = 'Tous';
     this.sousCategorieActive = '';
+    this.sousSousCategorieActive = '';
     this.typeActif = 'Tous';
     this.triActif = 'defaut';
     this.filtreGratuit = false;
+    this.filtrePayant = false;
     this.prixMin = null;
     this.prixMax = null;
     this.filtreDisponibilite = 'tous';
@@ -512,16 +543,23 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
       const domaine = params.get('domaine');
       const categorie = params.get('categorie');
       const sousCategorie = params.get('sousCategorie');
+      const sousSousCategorie = params.get('sousSousCategorie');
+      const gratuit = params.get('gratuit');
+      const payant = params.get('payant');
       // Affectation complète (pas changerDomaine()/filtrerCategorie()/filtrerSousCategorie()) :
       // ces méthodes réinitialisent les filtres plus fins, ce qui effacerait un paramètre
-      // appliqué juste avant dans cette même chaîne (domaine → catégorie → sous-catégorie).
-      // Un champ absent de l'URL revient à sa valeur par défaut : un lien du Header remplace
-      // entièrement les filtres actifs plutôt que de les cumuler avec un état résiduel.
+      // appliqué juste avant dans cette même chaîne (domaine → catégorie → sous-catégorie →
+      // sous-sous-catégorie). Un champ absent de l'URL revient à sa valeur par défaut : un lien
+      // du Header remplace entièrement les filtres actifs plutôt que de les cumuler avec un état
+      // résiduel.
       this.recherche = q || '';
       this.triActif = tri || 'defaut';
       if (domaine === 'documents' || domaine === 'fournitures') this.domaineActif = domaine;
       this.categorieActive = categorie || 'Tous';
       this.sousCategorieActive = sousCategorie || '';
+      this.sousSousCategorieActive = sousSousCategorie || '';
+      this.filtreGratuit = gratuit === '1';
+      this.filtrePayant = payant === '1';
     });
 
     this.panierSub = this.cartService.ouvert$.subscribe(ouvert => {

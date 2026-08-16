@@ -9,6 +9,16 @@ import { ConfirmDialogService } from '../services/confirm-dialog.service';
 import { CatalogueService, CategorieArbre } from '../services/catalogue.service';
 import { photoUrl } from '../shared/photo-url.util';
 
+export interface SousCategorieFourniture {
+  nom: string;
+  sousSousCategories: string[];
+}
+
+export interface CategorieFourniture {
+  nom: string;
+  sousCategories: SousCategorieFourniture[];
+}
+
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
@@ -21,6 +31,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   currentLang: string = 'FR';
   openMenu: string | null = null;
   boutiqueSub: string | null = null;
+  boutiqueSubSub: string | null = null;
   cartCount: number = 0;
   cartTotal: string = '0,000';
   cartBump: boolean = false;
@@ -41,6 +52,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private bumpTimeout: any;
   private fermetureMenuTimer: any;
   private fermetureSousMenuTimer: any;
+  private fermetureSousSousMenuTimer: any;
 
   constructor(
     private cartService: CartService,
@@ -67,8 +79,35 @@ export class HeaderComponent implements OnInit, OnDestroy {
     return this.catalogueService.categories.filter(c => c.type === 'documents');
   }
 
-  get categoriesFournitures(): CategorieArbre[] {
-    return this.catalogueService.categories.filter(c => c.type === 'fournitures');
+  /** Arbre Catégorie > Sous-catégorie > Sous-sous-catégorie construit dynamiquement à partir des
+   *  produits réellement publiés (synchronisés depuis la caisse, voir
+   *  backend/controllers/syncProduitSite.js) — contrairement à categoriesDocuments ci-dessus, pas
+   *  de collection Category dédiée à gérer séparément : n'affiche jamais un lien mort vers une
+   *  catégorie sans aucun produit derrière, et se met à jour tout seul dès qu'un produit caisse
+   *  est publié/dépublié. */
+  get categoriesFournituresArbre(): CategorieFourniture[] {
+    const produits = this.catalogueService.produits.filter(p => p.domaine === 'fournitures' && p.categorie);
+    const parCategorie = new Map<string, Map<string, Set<string>>>();
+    produits.forEach(p => {
+      if (!parCategorie.has(p.categorie)) parCategorie.set(p.categorie, new Map());
+      if (!p.sousCategorie) return;
+      const parSousCategorie = parCategorie.get(p.categorie)!;
+      if (!parSousCategorie.has(p.sousCategorie)) parSousCategorie.set(p.sousCategorie, new Set());
+      if (p.sousSousCategorie) parSousCategorie.get(p.sousCategorie)!.add(p.sousSousCategorie);
+    });
+    return [...parCategorie.entries()].map(([nom, parSousCategorie]) => ({
+      nom,
+      sousCategories: [...parSousCategorie.entries()].map(([sousNom, sousSousSet]) => ({
+        nom: sousNom,
+        sousSousCategories: [...sousSousSet]
+      }))
+    }));
+  }
+
+  /** Clé combinée catégorie+sous-catégorie pour le flyout de sous-sous-catégories (boutiqueSubSub)
+   *  — évite une collision si deux catégories différentes partagent un nom de sous-catégorie. */
+  cleSousCategorie(categorieNom: string, sousCategorieNom: string): string {
+    return `${categorieNom}::${sousCategorieNom}`;
   }
 
   ngOnInit(): void {
@@ -115,6 +154,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     clearTimeout(this.bumpTimeout);
     clearTimeout(this.fermetureMenuTimer);
     clearTimeout(this.fermetureSousMenuTimer);
+    clearTimeout(this.fermetureSousSousMenuTimer);
   }
 
   @HostListener('window:resize')
@@ -162,8 +202,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
   fermerMegaMenu(): void {
     clearTimeout(this.fermetureMenuTimer);
     clearTimeout(this.fermetureSousMenuTimer);
+    clearTimeout(this.fermetureSousSousMenuTimer);
     this.openMenu = null;
     this.boutiqueSub = null;
+    this.boutiqueSubSub = null;
   }
 
   openSub(sub: string): void {
@@ -175,6 +217,20 @@ export class HeaderComponent implements OnInit, OnDestroy {
     clearTimeout(this.fermetureSousMenuTimer);
     this.fermetureSousMenuTimer = setTimeout(() => {
       this.boutiqueSub = null;
+    }, 250);
+  }
+
+  /** Flyout de 3e niveau (sous-sous-catégories), imbriqué dans celui de openSub/closeSub —
+   *  même principe de fermeture différée pour laisser le curseur traverser vers le flyout. */
+  openSubSub(subSub: string): void {
+    clearTimeout(this.fermetureSousSousMenuTimer);
+    this.boutiqueSubSub = subSub;
+  }
+
+  closeSubSub(): void {
+    clearTimeout(this.fermetureSousSousMenuTimer);
+    this.fermetureSousSousMenuTimer = setTimeout(() => {
+      this.boutiqueSubSub = null;
     }, 250);
   }
 

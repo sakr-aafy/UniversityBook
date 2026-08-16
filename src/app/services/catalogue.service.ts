@@ -23,6 +23,7 @@ export interface Produit {
   domaine: Domaine;
   categorie: string;
   sousCategorie?: string;
+  sousSousCategorie?: string;
   prix: number;
   gratuit: boolean;
   type: string;
@@ -77,6 +78,7 @@ interface ProduitApi {
   description?: string;
   categorie?: string;
   sousCategorie?: string;
+  sousSousCategorie?: string;
   type?: string;
   prix: number;
   stock?: number;
@@ -207,6 +209,7 @@ export class CatalogueService {
       domaine: 'fournitures',
       categorie: p.categorie || '',
       sousCategorie: p.sousCategorie || undefined,
+      sousSousCategorie: p.sousSousCategorie || undefined,
       prix: p.prix || 0,
       gratuit: (p.prix || 0) === 0,
       type: p.type || '',
