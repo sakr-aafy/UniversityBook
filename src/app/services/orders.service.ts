@@ -74,6 +74,10 @@ export class OrdersService {
     total: number;
     paiement: string;
     adresseLivraison: string;
+    /** Valeurs structurées (en plus d'adresseLivraison, qui reste le texte affiché) — utilisées
+     *  côté caisse pour la création de colis Best Delivery, voir commande.component.ts. */
+    gouvernorat?: string;
+    delegation?: string;
     commentaire?: string;
     /** Achat sans compte : coordonnées + e-mail obligatoires (voir orders.controller.js#create). */
     invite?: InviteCommande;

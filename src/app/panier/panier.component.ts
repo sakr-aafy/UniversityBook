@@ -568,6 +568,8 @@ export class PanierComponent implements OnInit, OnDestroy {
         total: this.total,
         paiement: this.moyenPaiementLabel,
         adresseLivraison,
+        gouvernorat: this.commandeContientFournitures ? valeurs.gouvernorat : '',
+        delegation: this.commandeContientFournitures ? valeurs.delegation : '',
         commentaire: (valeurs.commentaire || '').trim(),
         invite: this.estConnecte ? undefined : {
           nom: valeurs.nom, prenom: valeurs.prenom, telephone: valeurs.telephone, email: valeurs.email
