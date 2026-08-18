@@ -6,23 +6,10 @@ import { AuthService, AuthUser } from '../services/auth.service';
 import { BoutiqueFavoritesService } from '../services/boutique-favorites.service';
 import { NotificationsService, AppNotification } from '../services/notifications.service';
 import { ConfirmDialogService } from '../services/confirm-dialog.service';
-import { CatalogueService } from '../services/catalogue.service';
+import { CategoriesSiteService, CategorieSiteDto } from '../services/categories-site.service';
+import { CategoriesCaisseService, CategorieCaisseDto } from '../services/categories-caisse.service';
 import { photoUrl } from '../shared/photo-url.util';
-
-export interface SousCategorieFourniture {
-  nom: string;
-  sousSousCategories: string[];
-}
-
-export interface CategorieFourniture {
-  nom: string;
-  sousCategories: SousCategorieFourniture[];
-}
-
-export interface CategorieDocument {
-  nom: string;
-  sousCategories: { nom: string }[];
-}
+import { formatCategorieLabel } from '../shared/format-label.util';
 
 @Component({
   selector: 'app-header',
@@ -30,13 +17,14 @@ export interface CategorieDocument {
   styleUrls: ['./header.component.css']
 })
 export class HeaderComponent implements OnInit, OnDestroy {
+  /** Exposée au template pour l'affichage des catégories/sous-catégories (casse d'origine
+   *  imprévisible côté caisse) — voir format-label.util.ts. */
+  readonly formatLabel = formatCategorieLabel;
+
   isMobile: boolean = false;
   menuOpen: boolean = false;
   searchOpen: boolean = false;
   currentLang: string = 'FR';
-  openMenu: string | null = null;
-  boutiqueSub: string | null = null;
-  boutiqueSubSub: string | null = null;
   cartCount: number = 0;
   cartTotal: string = '0,000';
   cartBump: boolean = false;
@@ -51,13 +39,34 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   userMenuOuvert: boolean = false;
 
+  /** Taxonomie "sur site" (Catégorie/Sous-Catégorie/Sous-Sous-Catégorie), pour le sous-menu
+   *  au survol de "Documents" dans le mega-menu Boutique — voir CategoriesSiteService. */
+  categoriesSite: CategorieSiteDto[] = [];
+
+  /** Catégorie/Sous-Catégorie du formulaire produit caisse (voir CategoriesCaisseService), pour
+   *  le sous-menu au survol de "Fournitures scolaires" dans le mega-menu Boutique. */
+  categoriesCaisse: CategorieCaisseDto[] = [];
+
+  /** Équivalent tactile du survol desktop : clés des sections dépliées de l'accordéon Boutique
+   *  mobile (ex: 'doc', 'doc:Droit', 'doc:Droit:examen', 'four', 'four:LIVRE') — le survol n'existe
+   *  pas au tactile, chaque niveau se déplie/replie au tap plutôt qu'au survol. */
+  private mobileExpanded = new Set<string>();
+
+  toggleMobileExpand(key: string, event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    if (this.mobileExpanded.has(key)) this.mobileExpanded.delete(key);
+    else this.mobileExpanded.add(key);
+  }
+
+  isMobileExpanded(key: string): boolean {
+    return this.mobileExpanded.has(key);
+  }
+
   private cartSub!: Subscription;
   private authSub!: Subscription;
   private favSub!: Subscription;
   private bumpTimeout: any;
-  private fermetureMenuTimer: any;
-  private fermetureSousMenuTimer: any;
-  private fermetureSousSousMenuTimer: any;
 
   constructor(
     private cartService: CartService,
@@ -65,7 +74,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private favoritesService: BoutiqueFavoritesService,
     private notificationsService: NotificationsService,
     private confirmDialogService: ConfirmDialogService,
-    private catalogueService: CatalogueService,
+    private categoriesSiteService: CategoriesSiteService,
+    private categoriesCaisseService: CategoriesCaisseService,
     private router: Router
   ) {}
 
@@ -77,73 +87,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
     return photoUrl(this.currentUser?.photo);
   }
 
-  /** Arbre Catégorie > Sous-catégorie construit dynamiquement à partir des documents réellement
-   *  publiés (synchronisés depuis la caisse, voir caisse/pages/fournisseurs et
-   *  backend/controllers/syncDocumentSite.js) — même principe que categoriesFournituresArbre
-   *  ci-dessous : reflète exactement les catégories/sous-catégories gérées en caisse plutôt qu'une
-   *  collection Category admin séparée qui pouvait en diverger (jamais de lien mort vers une
-   *  catégorie sans document derrière, se met à jour tout seul dès qu'un document est
-   *  publié/dépublié). */
-  get categoriesDocuments(): CategorieDocument[] {
-    const documents = this.catalogueService.produits.filter(p => p.domaine === 'documents' && p.categorie);
-    const parCategorie = new Map<string, Set<string>>();
-    documents.forEach(d => {
-      if (!parCategorie.has(d.categorie)) parCategorie.set(d.categorie, new Set());
-      if (d.sousCategorie) parCategorie.get(d.categorie)!.add(d.sousCategorie);
-    });
-    return [...parCategorie.entries()].map(([nom, sousSet]) => ({
-      nom,
-      sousCategories: [...sousSet].map(sousNom => ({ nom: sousNom }))
-    }));
-  }
-
-  /** Arbre Catégorie > Sous-catégorie > Sous-sous-catégorie construit dynamiquement à partir des
-   *  produits réellement publiés (synchronisés depuis la caisse, voir
-   *  backend/controllers/syncProduitSite.js) — contrairement à categoriesDocuments ci-dessus, pas
-   *  de collection Category dédiée à gérer séparément : n'affiche jamais un lien mort vers une
-   *  catégorie sans aucun produit derrière, et se met à jour tout seul dès qu'un produit caisse
-   *  est publié/dépublié. */
-  get categoriesFournituresArbre(): CategorieFourniture[] {
-    const produits = this.catalogueService.produits.filter(p => p.domaine === 'fournitures' && p.categorie);
-    const parCategorie = new Map<string, Map<string, Set<string>>>();
-    produits.forEach(p => {
-      if (!parCategorie.has(p.categorie)) parCategorie.set(p.categorie, new Map());
-      if (!p.sousCategorie) return;
-      const parSousCategorie = parCategorie.get(p.categorie)!;
-      if (!parSousCategorie.has(p.sousCategorie)) parSousCategorie.set(p.sousCategorie, new Set());
-      if (p.sousSousCategorie) parSousCategorie.get(p.sousCategorie)!.add(p.sousSousCategorie);
-    });
-    return [...parCategorie.entries()].map(([nom, parSousCategorie]) => ({
-      nom,
-      sousCategories: [...parSousCategorie.entries()].map(([sousNom, sousSousSet]) => ({
-        nom: sousNom,
-        sousSousCategories: [...sousSousSet]
-      }))
-    }));
-  }
-
-  /** Clé combinée catégorie+sous-catégorie pour le flyout de sous-sous-catégories (boutiqueSubSub)
-   *  — évite une collision si deux catégories différentes partagent un nom de sous-catégorie. */
-  cleSousCategorie(categorieNom: string, sousCategorieNom: string): string {
-    return `${categorieNom}::${sousCategorieNom}`;
-  }
-
-  /** trackBy indispensables ici : categoriesFournituresArbre est un getter qui reconstruit un
-   *  tableau (et des objets) neufs à chaque cycle de détection de changements Angular — sans
-   *  trackBy, *ngFor compare par référence, conclut que "tout" a changé à chaque passage de
-   *  souris, et détruit/recrée tous les nœuds DOM du mega-menu en continu (flyouts instables,
-   *  clics qui semblent ne pas répondre). categoriesDocuments (dérivé d'un .filter() sur un
-   *  tableau stable) est moins touché mais suit le même principe par cohérence. */
-  trackByNom(_: number, item: { nom: string }): string {
-    return item.nom;
-  }
-
-  trackByStr(_: number, item: string): string {
-    return item;
-  }
-
   ngOnInit(): void {
     this.updateMobile();
+    this.categoriesSiteService.list().subscribe({
+      next: res => (this.categoriesSite = res.categories),
+      error: () => {}
+    });
+    this.categoriesCaisseService.list().subscribe({
+      next: res => (this.categoriesCaisse = res.categories),
+      error: () => {}
+    });
     this.cartSub = this.cartService.items$.subscribe(() => {
       const nouveauCompte = this.cartService.count;
       if (nouveauCompte > this.cartCount) {
@@ -187,9 +140,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.authSub?.unsubscribe();
     this.favSub?.unsubscribe();
     clearTimeout(this.bumpTimeout);
-    clearTimeout(this.fermetureMenuTimer);
-    clearTimeout(this.fermetureSousMenuTimer);
-    clearTimeout(this.fermetureSousSousMenuTimer);
   }
 
   @HostListener('window:resize')
@@ -220,65 +170,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   closeMenu(): void {
     this.menuOpen = false;
+    this.mobileExpanded.clear();
   }
 
   setLang(l: string): void {
     this.currentLang = l;
-  }
-
-  openDropdown(menu: string): void {
-    clearTimeout(this.fermetureMenuTimer);
-    this.openMenu = menu;
-  }
-
-  /**
-   * Fermeture différée (250 ms, annulée si la souris revient via openDropdown/openSub avant
-   * l'échéance) : laisse le temps au curseur de traverser le léger espace mort entre le lien
-   * et le panneau — ou vers un flyout de sous-catégories — sans fermer le mega-menu par
-   * erreur. Comportement standard des menus déroulants e-commerce (Amazon, Shopify…).
-   */
-  closeDropdowns(): void {
-    clearTimeout(this.fermetureMenuTimer);
-    this.fermetureMenuTimer = setTimeout(() => {
-      this.openMenu = null;
-      this.boutiqueSub = null;
-    }, 250);
-  }
-
-  /** Ferme immédiatement (clic sur un lien, navigation) — pas de délai nécessaire ici. */
-  fermerMegaMenu(): void {
-    clearTimeout(this.fermetureMenuTimer);
-    clearTimeout(this.fermetureSousMenuTimer);
-    clearTimeout(this.fermetureSousSousMenuTimer);
-    this.openMenu = null;
-    this.boutiqueSub = null;
-    this.boutiqueSubSub = null;
-  }
-
-  openSub(sub: string): void {
-    clearTimeout(this.fermetureSousMenuTimer);
-    this.boutiqueSub = sub;
-  }
-
-  closeSub(): void {
-    clearTimeout(this.fermetureSousMenuTimer);
-    this.fermetureSousMenuTimer = setTimeout(() => {
-      this.boutiqueSub = null;
-    }, 250);
-  }
-
-  /** Flyout de 3e niveau (sous-sous-catégories), imbriqué dans celui de openSub/closeSub —
-   *  même principe de fermeture différée pour laisser le curseur traverser vers le flyout. */
-  openSubSub(subSub: string): void {
-    clearTimeout(this.fermetureSousSousMenuTimer);
-    this.boutiqueSubSub = subSub;
-  }
-
-  closeSubSub(): void {
-    clearTimeout(this.fermetureSousSousMenuTimer);
-    this.fermetureSousSousMenuTimer = setTimeout(() => {
-      this.boutiqueSubSub = null;
-    }, 250);
   }
 
   // ── Notifications ──

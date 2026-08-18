@@ -4,10 +4,11 @@ import { Subscription } from 'rxjs';
 import { CartService } from '../services/cart.service';
 import { CompareService } from '../services/compare.service';
 import { BoutiqueFavoritesService } from '../services/boutique-favorites.service';
-import { CatalogueService, Domaine, Produit } from '../services/catalogue.service';
+import { CatalogueService, Produit, estProduitCategorieLivre, estCategorieLivre, estCategorieJeux, estCategorieSoutenance } from '../services/catalogue.service';
 import { DocumentsService } from '../services/documents.service';
 import { AuthService } from '../services/auth.service';
 import { photoUrl } from '../shared/photo-url.util';
+import { formatCategorieLabel } from '../shared/format-label.util';
 
 interface HeroBannerSlide {
   /** Emplacement attendu pour une future photo (fournitures, livres, documents, étudiants, bureau, études…). */
@@ -16,12 +17,25 @@ interface HeroBannerSlide {
   gradient: string;
 }
 
+/**
+ * Vue affichée dans les onglets Boutique — plus fine que `Produit.domaine` (documents/fournitures)
+ * : les produits du catalogue "Fournitures" de catégorie "Livre"/"Jeux"/"Soutenance" sont
+ * regroupés dans leur propre vue (même logique que le mega-menu, voir header.component.ts#
+ * CATEGORIES_SPECIALES) plutôt que noyés dans "Fournitures scolaires". `Produit.domaine` reste
+ * inchangé (toujours 'fournitures' pour ces produits — ce sont des articles physiques, pas des
+ * documents numériques), seul l'affichage/filtrage de cette page en tient compte.
+ */
+type Vue = 'documents' | 'fournitures' | 'jeux' | 'soutenance';
+
 @Component({
   selector: 'app-boutique',
   templateUrl: './boutique.component.html',
   styleUrls: ['./boutique.component.css']
 })
 export class BoutiqueComponent implements OnInit, OnDestroy {
+  /** Exposée au template pour l'affichage du breadcrumb de filtre (casse d'origine imprévisible
+   *  côté caisse) — voir format-label.util.ts. */
+  readonly formatLabel = formatCategorieLabel;
 
   constructor(
     public cartService: CartService,
@@ -35,22 +49,36 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
   ) {}
 
   recherche: string = '';
-  /** Domaine explicitement choisi (clic sur un onglet, lien du Header, query param `domaine`) —
-   *  `null` tant qu'aucun choix explicite n'a été fait, auquel cas `domaineActif` calcule un
-   *  repli dynamique (voir le getter ci-dessous) plutôt que de figer "Documents" par défaut,
-   *  qui peut être vide alors que Fournitures a du contenu publié (ou l'inverse). */
-  private domaineChoisi: Domaine | null = null;
+  /** Vue explicitement choisie (clic sur un onglet, lien du Header, query params `domaine`/
+   *  `categorie`) — `null` tant qu'aucun choix explicite n'a été fait, auquel cas `vueActive`
+   *  calcule un repli dynamique (voir le getter ci-dessous) plutôt que de figer "Documents" par
+   *  défaut, qui peut être vide alors que Fournitures a du contenu publié (ou l'inverse). */
+  private vueChoisie: Vue | null = null;
 
-  get domaineActif(): Domaine {
-    if (this.domaineChoisi) return this.domaineChoisi;
+  get vueActive(): Vue {
+    if (this.vueChoisie) return this.vueChoisie;
     if (!this.catalogueService.chargement
-        && this.catalogueService.produits.filter(p => p.domaine === 'documents').length === 0
-        && this.catalogueService.produits.some(p => p.domaine === 'fournitures')) {
+        && this.catalogueService.produits.filter(p => this.vueDeProduit(p) === 'documents').length === 0
+        && this.catalogueService.produits.some(p => this.vueDeProduit(p) === 'fournitures')) {
       return 'fournitures';
     }
     return 'documents';
   }
-  set domaineActif(d: Domaine) { this.domaineChoisi = d; }
+  set vueActive(v: Vue) { this.vueChoisie = v; }
+
+  /** Détermine la vue d'affichage d'un produit — voir le commentaire sur `Vue` plus haut. Les
+   *  correspondances estCategorieJeux/Soutenance/estProduitCategorieLivre sont par sous-chaîne
+   *  (pas d'égalité stricte) : `categorie`/`sousCategorie` sont un texte libre saisi en caisse,
+   *  jamais garanti d'être exactement "Livre"/"Jeux"/"Soutenance" (voir catalogue.service.ts).
+   *  estProduitCategorieLivre regarde aussi la sous-catégorie (ex. "Droit > Livre concours"
+   *  rejoint Documents numériques même si la catégorie parente "Droit" n'y correspond pas). */
+  private vueDeProduit(p: Produit): Vue {
+    if (p.domaine === 'documents') return 'documents';
+    if (estProduitCategorieLivre(p)) return 'documents';
+    if (estCategorieJeux(p.categorie)) return 'jeux';
+    if (estCategorieSoutenance(p.categorie)) return 'soutenance';
+    return 'fournitures';
+  }
 
   categorieActive: string = 'Tous';
   sousCategorieActive: string = '';
@@ -97,7 +125,7 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
   /** Catégories réellement présentes dans le catalogue pour le domaine actif (remplace
    *  l'ancienne liste codée en dur — synchronisée avec les catégories gérées par l'admin). */
   get categories(): { nom: string; icone: string; count: number }[] {
-    const produitsDomaine = this.produits.filter(p => p.domaine === this.domaineActif);
+    const produitsDomaine = this.produits.filter(p => this.vueDeProduit(p) === this.vueActive);
     const parCategorie = new Map<string, number>();
     produitsDomaine.forEach(p => {
       if (!p.categorie) return;
@@ -112,33 +140,39 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
   }
 
   /** Sous-catégories présentes pour la catégorie actuellement sélectionnée (remplace le
-   *  précédent littéral codé en dur `categorieActive === 'Droit'`). */
+   *  précédent littéral codé en dur `categorieActive === 'Droit'`). Pour les vues Jeux/Soutenance,
+   *  la catégorie caisse sous-jacente est unique (c'est elle qui définit la vue elle-même — voir
+   *  vueDeProduit) : les sous-catégories restent donc visibles même quand categorieActive vaut
+   *  encore "Tous" (aucun chip de catégorie redondant à cliquer d'abord). */
   get sousCategoriesActives(): string[] {
-    if (this.categorieActive === 'Tous') return [];
+    const vueSansChipCategorie = this.vueActive === 'jeux' || this.vueActive === 'soutenance';
+    if (this.categorieActive === 'Tous' && !vueSansChipCategorie) return [];
     const set = new Set<string>();
     this.produits
-      .filter(p => p.domaine === this.domaineActif && p.categorie === this.categorieActive && p.sousCategorie)
+      .filter(p => this.vueDeProduit(p) === this.vueActive
+        && (this.categorieActive === 'Tous' || p.categorie === this.categorieActive) && p.sousCategorie)
       .forEach(p => set.add(p.sousCategorie as string));
     return [...set];
   }
 
   /** Sous-sous-catégories présentes pour la sous-catégorie actuellement sélectionnée — même
-   *  principe que sousCategoriesActives, un niveau plus bas. */
+   *  principe que sousCategoriesActives, un niveau plus bas (et même exception Jeux/Soutenance). */
   get sousSousCategoriesActives(): string[] {
     if (!this.sousCategorieActive) return [];
     const set = new Set<string>();
     this.produits
-      .filter(p => p.domaine === this.domaineActif && p.categorie === this.categorieActive
+      .filter(p => this.vueDeProduit(p) === this.vueActive
+        && (this.categorieActive === 'Tous' || p.categorie === this.categorieActive)
         && p.sousCategorie === this.sousCategorieActive && p.sousSousCategorie)
       .forEach(p => set.add(p.sousSousCategorie as string));
     return [...set];
   }
 
-  /** Types présents dans le catalogue pour le domaine actif. */
+  /** Types présents dans le catalogue pour la vue active. */
   get typesActifs(): string[] {
     const set = new Set<string>();
     this.produits
-      .filter(p => p.domaine === this.domaineActif && p.type)
+      .filter(p => this.vueDeProduit(p) === this.vueActive && p.type)
       .forEach(p => set.add(p.type));
     return ['Tous', ...set];
   }
@@ -156,7 +190,7 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
   }
 
   get produitsFiltres(): Produit[] {
-    let res = this.produits.filter(p => p.domaine === this.domaineActif);
+    let res = this.produits.filter(p => this.vueDeProduit(p) === this.vueActive);
 
     if (this.categorieActive !== 'Tous') {
       res = res.filter(p => p.categorie === this.categorieActive);
@@ -211,11 +245,11 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
     return res;
   }
 
-  // ── Domaine (onglets Documents / Fournitures scolaires) ──
+  // ── Vue (onglets Documents / Fournitures scolaires / Jeux / Soutenance) ──
 
-  changerDomaine(d: Domaine): void {
-    if (this.domaineActif === d) return;
-    this.domaineActif = d;
+  changerVue(v: Vue): void {
+    if (this.vueActive === v) return;
+    this.vueActive = v;
     this.categorieActive = 'Tous';
     this.sousCategorieActive = '';
     this.sousSousCategorieActive = '';
@@ -270,7 +304,7 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
   // ── Recommandés ──
 
   get produitsRecommandes(): Produit[] {
-    return this.produits.filter(p => p.populaire && p.domaine === this.domaineActif);
+    return this.produits.filter(p => p.populaire && this.vueDeProduit(p) === this.vueActive);
   }
 
   // ── Divers ──
@@ -315,6 +349,25 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
   filtrerSousSousCategorie(ssc: string): void {
     this.sousSousCategorieActive = this.sousSousCategorieActive === ssc ? '' : ssc;
     this.resetPage();
+  }
+
+  /** Efface uniquement la sous-sous-catégorie active — utilisé par le breadcrumb de filtres pour
+   *  remonter d'un niveau sans perdre la sous-catégorie sélectionnée (filtrerSousCategorie()
+   *  la basculerait puisqu'elle est déjà active). */
+  viderSousSousCategorieActive(): void {
+    this.sousSousCategorieActive = '';
+    this.resetPage();
+  }
+
+  /** Libellé lisible du domaine actif, pour le breadcrumb de filtres — mêmes libellés que les
+   *  onglets ub-domaine-tab du template. */
+  get vueActiveLabel(): string {
+    switch (this.vueActive) {
+      case 'documents': return 'Documents';
+      case 'jeux': return 'Jeux';
+      case 'soutenance': return 'Soutenance';
+      default: return 'Fournitures scolaires';
+    }
   }
 
   filtrerType(t: string): void {
@@ -523,7 +576,7 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
   // ── Bannière promo ──
 
   decouvrirPromo(): void {
-    this.changerDomaine('documents');
+    this.changerVue('documents');
     this.filtrerType('Examens');
     document.getElementById('grille-produits')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -562,7 +615,7 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
       const sousSousCategorie = params.get('sousSousCategorie');
       const gratuit = params.get('gratuit');
       const payant = params.get('payant');
-      // Affectation complète (pas changerDomaine()/filtrerCategorie()/filtrerSousCategorie()) :
+      // Affectation complète (pas changerVue()/filtrerCategorie()/filtrerSousCategorie()) :
       // ces méthodes réinitialisent les filtres plus fins, ce qui effacerait un paramètre
       // appliqué juste avant dans cette même chaîne (domaine → catégorie → sous-catégorie →
       // sous-sous-catégorie). Un champ absent de l'URL revient à sa valeur par défaut : un lien
@@ -570,7 +623,16 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
       // résiduel.
       this.recherche = q || '';
       this.triActif = tri || 'defaut';
-      if (domaine === 'documents' || domaine === 'fournitures') this.domaineActif = domaine;
+      // `domaine` (venant des liens du Header) reste 'documents'/'fournitures' — la vue Jeux/
+      // Soutenance/Livre-dans-Documents s'en déduit via `categorie`/`sousCategorie`, même logique
+      // que vueDeProduit() ci-dessus (estProduitCategorieLivre) mais appliquée aux query params
+      // plutôt qu'à un Produit.
+      if (domaine === 'documents' || domaine === 'fournitures') {
+        if (domaine === 'documents' || estCategorieLivre(categorie) || estCategorieLivre(sousCategorie)) this.vueActive = 'documents';
+        else if (estCategorieJeux(categorie)) this.vueActive = 'jeux';
+        else if (estCategorieSoutenance(categorie)) this.vueActive = 'soutenance';
+        else this.vueActive = 'fournitures';
+      }
       this.categorieActive = categorie || 'Tous';
       this.sousCategorieActive = sousCategorie || '';
       this.sousSousCategorieActive = sousSousCategorie || '';

@@ -87,11 +87,17 @@
 
     <!-- ── Onglets de domaine ── -->
     <div class="ub-domaine-tabs ub-anim-fade-up">
-      <button class="ub-domaine-tab" [class.active]="domaineActif === 'documents'" (click)="changerDomaine('documents')">
+      <button class="ub-domaine-tab" [class.active]="vueActive === 'documents'" (click)="changerVue('documents')">
         <span class="ub-domaine-emoji">📚</span> Documents
       </button>
-      <button class="ub-domaine-tab" [class.active]="domaineActif === 'fournitures'" (click)="changerDomaine('fournitures')">
+      <button class="ub-domaine-tab" [class.active]="vueActive === 'fournitures'" (click)="changerVue('fournitures')">
         <span class="ub-domaine-emoji">🎒</span> Fournitures scolaires
+      </button>
+      <button class="ub-domaine-tab" [class.active]="vueActive === 'jeux'" (click)="changerVue('jeux')">
+        <span class="ub-domaine-emoji">🎲</span> Jeux
+      </button>
+      <button class="ub-domaine-tab" [class.active]="vueActive === 'soutenance'" (click)="changerVue('soutenance')">
+        <span class="ub-domaine-emoji">🎓</span> Soutenance
       </button>
     </div>
 
@@ -114,6 +120,36 @@
 
       <!-- ─── CATALOGUE ────────────────────────────────────────── -->
       <main class="produits-col">
+
+        <!-- Breadcrumb de filtre catégorie/sous-catégorie/sous-sous-catégorie actif — visible
+             quand on arrive via un lien du mega-menu Documents du header (ou via les filtres de
+             la barre latérale) ; chaque segment ramène à ce niveau, le bouton croix réinitialise. -->
+        <div class="ub-filtre-breadcrumb ub-anim-fade-up" *ngIf="categorieActive !== 'Tous'">
+          <i class="fa-solid fa-location-dot ub-filtre-breadcrumb-icon"></i>
+
+          <button type="button" class="ub-filtre-crumb" (click)="filtrerCategorie('Tous')">{{ vueActiveLabel }}</button>
+
+          <i class="fa-solid fa-chevron-right ub-filtre-crumb-sep"></i>
+          <button type="button" class="ub-filtre-crumb"
+                  [class.ub-filtre-crumb--current]="!sousCategorieActive"
+                  (click)="filtrerCategorie(categorieActive)">{{ formatLabel(categorieActive) }}</button>
+
+          <ng-container *ngIf="sousCategorieActive">
+            <i class="fa-solid fa-chevron-right ub-filtre-crumb-sep"></i>
+            <button type="button" class="ub-filtre-crumb"
+                    [class.ub-filtre-crumb--current]="!sousSousCategorieActive"
+                    (click)="viderSousSousCategorieActive()">{{ formatLabel(sousCategorieActive) }}</button>
+          </ng-container>
+
+          <ng-container *ngIf="sousSousCategorieActive">
+            <i class="fa-solid fa-chevron-right ub-filtre-crumb-sep"></i>
+            <span class="ub-filtre-crumb ub-filtre-crumb--current">{{ formatLabel(sousSousCategorieActive) }}</span>
+          </ng-container>
+
+          <button type="button" class="ub-filtre-breadcrumb-clear" (click)="filtrerCategorie('Tous')" aria-label="Effacer le filtre de catégorie">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
 
         <!-- Chips type de produit -->
         <div class="d-flex flex-wrap gap-2 mb-4">
@@ -400,8 +436,8 @@
     </button>
   </div>
 
-  <!-- Catégories (les deux domaines — filtrerCategorie/categories filtrent déjà par
-       domaineActif, seule cette condition les cachait pour les Fournitures scolaires) -->
+  <!-- Catégories (toutes les vues — filtrerCategorie/categories filtrent déjà par
+       vueActive, seule cette condition les cachait pour les Fournitures scolaires) -->
   <details class="filtre-accordion" open *ngIf="categories.length > 0">
     <summary class="filtre-accordion-titre">
       Catégorie <i class="fa-solid fa-chevron-down filtre-accordion-chevron"></i>
@@ -445,7 +481,7 @@
   <!-- Type de produit (dynamique selon le domaine actif) -->
   <details class="filtre-accordion" open>
     <summary class="filtre-accordion-titre">
-      {{ domaineActif === 'documents' ? 'Type de document' : 'Type de fourniture' }}
+      {{ vueActive === 'documents' ? 'Type de document' : 'Type de fourniture' }}
       <i class="fa-solid fa-chevron-down filtre-accordion-chevron"></i>
     </summary>
     <div class="filtre-accordion-body">
@@ -510,7 +546,7 @@
       <label class="d-flex align-items-center gap-3 py-2" style="cursor:pointer;">
         <input type="checkbox" class="ub-check" [(ngModel)]="filtreGratuit" name="filtreGratuit" (ngModelChange)="onFiltreGratuitChange()">
         <span class="small" style="color:#3C444E; font-weight:500;">
-          {{ domaineActif === 'documents' ? 'Documents gratuits uniquement' : 'Articles gratuits uniquement' }}
+          {{ vueActive === 'documents' ? 'Documents gratuits uniquement' : 'Articles gratuits uniquement' }}
         </span>
       </label>
     </div>

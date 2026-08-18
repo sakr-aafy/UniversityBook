@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CartService } from '../services/cart.service';
 import { CompareService } from '../services/compare.service';
-import { CatalogueService, Domaine, Produit } from '../services/catalogue.service';
+import { CatalogueService, Domaine, Produit, estCategorieJeux, estCategorieSoutenance } from '../services/catalogue.service';
 
 interface HeroGalleryImage {
   /** Emplacement attendu pour une future photo grand format. */
@@ -30,6 +30,13 @@ interface CategorieSection {
   ctaLabel: string;
   lien: string;
   carouselTitre: string;
+  /** queryParams du lien "carte" / "Voir tout" — remplace le simple {domaine: key} par défaut pour
+   *  les sous-sections (Documents Payants/Gratuits, Soutenance, Jeux), voir header.component.html
+   *  pour les mêmes paramètres attendus par boutique.component.ts. */
+  queryParams: Record<string, string>;
+  /** Filtre additionnel appliqué en plus de `domaine === key` — permet à plusieurs sections de
+   *  puiser dans le même domaine (ex: Documents Payants/Gratuits partagent domaine='documents'). */
+  filtre?: (p: Produit) => boolean;
 }
 
 interface Avantage {
@@ -97,7 +104,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       lottiePath: 'assets/images/Back.json',
       ctaLabel: 'Voir la boutique',
       lien: '/boutique',
-      carouselTitre: 'Nos meilleures fournitures'
+      carouselTitre: 'Nos meilleures fournitures',
+      queryParams: { domaine: 'fournitures' }
     },
     {
       key: 'documents',
@@ -109,17 +117,75 @@ export class HomeComponent implements OnInit, OnDestroy {
       lottiePath: 'assets/images/Document.json',
       ctaLabel: 'Voir les documents',
       lien: '/boutique',
-      carouselTitre: 'Documents les plus populaires'
+      carouselTitre: 'Documents les plus populaires',
+      queryParams: { domaine: 'documents' }
+    },
+    {
+      key: 'documents',
+      titre: 'Documents payants',
+      description: 'Cours et annales premium rédigés par des enseignants et étudiants confirmés.',
+      icone: 'fa-file-invoice',
+      image: 'assets/images/d.jpg',
+      gradient: 'linear-gradient(160deg, #B45309 0%, #92400E 50%, #78350F 100%)',
+      lottiePath: 'assets/images/Document.json',
+      ctaLabel: 'Voir les documents payants',
+      lien: '/boutique',
+      carouselTitre: 'Documents payants les plus demandés',
+      queryParams: { domaine: 'documents', payant: '1' },
+      filtre: p => !p.gratuit
+    },
+    {
+      key: 'documents',
+      titre: 'Documents gratuits',
+      description: 'Une sélection de documents numériques téléchargeables gratuitement, sans engagement.',
+      icone: 'fa-file',
+      image: 'assets/images/d.jpg',
+      gradient: 'linear-gradient(160deg, #16A34A 0%, #15803D 50%, #14532D 100%)',
+      lottiePath: 'assets/images/Document.json',
+      ctaLabel: 'Voir les documents gratuits',
+      lien: '/boutique',
+      carouselTitre: 'Documents gratuits à télécharger',
+      queryParams: { domaine: 'documents', gratuit: '1' },
+      filtre: p => !!p.gratuit
+    },
+    {
+      key: 'fournitures',
+      titre: 'Soutenance',
+      description: 'Tout le nécessaire pour réussir votre soutenance : reliure, clé USB, tenue et accessoires.',
+      icone: 'fa-graduation-cap',
+      image: 'assets/images/scolair.jpg',
+      gradient: 'linear-gradient(160deg, #0EA5E9 0%, #0369A1 50%, #0C4A6E 100%)',
+      lottiePath: 'assets/images/Back.json',
+      ctaLabel: 'Voir la soutenance',
+      lien: '/boutique',
+      carouselTitre: 'Essentiels pour votre soutenance',
+      queryParams: { domaine: 'fournitures', categorie: 'Soutenance' },
+      filtre: p => estCategorieSoutenance(p.categorie)
+    },
+    {
+      key: 'fournitures',
+      titre: 'Jeux',
+      description: 'Jeux éducatifs et de société pour apprendre autrement, entre pauses et révisions.',
+      icone: 'fa-dice',
+      image: 'assets/images/scolair.jpg',
+      gradient: 'linear-gradient(160deg, #EC4899 0%, #BE185D 50%, #831843 100%)',
+      lottiePath: 'assets/images/Back.json',
+      ctaLabel: 'Voir les jeux',
+      lien: '/boutique',
+      carouselTitre: 'Jeux les plus populaires',
+      queryParams: { domaine: 'fournitures', categorie: 'Jeux' },
+      filtre: p => estCategorieJeux(p.categorie)
     }
   ];
 
   /** Produits réels affichés dans le carrousel d'une section (remplace les listes codées en dur
    * précédentes, ids 101-206 factices non reliés au catalogue) — les 6 premiers du domaine
-   * correspondant, nouveautés/best-sellers d'abord, alimentés par CatalogueService (donc par tout
-   * produit caisse publié via "Ajouter sur Site Internet", voir syncProduitSite.js côté backend). */
+   * correspondant (et du filtre additionnel de la section s'il y en a un, voir CategorieSection),
+   * nouveautés/best-sellers d'abord, alimentés par CatalogueService (donc par tout produit caisse
+   * publié via "Ajouter sur Site Internet", voir syncProduitSite.js côté backend). */
   produitsDe(cat: CategorieSection): Produit[] {
     return this.catalogueService.produits
-      .filter(p => p.domaine === cat.key)
+      .filter(p => p.domaine === cat.key && (!cat.filtre || cat.filtre(p)))
       .sort((a, b) => (+!!b.populaire - +!!a.populaire) || (+!!b.nouveaute - +!!a.nouveaute))
       .slice(0, 6);
   }
@@ -211,8 +277,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
-  ouvrirCategorie(domaine: Domaine): void {
-    this.router.navigate(['/boutique'], { queryParams: { domaine } });
+  ouvrirCategorie(queryParams: Record<string, string>): void {
+    this.router.navigate(['/boutique'], { queryParams });
   }
 
   estDansComparateur(id: number): boolean {

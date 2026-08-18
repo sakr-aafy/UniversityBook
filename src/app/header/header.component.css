@@ -31,98 +31,197 @@
   width: 100%;
 }
 
-/* ── Dropdowns ── */
-.dropdown-menu {
+/* ── Boutique : mega-menu au survol ── */
+.ub-boutique-item {
+  padding-bottom: 2px;
+}
+.ub-boutique-menu {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 0;
+  min-width: 250px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 24px 56px -20px rgba(20,24,32,.28);
+  border: 1px solid #F0F1F4;
+  padding: 8px;
+  z-index: 1030;
   opacity: 0;
-  transform: translateY(-6px);
   visibility: hidden;
-  transition: opacity .18s ease, transform .18s ease, visibility .18s;
-  display: block !important;
-  pointer-events: none;
+  transform: translateY(-8px) scale(.98);
+  transition: opacity .18s ease, transform .18s cubic-bezier(.16,.84,.44,1), visibility .18s;
 }
-.dropdown-menu.show {
+.ub-boutique-item:hover .ub-boutique-menu,
+.ub-boutique-item:focus-within .ub-boutique-menu {
   opacity: 1;
-  transform: translateY(0);
   visibility: visible;
-  pointer-events: auto;
+  transform: translateY(0) scale(1);
 }
-.dropdown-item {
+/* Pont invisible au-dessus du menu — sans lui, traverser les 12px d'écart en diagonale sort du
+   survol de .ub-boutique-item et referme le mega-menu avant d'y arriver. */
+.ub-boutique-item::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 12px;
+}
+
+.ub-boutique-menu-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #3C444E;
+  text-decoration: none;
   transition: background .15s ease, color .15s ease, padding-left .15s ease;
 }
-.dropdown-item:hover {
+.ub-boutique-menu-item i {
+  width: 16px;
+  color: var(--accent);
+}
+.ub-boutique-menu-item:hover {
   background: #FDF2F3;
   color: var(--accent);
-  padding-left: 18px;
+  padding-left: 16px;
 }
-
-/* ── Mega-menu Boutique (colonnes Documents / Fournitures, catégories dynamiques) ── */
-.dropdown-menu.ub-mega-menu {
-  display: flex !important;
-  gap: 0;
-  min-width: 520px;
-  align-items: flex-start;
-  padding: 18px 8px !important;
-  border: 1px solid rgba(27,36,48,.06) !important;
+.ub-boutique-menu-item.ub-has-flyout {
+  justify-content: space-between;
 }
-.ub-mega-col {
-  flex: 1 1 0;
-  min-width: 230px;
-  list-style: none;
-  padding: 0 14px;
+.ub-boutique-menu-item.ub-has-flyout span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
-.ub-mega-col + .ub-mega-col {
-  border-left: 1px solid #F0EDEA;
-}
-.ub-mega-col-titre {
-  font-size: 11.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  color: #9AA0A8;
-  padding: 2px 10px 12px;
-  margin-bottom: 8px;
-  border-bottom: 1px solid #F0EDEA;
+.ub-flyout-caret {
+  font-size: 10px;
+  color: #AEB6BF;
   transition: color .15s ease;
 }
-a.ub-mega-col-titre:hover {
+.ub-boutique-menu-item:hover .ub-flyout-caret {
   color: var(--accent);
 }
-.ub-mega-col-titre i {
-  display: inline-flex;
+
+/* ── Sous-menu en cascade (ex: Documents > Catégorie > Sous-Catégorie > Sous-Sous-Catégorie sur
+   site) — mêmes règles de survol à chaque niveau, la profondeur est purement structurelle. ── */
+.ub-flyout-item {
+  position: relative;
+}
+.ub-flyout-panel {
+  position: absolute;
+  top: -8px;
+  left: 100%;
+  margin-left: 8px;
+  min-width: 220px;
+  max-width: 280px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 24px 56px -20px rgba(20,24,32,.28);
+  border: 1px solid #F0F1F4;
+  padding: 8px;
+  z-index: 1031;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-8px);
+  transition: opacity .18s ease, transform .18s cubic-bezier(.16,.84,.44,1), visibility .18s;
+}
+/* Défilement réservé aux panneaux "feuille" (aucun sous-flyout en dessous) — un panneau qui
+   contient lui-même des .ub-flyout-item ne doit jamais recevoir overflow: ça rogne le flyout
+   imbriqué qui doit apparaître à côté, hors des bords de ce panneau. */
+.ub-flyout-panel--scroll {
+  max-height: min(360px, calc(100vh - 160px));
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+/* Même principe de pont que .ub-boutique-item::after, appliqué horizontalement cette fois — un
+   seul jeu de règles couvre tous les niveaux de profondeur (Documents > Droit > examen…). */
+.ub-flyout-item::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  width: 8px;
+}
+.ub-flyout-item:hover > .ub-flyout-panel,
+.ub-flyout-item:focus-within > .ub-flyout-panel {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+}
+
+/* ── Boutique : accordéon mobile (équivalent tactile du mega-menu ci-dessus, pas de survol
+   possible au tactile — chaque niveau se déplie/replie au tap) ── */
+.ub-mobile-row {
+  display: flex;
+  align-items: stretch;
+}
+/* En-têtes de groupe (Boutique/Documents/Fournitures scolaires) : toute la ligne est un <button>
+   qui replie/déplie — reset des styles natifs de bouton pour qu'il se comporte visuellement comme
+   .ub-mobile-row-link + .ub-mobile-row-toggle réunis. */
+button.ub-mobile-row {
+  width: 100%;
+  border: none;
+  background: none;
+  padding: 0;
+  text-align: left;
+}
+.ub-mobile-row-link {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  padding: 12px 0;
+  font-weight: 600;
+  color: #1B2430;
+  text-decoration: none;
+}
+.ub-mobile-row-link:active {
+  color: var(--accent);
+}
+.ub-mobile-row-toggle {
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 22px; height: 22px;
-  border-radius: 7px;
-  background: #FDF2F3;
-  color: var(--accent);
-  font-size: 11px;
-}
-
-/* Flyouts imbriqués (sous-catégorie / sous-sous-catégorie) : décalés du parent plutôt que
-   collés à left:100%, pour ne pas chevaucher visuellement la colonne suivante du mega-menu. */
-.ub-mega-col .dropdown-submenu > .dropdown-menu {
-  left: calc(100% + 10px) !important;
-  border: 1px solid rgba(27,36,48,.06) !important;
-  padding: 8px !important;
-}
-.ub-mega-col .dropdown-item {
-  border-radius: 9px;
-}
-.ub-mega-col .dropdown-item:hover {
-  padding-left: 14px;
-}
-
-/* ── Drawer mobile : mêmes en-têtes de section que le mega-menu desktop ── */
-.ub-mobile-domaine-titre {
-  font-size: 11.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .05em;
+  width: 44px;
+  border: none;
+  background: none;
   color: #9AA0A8;
-  padding: 10px 0 6px;
+  flex-shrink: 0;
 }
-a.ub-mobile-domaine-titre:active {
-  color: var(--accent);
+.ub-mobile-row-toggle i {
+  transition: transform .2s ease;
+}
+.ub-mobile-row-toggle i.ub-rotated {
+  transform: rotate(180deg);
+}
+.ub-mobile-subaccordion {
+  border-left: 2px solid #F0F1F4;
+  margin-left: 4px;
+}
+/* Chaque modificateur d'indentation s'applique soit au conteneur .ub-mobile-row (ligne avec bouton
+   déplier), soit directement au lien .ub-mobile-row-link (ligne feuille sans enfants) — d'où les
+   deux sélecteurs (self + descendant) à chaque niveau. */
+.ub-mobile-row--indent1 { padding-left: 12px; }
+.ub-mobile-row--indent2 { padding-left: 24px; }
+.ub-mobile-row--indent3 { padding-left: 36px; }
+.ub-mobile-row--indent4 { padding-left: 48px; }
+.ub-mobile-row--indent1.ub-mobile-row-link, .ub-mobile-row--indent1 .ub-mobile-row-link,
+.ub-mobile-row--indent2.ub-mobile-row-link, .ub-mobile-row--indent2 .ub-mobile-row-link,
+.ub-mobile-row--indent3.ub-mobile-row-link, .ub-mobile-row--indent3 .ub-mobile-row-link {
+  font-weight: 600;
+  font-size: 14.5px;
+  color: #3C444E;
+}
+.ub-mobile-row--indent4.ub-mobile-row-link {
+  font-weight: 500;
+  font-size: 13.5px;
+  color: #6B7480;
 }
 
 /* ── Panier ── */

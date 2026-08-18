@@ -39,6 +39,14 @@ export interface AdminUserUpdatePayload {
   telephoneSecondaire?: string;
 }
 
+export interface AdminCreatePayload {
+  nom: string;
+  prenom?: string;
+  email: string;
+  telephone?: string;
+  password: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AdminUsersService {
   private readonly apiUrl = `${environment.apiUrl}/admin/utilisateurs`;
@@ -68,5 +76,12 @@ export class AdminUsersService {
 
   remove(id: string): Observable<{ message: string; user: AdminUser }> {
     return this.http.delete<{ message: string; user: AdminUser }>(`${this.apiUrl}/${id}`);
+  }
+
+  /** Crée un administrateur nominatif (profil complet, contrairement au compte système .env —
+   *  voir admin-profil.component.html) via POST /api/admin/create. Route distincte de `apiUrl`
+   *  ci-dessus (montée sous /api/admin, pas /api/admin/utilisateurs). */
+  createAdmin(payload: AdminCreatePayload): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${environment.apiUrl}/admin/create`, payload);
   }
 }

@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AdminUsersService, AdminUser, AdminUserDetail } from '../../services/admin-users.service';
+
+const REGEX_MOT_DE_PASSE_FORT = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 import { photoUrl } from '../../shared/photo-url.util';
 
@@ -35,6 +37,21 @@ export class UtilisateursComponent implements OnInit {
   formTelephoneSecondaire: string = '';
   enregistrement: boolean = false;
   erreurEdition: string = '';
+
+  // ── Dialogue : nouvel administrateur ──
+  dialogCreationOuvert: boolean = false;
+  creationNom: string = '';
+  creationPrenom: string = '';
+  creationEmail: string = '';
+  creationTelephone: string = '';
+  creationMotDePasse: string = '';
+  creationShowMotDePasse: boolean = false;
+  creationEnCours: boolean = false;
+  erreurCreation: string = '';
+
+  get creationMotDePasseFort(): boolean {
+    return REGEX_MOT_DE_PASSE_FORT.test(this.creationMotDePasse);
+  }
 
   constructor(
     private adminUsersService: AdminUsersService,
@@ -166,6 +183,65 @@ export class UtilisateursComponent implements OnInit {
         error: (err: HttpErrorResponse) => {
           this.enregistrement = false;
           this.erreurEdition = err.error?.message || 'Erreur lors de la mise à jour.';
+        }
+      });
+  }
+
+  // ══════════════════ Nouvel administrateur ══════════════════
+  // Compte nominatif (profil, adresse, mot de passe modifiables) — distinct du compte système
+  // .env, qui n'a aucun profil éditable (voir admin-profil.component.html).
+
+  ouvrirCreation(): void {
+    this.creationNom = '';
+    this.creationPrenom = '';
+    this.creationEmail = '';
+    this.creationTelephone = '';
+    this.creationMotDePasse = '';
+    this.creationShowMotDePasse = false;
+    this.erreurCreation = '';
+    this.dialogCreationOuvert = true;
+  }
+
+  fermerCreation(): void {
+    this.dialogCreationOuvert = false;
+  }
+
+  toggleCreationMotDePasse(): void {
+    this.creationShowMotDePasse = !this.creationShowMotDePasse;
+  }
+
+  creerAdmin(): void {
+    this.erreurCreation = '';
+
+    if (!this.creationNom.trim() || !this.creationEmail.trim()) {
+      this.erreurCreation = "Le nom et l'email sont obligatoires.";
+      return;
+    }
+    if (!this.creationMotDePasseFort) {
+      this.erreurCreation = 'Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.';
+      return;
+    }
+
+    this.creationEnCours = true;
+    this.adminUsersService
+      .createAdmin({
+        nom: this.creationNom.trim(),
+        prenom: this.creationPrenom.trim(),
+        email: this.creationEmail.trim(),
+        telephone: this.creationTelephone.trim(),
+        password: this.creationMotDePasse
+      })
+      .subscribe({
+        next: () => {
+          this.creationEnCours = false;
+          this.dialogCreationOuvert = false;
+          this.succes = `Administrateur ${this.creationPrenom} ${this.creationNom} créé avec succès.`;
+          setTimeout(() => (this.succes = ''), 5000);
+          this.charger();
+        },
+        error: (err: HttpErrorResponse) => {
+          this.creationEnCours = false;
+          this.erreurCreation = err.error?.message || "Erreur lors de la création de l'administrateur.";
         }
       });
   }

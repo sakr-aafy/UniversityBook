@@ -142,6 +142,38 @@ const ICONE_DEFAUT: Record<Domaine, { icone: string; iconeBg: string }> = {
   fournitures: { icone: 'fa-box', iconeBg: '#F5F3FF' }
 };
 
+/**
+ * Détection des catégories "Fournitures" traitées comme des sections à part (Livre → Documents
+ * numériques, Jeux, Soutenance — voir header.component.ts et boutique.component.ts). `categorie`
+ * est un texte libre saisi par l'admin en caisse (CategorieCaisse/CategorieSite : aucun enum, pas
+ * de valeur par défaut), donc jamais garanti d'être exactement "Livre"/"Jeux"/"Soutenance" — une
+ * correspondance par sous-chaîne (insensible à la casse/espaces) évite qu'une saisie comme
+ * "Livres", "Livre scolaire" ou "LIVRE " passe à travers une égalité stricte et atterrisse par
+ * erreur dans Fournitures scolaires. Exportées ici (plutôt que dupliquées dans les deux
+ * composants) pour que le Header et la Boutique classent toujours un même produit de la même
+ * façon.
+ */
+export function estCategorieLivre(categorie: string | undefined | null): boolean {
+  return (categorie || '').trim().toLowerCase().includes('livre');
+}
+
+/**
+ * Variante "Livre" appliquée à un produit entier (catégorie OU sous-catégorie) : un produit
+ * catégorisé "Droit" en caisse mais dont la sous-catégorie est "Livre concours" (ouvrage papier
+ * plutôt que fourniture) doit lui aussi rejoindre Documents numériques, même si sa catégorie
+ * parente ne contient pas "livre". Les autres sous-catégories de "Droit" (examen, code
+ * juridique…) restent dans Fournitures scolaires.
+ */
+export function estProduitCategorieLivre(p: { categorie?: string; sousCategorie?: string }): boolean {
+  return estCategorieLivre(p.categorie) || estCategorieLivre(p.sousCategorie);
+}
+export function estCategorieJeux(categorie: string | undefined | null): boolean {
+  return (categorie || '').trim().toLowerCase().includes('jeu');
+}
+export function estCategorieSoutenance(categorie: string | undefined | null): boolean {
+  return (categorie || '').trim().toLowerCase().includes('soutenance');
+}
+
 @Injectable({ providedIn: 'root' })
 export class CatalogueService {
 

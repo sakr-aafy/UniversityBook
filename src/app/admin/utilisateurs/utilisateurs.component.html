@@ -9,7 +9,11 @@
     </div>
     <button class="btn btn-outline-dark-ub btn-sm" (click)="rechercher()">Rechercher</button>
 
-    <label class="d-flex align-items-center gap-2 ms-auto small fw-semibold" style="cursor:pointer;">
+    <button class="btn btn-accent btn-sm ms-auto" (click)="ouvrirCreation()">
+      <i class="fa-solid fa-user-shield me-2"></i>Nouvel administrateur
+    </button>
+
+    <label class="d-flex align-items-center gap-2 small fw-semibold" style="cursor:pointer;">
       <input type="checkbox" class="ub-check" [checked]="avecSupprimes" (change)="basculerAvecSupprimes()">
       Afficher aussi les supprimés
     </label>
@@ -170,6 +174,69 @@
           <button type="submit" class="btn btn-accent flex-grow-1 ub-ripple" [disabled]="enregistrement">
             <span *ngIf="!enregistrement"><i class="fa-solid fa-floppy-disk me-2"></i>Enregistrer</span>
             <span *ngIf="enregistrement"><i class="fa-solid fa-spinner fa-spin me-2"></i>Enregistrement...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══════════════ Dialogue : Nouvel administrateur ══════════════ -->
+  <div class="ub-overlay" *ngIf="dialogCreationOuvert" (click)="fermerCreation()">
+    <div class="ub-dialog" (click)="$event.stopPropagation()">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <h3 class="fw-bold mb-0" style="font-size:18px;">Nouvel administrateur</h3>
+        <button class="ub-dialog-close" (click)="fermerCreation()" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <p class="text-secondary small">
+        Compte nominatif avec profil complet (photo, adresse, mot de passe modifiables) — à la différence
+        du compte système du fichier <code>.env</code>.
+      </p>
+
+      <div class="alert alert-danger py-2 px-3" *ngIf="erreurCreation">{{ erreurCreation }}</div>
+
+      <form (ngSubmit)="creerAdmin()">
+        <div class="row g-3">
+          <div class="col-12 col-md-6">
+            <label class="form-label ub-label">Nom *</label>
+            <input type="text" class="form-control ub-input" [(ngModel)]="creationNom" name="creationNom" required>
+          </div>
+          <div class="col-12 col-md-6">
+            <label class="form-label ub-label">Prénom</label>
+            <input type="text" class="form-control ub-input" [(ngModel)]="creationPrenom" name="creationPrenom">
+          </div>
+          <div class="col-12">
+            <label class="form-label ub-label">Email *</label>
+            <input type="email" class="form-control ub-input" [(ngModel)]="creationEmail" name="creationEmail" required>
+          </div>
+          <div class="col-12">
+            <label class="form-label ub-label">Téléphone</label>
+            <input type="tel" class="form-control ub-input" [(ngModel)]="creationTelephone" name="creationTelephone">
+          </div>
+          <div class="col-12">
+            <label class="form-label ub-label">Mot de passe *</label>
+            <div class="ub-input-eye-wrap">
+              <input [type]="creationShowMotDePasse ? 'text' : 'password'" class="form-control ub-input"
+                     [(ngModel)]="creationMotDePasse" name="creationMotDePasse">
+              <button type="button" class="ub-eye-btn" (click)="toggleCreationMotDePasse()">
+                <i class="fa-solid" [class.fa-eye]="!creationShowMotDePasse" [class.fa-eye-slash]="creationShowMotDePasse"></i>
+              </button>
+            </div>
+            <div class="ub-strength-meter" *ngIf="creationMotDePasse">
+              <span class="ub-strength-bar" [class.ub-strength-ok]="creationMotDePasseFort"></span>
+            </div>
+            <p class="small mt-1 mb-0" [style.color]="creationMotDePasseFort ? '#16A34A' : '#9AA0A8'" *ngIf="creationMotDePasse">
+              <i class="fa-solid" [class.fa-circle-check]="creationMotDePasseFort" [class.fa-circle-xmark]="!creationMotDePasseFort"></i>
+              8 caractères min., majuscule, minuscule, chiffre et caractère spécial
+            </p>
+          </div>
+        </div>
+
+        <div class="d-flex gap-2 mt-4">
+          <button type="button" class="btn btn-outline-dark-ub flex-grow-1" (click)="fermerCreation()">Annuler</button>
+          <button type="submit" class="btn btn-accent flex-grow-1 ub-ripple" [disabled]="creationEnCours">
+            <span *ngIf="!creationEnCours"><i class="fa-solid fa-user-shield me-2"></i>Créer l'administrateur</span>
+            <span *ngIf="creationEnCours"><i class="fa-solid fa-spinner fa-spin me-2"></i>Création...</span>
           </button>
         </div>
       </form>

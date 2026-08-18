@@ -1,3 +1,41 @@
+/* ── Champ mot de passe (dialogue Nouvel administrateur) ── */
+.ub-input-eye-wrap {
+  position: relative;
+}
+.ub-input-eye-wrap .ub-input {
+  padding-right: 40px;
+  width: 100%;
+}
+.ub-eye-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  color: #9AA0A8;
+  padding: 4px;
+}
+.ub-strength-meter {
+  height: 4px;
+  border-radius: 4px;
+  background: #F0F1F4;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.ub-strength-bar {
+  display: block;
+  height: 100%;
+  width: 35%;
+  background: #EF4444;
+  border-radius: 4px;
+  transition: width .3s ease, background .3s ease;
+}
+.ub-strength-bar.ub-strength-ok {
+  width: 100%;
+  background: #22C55E;
+}
+
 .ub-badge {
   background: #E9F9EF;
   color: #22C55E;

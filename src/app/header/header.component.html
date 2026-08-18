@@ -81,103 +81,94 @@
         Accueil
       </a>
 
-      <!-- Boutique mega-menu : catégories/sous-catégories réelles (Category/SousCategorie),
-           aucun contenu codé en dur — une catégorie ajoutée en admin apparaît ici au prochain
-           chargement du catalogue, sans modification de code (voir CatalogueService). -->
-      <div class="dropdown" (mouseenter)="openDropdown('boutique')" (mouseleave)="closeDropdowns()">
-        <a class="nav-link fw-semibold text-secondary d-flex align-items-center gap-1 py-2" routerLink="/boutique"
-           aria-haspopup="true" [attr.aria-expanded]="openMenu==='boutique'">
+      <!-- Boutique : lien de navigation + mega-menu au survol (souris) listant les 4 catégories
+           de la page /boutique (Documents/Soutenance/Fournitures scolaires/Jeux). -->
+      <div class="ub-boutique-item position-relative">
+        <a routerLink="/boutique" routerLinkActive="ub-active"
+           class="nav-link fw-semibold text-secondary py-2 d-flex align-items-center gap-1">
           Boutique
-          <i class="fa-solid fa-chevron-down"
-             [style.transform]="openMenu==='boutique' ? 'rotate(180deg)' : 'rotate(0deg)'"
-             style="transition:transform .2s;font-size:11px;"></i>
+          <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
         </a>
-        <ul class="dropdown-menu ub-mega-menu border-0 shadow-lg p-3 mt-1"
-            style="border-top:3px solid var(--accent)!important;border-radius:14px;"
-            [class.show]="openMenu==='boutique'">
 
-          <li class="ub-mega-col" *ngIf="categoriesDocuments.length > 0">
-            <a class="ub-mega-col-titre d-block text-decoration-none"
-               [routerLink]="['/boutique']" [queryParams]="{domaine:'documents'}"
-               (click)="fermerMegaMenu()">
-              <i class="fa-solid fa-book me-2"></i>Documents numériques
+        <div class="ub-boutique-menu">
+
+          <!-- Documents : sous-menu au survol reprenant la taxonomie "sur site" gérée côté
+               caisse (Catégorie/Sous-Catégorie/Sous-Sous-Catégorie sur site, voir
+               CategoriesSiteService) — 3 niveaux en cascade, chaque niveau n'affiche son flyout
+               que s'il a des enfants. -->
+          <div class="ub-flyout-item">
+            <a routerLink="/boutique" [queryParams]="{domaine:'documents'}"
+               class="ub-boutique-menu-item" [class.ub-has-flyout]="categoriesSite.length">
+              <span><i class="fa-solid fa-book"></i>Documents</span>
+              <i class="fa-solid fa-chevron-right ub-flyout-caret" *ngIf="categoriesSite.length"></i>
             </a>
-            <ul class="list-unstyled mb-0">
-              <li *ngFor="let cat of categoriesDocuments; trackBy: trackByNom" class="dropdown-submenu position-relative"
-                  (mouseenter)="openSub('doc:' + cat.nom)" (mouseleave)="closeSub()">
-                <a class="dropdown-item rounded-3 d-flex justify-content-between align-items-center"
-                   style="font-size:14.5px;font-weight:500;"
-                   [style.color]="boutiqueSub===('doc:' + cat.nom) ? 'var(--accent)' : 'inherit'"
-                   [routerLink]="['/boutique']" [queryParams]="{domaine:'documents', categorie: cat.nom}"
-                   (click)="fermerMegaMenu()">
-                  {{ cat.nom }}
-                  <i class="fa-solid fa-chevron-right text-secondary ms-2" style="font-size:11px" *ngIf="cat.sousCategories.length > 0"></i>
-                </a>
-                <ul class="dropdown-menu border-0 shadow-lg p-2" *ngIf="cat.sousCategories.length > 0"
-                    style="top:-11px;left:100%;border-top:3px solid var(--accent)!important;border-radius:12px;min-width:230px;"
-                    [class.show]="boutiqueSub===('doc:' + cat.nom)">
-                  <li *ngFor="let sc of cat.sousCategories; trackBy: trackByNom">
-                    <a class="dropdown-item rounded-3" style="font-size:14.5px"
-                       [routerLink]="['/boutique']" [queryParams]="{domaine:'documents', categorie: cat.nom, sousCategorie: sc.nom}"
-                       (click)="fermerMegaMenu()">
-                      {{ sc.nom }}
-                    </a>
-                  </li>
-                </ul>
-              </li>
-            </ul>
-          </li>
 
-          <li class="ub-mega-col" *ngIf="categoriesFournituresArbre.length > 0">
-            <a class="ub-mega-col-titre d-block text-decoration-none"
-               [routerLink]="['/boutique']" [queryParams]="{domaine:'fournitures'}"
-               (click)="fermerMegaMenu()">
-              <i class="fa-solid fa-box me-2"></i>Fournitures scolaires
+            <div class="ub-flyout-panel" *ngIf="categoriesSite.length">
+              <div class="ub-flyout-item" *ngFor="let cat of categoriesSite">
+                <a routerLink="/boutique" [queryParams]="{domaine:'documents', categorie: cat.nom}"
+                   class="ub-boutique-menu-item" [class.ub-has-flyout]="cat.sousCategories.length">
+                  <span>{{ formatLabel(cat.nom) }}</span>
+                  <i class="fa-solid fa-chevron-right ub-flyout-caret" *ngIf="cat.sousCategories.length"></i>
+                </a>
+
+                <div class="ub-flyout-panel" *ngIf="cat.sousCategories.length">
+                  <div class="ub-flyout-item" *ngFor="let sc of cat.sousCategories">
+                    <a routerLink="/boutique" [queryParams]="{domaine:'documents', categorie: cat.nom, sousCategorie: sc.nom}"
+                       class="ub-boutique-menu-item" [class.ub-has-flyout]="sc.sousSousCategories.length">
+                      <span>{{ formatLabel(sc.nom) }}</span>
+                      <i class="fa-solid fa-chevron-right ub-flyout-caret" *ngIf="sc.sousSousCategories.length"></i>
+                    </a>
+
+                    <div class="ub-flyout-panel ub-flyout-panel--scroll" *ngIf="sc.sousSousCategories.length">
+                      <a *ngFor="let ssc of sc.sousSousCategories"
+                         routerLink="/boutique"
+                         [queryParams]="{domaine:'documents', categorie: cat.nom, sousCategorie: sc.nom, sousSousCategorie: ssc}"
+                         class="ub-boutique-menu-item">
+                        {{ formatLabel(ssc) }}
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie:'Soutenance'}" class="ub-boutique-menu-item">
+            <i class="fa-solid fa-graduation-cap"></i>Soutenance
+          </a>
+          <!-- Fournitures scolaires : sous-menu au survol reprenant la Catégorie/Sous-Catégorie du
+               formulaire produit caisse, limitée aux produits réellement ajoutés au site (voir
+               CategoriesCaisseService) — 2 niveaux. -->
+          <div class="ub-flyout-item">
+            <a routerLink="/boutique" [queryParams]="{domaine:'fournitures'}"
+               class="ub-boutique-menu-item" [class.ub-has-flyout]="categoriesCaisse.length">
+              <span><i class="fa-solid fa-pen-ruler"></i>Fournitures scolaires</span>
+              <i class="fa-solid fa-chevron-right ub-flyout-caret" *ngIf="categoriesCaisse.length"></i>
             </a>
-            <ul class="list-unstyled mb-0">
-              <li *ngFor="let cat of categoriesFournituresArbre; trackBy: trackByNom" class="dropdown-submenu position-relative"
-                  (mouseenter)="openSub(cat.nom)" (mouseleave)="closeSub()">
-                <a class="dropdown-item rounded-3 d-flex justify-content-between align-items-center"
-                   style="font-size:14.5px;font-weight:500;"
-                   [style.color]="boutiqueSub===cat.nom ? 'var(--accent)' : 'inherit'"
-                   [routerLink]="['/boutique']" [queryParams]="{domaine:'fournitures', categorie: cat.nom}"
-                   (click)="fermerMegaMenu()">
-                  {{ cat.nom }}
-                  <i class="fa-solid fa-chevron-right text-secondary ms-2" style="font-size:11px" *ngIf="cat.sousCategories.length > 0"></i>
-                </a>
-                <ul class="dropdown-menu border-0 shadow-lg p-2" *ngIf="cat.sousCategories.length > 0"
-                    style="top:-11px;left:100%;border-top:3px solid var(--accent)!important;border-radius:12px;min-width:230px;"
-                    [class.show]="boutiqueSub===cat.nom">
-                  <li *ngFor="let sc of cat.sousCategories; trackBy: trackByNom" class="dropdown-submenu position-relative"
-                      (mouseenter)="openSubSub(cleSousCategorie(cat.nom, sc.nom))" (mouseleave)="closeSubSub()">
-                    <a class="dropdown-item rounded-3 d-flex justify-content-between align-items-center" style="font-size:14.5px"
-                       [style.color]="boutiqueSubSub===cleSousCategorie(cat.nom, sc.nom) ? 'var(--accent)' : 'inherit'"
-                       [routerLink]="['/boutique']" [queryParams]="{domaine:'fournitures', categorie: cat.nom, sousCategorie: sc.nom}"
-                       (click)="fermerMegaMenu()">
-                      {{ sc.nom }}
-                      <i class="fa-solid fa-chevron-right text-secondary ms-2" style="font-size:11px" *ngIf="sc.sousSousCategories.length > 0"></i>
-                    </a>
-                    <ul class="dropdown-menu border-0 shadow-lg p-2" *ngIf="sc.sousSousCategories.length > 0"
-                        style="top:-11px;left:100%;border-top:3px solid var(--accent)!important;border-radius:12px;min-width:210px;"
-                        [class.show]="boutiqueSubSub===cleSousCategorie(cat.nom, sc.nom)">
-                      <li *ngFor="let ssc of sc.sousSousCategories; trackBy: trackByStr">
-                        <a class="dropdown-item rounded-3" style="font-size:14.5px"
-                           [routerLink]="['/boutique']" [queryParams]="{domaine:'fournitures', categorie: cat.nom, sousCategorie: sc.nom, sousSousCategorie: ssc}"
-                           (click)="fermerMegaMenu()">
-                          {{ ssc }}
-                        </a>
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </li>
-            </ul>
-          </li>
 
-          <li *ngIf="categoriesDocuments.length === 0 && categoriesFournituresArbre.length === 0" class="px-3 py-2 small text-secondary">
-            Aucune catégorie pour le moment.
-          </li>
-        </ul>
+            <div class="ub-flyout-panel" *ngIf="categoriesCaisse.length">
+              <div class="ub-flyout-item" *ngFor="let cat of categoriesCaisse">
+                <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie: cat.nom}"
+                   class="ub-boutique-menu-item" [class.ub-has-flyout]="cat.sousCategories.length">
+                  <span>{{ formatLabel(cat.nom) }}</span>
+                  <i class="fa-solid fa-chevron-right ub-flyout-caret" *ngIf="cat.sousCategories.length"></i>
+                </a>
+
+                <div class="ub-flyout-panel ub-flyout-panel--scroll" *ngIf="cat.sousCategories.length">
+                  <a *ngFor="let sc of cat.sousCategories"
+                     routerLink="/boutique"
+                     [queryParams]="{domaine:'fournitures', categorie: cat.nom, sousCategorie: sc}"
+                     class="ub-boutique-menu-item">
+                    {{ formatLabel(sc) }}
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+          <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie:'Jeux'}" class="ub-boutique-menu-item">
+            <i class="fa-solid fa-dice"></i>Jeux
+          </a>
+        </div>
       </div>
       <a routerLink="/boutique" [queryParams]="{domaine:'documents', payant:'1'}" class="nav-link fw-semibold text-secondary py-2">Documents Payants</a>
       <a routerLink="/boutique" [queryParams]="{domaine:'documents', gratuit:'1'}" class="nav-link fw-semibold text-secondary py-2">Documents Gratuits</a>
@@ -320,102 +311,107 @@
       <i class="fa-solid fa-house me-2" style="color:var(--accent)"></i>Accueil
     </a>
 
-    <!-- Boutique accordéon -->
-    <div class="accordion-item border-0 border-bottom">
-      <h2 class="accordion-header">
-        <button class="accordion-button collapsed bg-white fw-semibold ps-0 shadow-none"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#mobileBoutique">
+    <!-- Boutique : équivalent tactile du mega-menu desktop — le survol n'existe pas au tactile,
+         chaque niveau (Documents/Fournitures scolaires + leurs Catégorie/Sous-Catégorie) se
+         déplie/replie au tap via toggleMobileExpand() plutôt qu'au survol. -->
+    <div class="border-bottom">
+      <!-- "Boutique" est un en-tête de groupe, pas une catégorie réelle : le tap déplie/replie
+           (toggleMobileExpand), il ne navigue jamais — sinon impossible d'atteindre les sous-items
+           d'un seul tap sur tactile (pas de survol). -->
+      <button type="button" class="ub-mobile-row ub-mobile-row--toggle" (click)="toggleMobileExpand('boutique', $event)" [attr.aria-expanded]="isMobileExpanded('boutique')">
+        <span class="ub-mobile-row-link py-3 fw-semibold">
           <i class="fa-solid fa-shop me-2" style="color:var(--accent)"></i>Boutique
+        </span>
+        <span class="ub-mobile-row-toggle" aria-hidden="true">
+          <i class="fa-solid fa-chevron-down" [class.ub-rotated]="isMobileExpanded('boutique')"></i>
+        </span>
+      </button>
+
+      <div class="ub-mobile-subaccordion" *ngIf="isMobileExpanded('boutique')">
+
+        <!-- Documents -->
+        <button *ngIf="categoriesSite.length; else lienDocuments" type="button" class="ub-mobile-row ub-mobile-row--indent1 ub-mobile-row--toggle" (click)="toggleMobileExpand('doc', $event)" [attr.aria-expanded]="isMobileExpanded('doc')">
+          <span class="ub-mobile-row-link"><i class="fa-solid fa-book me-2"></i>Documents</span>
+          <span class="ub-mobile-row-toggle" aria-hidden="true">
+            <i class="fa-solid fa-chevron-down" [class.ub-rotated]="isMobileExpanded('doc')"></i>
+          </span>
         </button>
-      </h2>
-      <div id="mobileBoutique" class="accordion-collapse collapse" data-bs-parent="#mobileAccordion">
-        <div class="accordion-body ps-3 pe-0 py-2">
-
-          <!-- Catégories réelles (Documents numériques) : aucun contenu codé en dur — voir
-               le mega-menu desktop pour le détail du câblage CatalogueService. -->
-          <a class="ub-mobile-domaine-titre d-block text-decoration-none" *ngIf="categoriesDocuments.length > 0"
-             [routerLink]="['/boutique']" [queryParams]="{domaine:'documents'}" (click)="closeMenu()">
-            <i class="fa-solid fa-book me-2"></i>Documents numériques
+        <ng-template #lienDocuments>
+          <a routerLink="/boutique" [queryParams]="{domaine:'documents'}" (click)="closeMenu()" class="ub-mobile-row-link d-block ub-mobile-row--indent1">
+            <i class="fa-solid fa-book me-2"></i>Documents
           </a>
-          <div class="accordion" *ngIf="categoriesDocuments.length > 0">
-            <div class="accordion-item border-0 border-bottom" *ngFor="let cat of categoriesDocuments; trackBy: trackByNom; let ci = index">
-              <h2 class="accordion-header">
-                <ng-container *ngIf="cat.sousCategories.length > 0; else lienSimpleDoc">
-                  <button class="accordion-button collapsed bg-white fw-500 ps-2 shadow-none small"
-                          type="button" data-bs-toggle="collapse" [attr.data-bs-target]="'#sub-d-' + ci">
-                    {{ cat.nom }}
-                  </button>
-                </ng-container>
-                <ng-template #lienSimpleDoc>
-                  <a class="d-block py-2 ps-2 small fw-500" style="color:#1B2430;"
-                     [routerLink]="['/boutique']" [queryParams]="{domaine:'documents', categorie: cat.nom}"
-                     (click)="closeMenu()">{{ cat.nom }}</a>
-                </ng-template>
-              </h2>
-              <div [id]="'sub-d-' + ci" class="accordion-collapse collapse" *ngIf="cat.sousCategories.length > 0">
-                <div class="accordion-body ps-4 py-1">
-                  <a class="d-block py-2 small text-secondary" *ngFor="let sc of cat.sousCategories; trackBy: trackByNom"
-                     [routerLink]="['/boutique']" [queryParams]="{domaine:'documents', categorie: cat.nom, sousCategorie: sc.nom}"
-                     (click)="closeMenu()">{{ sc.nom }}</a>
-                </div>
-              </div>
+        </ng-template>
+        <div class="ub-mobile-subaccordion" *ngIf="isMobileExpanded('doc')">
+          <ng-container *ngFor="let cat of categoriesSite">
+            <div class="ub-mobile-row ub-mobile-row--indent2">
+              <a routerLink="/boutique" [queryParams]="{domaine:'documents', categorie: cat.nom}" (click)="closeMenu()" class="ub-mobile-row-link">{{ formatLabel(cat.nom) }}</a>
+              <button *ngIf="cat.sousCategories.length" type="button" class="ub-mobile-row-toggle" (click)="toggleMobileExpand('doc:'+cat.nom, $event)" [attr.aria-expanded]="isMobileExpanded('doc:'+cat.nom)">
+                <i class="fa-solid fa-chevron-down" [class.ub-rotated]="isMobileExpanded('doc:'+cat.nom)"></i>
+              </button>
             </div>
-          </div>
-
-          <!-- Catégories réelles (Fournitures scolaires) -->
-          <a class="ub-mobile-domaine-titre d-block text-decoration-none mt-2" *ngIf="categoriesFournituresArbre.length > 0"
-             [routerLink]="['/boutique']" [queryParams]="{domaine:'fournitures'}" (click)="closeMenu()">
-            <i class="fa-solid fa-box me-2"></i>Fournitures scolaires
-          </a>
-          <div class="accordion" *ngIf="categoriesFournituresArbre.length > 0">
-            <div class="accordion-item border-0 border-bottom" *ngFor="let cat of categoriesFournituresArbre; trackBy: trackByNom; let ci = index">
-              <h2 class="accordion-header">
-                <ng-container *ngIf="cat.sousCategories.length > 0; else lienSimpleFourn">
-                  <button class="accordion-button collapsed bg-white fw-500 ps-2 shadow-none small"
-                          type="button" data-bs-toggle="collapse" [attr.data-bs-target]="'#sub-f-' + ci">
-                    {{ cat.nom }}
+            <div class="ub-mobile-subaccordion" *ngIf="isMobileExpanded('doc:'+cat.nom)">
+              <ng-container *ngFor="let sc of cat.sousCategories">
+                <div class="ub-mobile-row ub-mobile-row--indent3">
+                  <a routerLink="/boutique" [queryParams]="{domaine:'documents', categorie: cat.nom, sousCategorie: sc.nom}" (click)="closeMenu()" class="ub-mobile-row-link">{{ formatLabel(sc.nom) }}</a>
+                  <button *ngIf="sc.sousSousCategories.length" type="button" class="ub-mobile-row-toggle" (click)="toggleMobileExpand('doc:'+cat.nom+':'+sc.nom, $event)" [attr.aria-expanded]="isMobileExpanded('doc:'+cat.nom+':'+sc.nom)">
+                    <i class="fa-solid fa-chevron-down" [class.ub-rotated]="isMobileExpanded('doc:'+cat.nom+':'+sc.nom)"></i>
                   </button>
-                </ng-container>
-                <ng-template #lienSimpleFourn>
-                  <a class="d-block py-2 ps-2 small fw-500" style="color:#1B2430;"
-                     [routerLink]="['/boutique']" [queryParams]="{domaine:'fournitures', categorie: cat.nom}"
-                     (click)="closeMenu()">{{ cat.nom }}</a>
-                </ng-template>
-              </h2>
-              <div [id]="'sub-f-' + ci" class="accordion-collapse collapse" *ngIf="cat.sousCategories.length > 0">
-                <div class="accordion-body ps-4 py-1">
-                  <ng-container *ngFor="let sc of cat.sousCategories; trackBy: trackByNom; let si = index">
-                    <ng-container *ngIf="sc.sousSousCategories.length > 0; else lienSimpleSousFourn">
-                      <button class="d-flex justify-content-between align-items-center w-100 py-2 small text-secondary bg-white border-0"
-                              type="button" data-bs-toggle="collapse" [attr.data-bs-target]="'#subsub-f-' + ci + '-' + si">
-                        {{ sc.nom }}
-                        <i class="fa-solid fa-chevron-down" style="font-size:10px"></i>
-                      </button>
-                      <div [id]="'subsub-f-' + ci + '-' + si" class="accordion-collapse collapse">
-                        <div class="ps-3 py-1">
-                          <a class="d-block py-2 small text-secondary" *ngFor="let ssc of sc.sousSousCategories; trackBy: trackByStr"
-                             [routerLink]="['/boutique']" [queryParams]="{domaine:'fournitures', categorie: cat.nom, sousCategorie: sc.nom, sousSousCategorie: ssc}"
-                             (click)="closeMenu()">{{ ssc }}</a>
-                        </div>
-                      </div>
-                    </ng-container>
-                    <ng-template #lienSimpleSousFourn>
-                      <a class="d-block py-2 small text-secondary"
-                         [routerLink]="['/boutique']" [queryParams]="{domaine:'fournitures', categorie: cat.nom, sousCategorie: sc.nom}"
-                         (click)="closeMenu()">{{ sc.nom }}</a>
-                    </ng-template>
-                  </ng-container>
                 </div>
-              </div>
+                <div class="ub-mobile-subaccordion" *ngIf="isMobileExpanded('doc:'+cat.nom+':'+sc.nom)">
+                  <a *ngFor="let ssc of sc.sousSousCategories"
+                     routerLink="/boutique"
+                     [queryParams]="{domaine:'documents', categorie: cat.nom, sousCategorie: sc.nom, sousSousCategorie: ssc}"
+                     (click)="closeMenu()"
+                     class="ub-mobile-row-link d-block ub-mobile-row--indent4">
+                    {{ formatLabel(ssc) }}
+                  </a>
+                </div>
+              </ng-container>
             </div>
-          </div>
-
-          <p *ngIf="categoriesDocuments.length === 0 && categoriesFournituresArbre.length === 0" class="small text-secondary py-2 mb-0">
-            Aucune catégorie pour le moment.
-          </p>
+          </ng-container>
         </div>
+
+        <!-- Soutenance -->
+        <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie:'Soutenance'}" (click)="closeMenu()" class="ub-mobile-row-link d-block ub-mobile-row--indent1">
+          <i class="fa-solid fa-graduation-cap me-2"></i>Soutenance
+        </a>
+
+        <!-- Fournitures scolaires -->
+        <button *ngIf="categoriesCaisse.length; else lienFournitures" type="button" class="ub-mobile-row ub-mobile-row--indent1 ub-mobile-row--toggle" (click)="toggleMobileExpand('four', $event)" [attr.aria-expanded]="isMobileExpanded('four')">
+          <span class="ub-mobile-row-link"><i class="fa-solid fa-pen-ruler me-2"></i>Fournitures scolaires</span>
+          <span class="ub-mobile-row-toggle" aria-hidden="true">
+            <i class="fa-solid fa-chevron-down" [class.ub-rotated]="isMobileExpanded('four')"></i>
+          </span>
+        </button>
+        <ng-template #lienFournitures>
+          <a routerLink="/boutique" [queryParams]="{domaine:'fournitures'}" (click)="closeMenu()" class="ub-mobile-row-link d-block ub-mobile-row--indent1">
+            <i class="fa-solid fa-pen-ruler me-2"></i>Fournitures scolaires
+          </a>
+        </ng-template>
+        <div class="ub-mobile-subaccordion" *ngIf="isMobileExpanded('four')">
+          <ng-container *ngFor="let cat of categoriesCaisse">
+            <div class="ub-mobile-row ub-mobile-row--indent2">
+              <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie: cat.nom}" (click)="closeMenu()" class="ub-mobile-row-link">{{ formatLabel(cat.nom) }}</a>
+              <button *ngIf="cat.sousCategories.length" type="button" class="ub-mobile-row-toggle" (click)="toggleMobileExpand('four:'+cat.nom, $event)" [attr.aria-expanded]="isMobileExpanded('four:'+cat.nom)">
+                <i class="fa-solid fa-chevron-down" [class.ub-rotated]="isMobileExpanded('four:'+cat.nom)"></i>
+              </button>
+            </div>
+            <div class="ub-mobile-subaccordion" *ngIf="isMobileExpanded('four:'+cat.nom)">
+              <a *ngFor="let sc of cat.sousCategories"
+                 routerLink="/boutique"
+                 [queryParams]="{domaine:'fournitures', categorie: cat.nom, sousCategorie: sc}"
+                 (click)="closeMenu()"
+                 class="ub-mobile-row-link d-block ub-mobile-row--indent3">
+                {{ formatLabel(sc) }}
+              </a>
+            </div>
+          </ng-container>
+        </div>
+
+        <!-- Jeux -->
+        <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie:'Jeux'}" (click)="closeMenu()" class="ub-mobile-row-link d-block ub-mobile-row--indent1">
+          <i class="fa-solid fa-dice me-2"></i>Jeux
+        </a>
       </div>
     </div>
 
