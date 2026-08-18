@@ -90,7 +90,19 @@ export class TicketsFacturesComponent implements OnInit {
   voirFacture(f: Facture): void { this.factureSelectionnee = f; }
   fermerFacture(): void { this.factureSelectionnee = null; }
 
-  imprimer(): void { window.print(); }
+  /** window.print() imprime toute la page par défaut (sidebar, header...) — la classe
+   *  .ub-printing (voir styles.css) n'affiche que l'élément .ub-print-area (le modal ouvert)
+   *  le temps de l'impression. Retrait sur onafterprint plutôt que juste après window.print()
+   *  (synchrone ou non selon le navigateur) pour ne jamais retirer la classe trop tôt. */
+  imprimer(): void {
+    document.body.classList.add('ub-printing');
+    const retirer = () => {
+      document.body.classList.remove('ub-printing');
+      window.removeEventListener('afterprint', retirer);
+    };
+    window.addEventListener('afterprint', retirer);
+    window.print();
+  }
 
   trackByTicket(_index: number, item: Ticket): string { return item.id; }
   trackByFacture(_index: number, item: Facture): string { return item.id; }

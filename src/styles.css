@@ -340,3 +340,24 @@ input::placeholder { color: #9AA0A8; }
   border-color: #8C2433;
   color: #8C2433;
 }
+
+/* ── Impression ciblée ──────────────────────────────────────────────────────
+   window.print() imprime toute la page par défaut (sidebar, header, footer...).
+   Convention réutilisable : ajouter la classe .ub-printing sur <body> juste avant
+   d'imprimer (et la retirer juste après) masque tout sauf l'élément marqué
+   .ub-print-area (ex: le modal de détail ticket/facture), voir
+   user/tickets-factures/tickets-factures.component.ts#imprimer. */
+@media print {
+  /* `*` (tous les descendants, pas seulement les enfants directs) : visibility:hidden ne
+     bloque pas un enfant qui redéfinit explicitement visibility:visible, ce qui permet à
+     .ub-print-area de "percer" à travers ses ancêtres masqués (header, sidebar...). */
+  body.ub-printing * { visibility: hidden; }
+  body.ub-printing .ub-print-area,
+  body.ub-printing .ub-print-area * { visibility: visible; }
+  body.ub-printing .ub-print-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+}

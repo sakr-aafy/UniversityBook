@@ -94,7 +94,7 @@
 
 <!-- ═══ MODAL — Détail ticket ═══ -->
 <div class="ub-tk-modal-overlay" *ngIf="ticketSelectionne" (click)="fermerTicket()">
-  <div class="ub-tk-modal" (click)="$event.stopPropagation()">
+  <div class="ub-tk-modal ub-print-area" (click)="$event.stopPropagation()">
     <div class="d-flex justify-content-between align-items-start mb-4">
       <div>
         <h2 class="fw-bold mb-1" style="font-size:20px;">Ticket #{{ ticketSelectionne.numero }}</h2>
@@ -157,7 +157,7 @@
 
 <!-- ═══ MODAL — Détail facture ═══ -->
 <div class="ub-tk-modal-overlay" *ngIf="factureSelectionnee" (click)="fermerFacture()">
-  <div class="ub-tk-modal" (click)="$event.stopPropagation()">
+  <div class="ub-tk-modal ub-print-area" (click)="$event.stopPropagation()">
     <div class="d-flex justify-content-between align-items-start mb-4">
       <div>
         <h2 class="fw-bold mb-1" style="font-size:20px;">{{ factureSelectionnee.numFacture }}</h2>
