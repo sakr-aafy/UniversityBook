@@ -48,16 +48,16 @@
             </div>
             
 
-            <!-- Email -->
+            <!-- Email ou téléphone -->
             <div class="mb-4">
-              <label class="form-label ub-label">Adresse e-mail</label>
+              <label class="form-label ub-label">Email ou téléphone</label>
               <div class="input-group-ub">
-                <i class="fa-regular fa-envelope input-icon-ub" style="color:#9AA0A8"></i>
-                <input type="email"
+                <i class="fa-regular fa-user input-icon-ub" style="color:#9AA0A8"></i>
+                <input type="text"
                        class="form-control ub-input"
-                       placeholder="votre@email.com"
-                       [(ngModel)]="email"
-                       name="email"
+                       placeholder="votre@email.com ou 12 345 678"
+                       [(ngModel)]="identifiant"
+                       name="identifiant"
                        required>
               </div>
             </div>

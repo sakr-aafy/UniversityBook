@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -111,6 +111,32 @@ export class ProduitDetailComponent implements OnInit, OnDestroy {
     this.imageActive = i;
   }
 
+  /* ── Modal (lightbox) : agrandir l'image active au clic ── */
+  modalImageOuvert = false;
+
+  ouvrirModalImage(): void {
+    if (this.aDesImages) this.modalImageOuvert = true;
+  }
+
+  fermerModalImage(): void {
+    this.modalImageOuvert = false;
+  }
+
+  imageModalPrecedente(): void {
+    if (!this.galerie.length) return;
+    this.imageActive = (this.imageActive - 1 + this.galerie.length) % this.galerie.length;
+  }
+
+  imageModalSuivante(): void {
+    if (!this.galerie.length) return;
+    this.imageActive = (this.imageActive + 1) % this.galerie.length;
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscapeModalImage(): void {
+    if (this.modalImageOuvert) this.fermerModalImage();
+  }
+
   /* ── Divers / formatage ── */
 
   formatPrix(v: number): string {
@@ -169,15 +195,8 @@ export class ProduitDetailComponent implements OnInit, OnDestroy {
     return this.stockAffiche === null || this.stockAffiche > 0;
   }
 
-  /** Seuil (unités) sous lequel le stock est présenté comme "faible" plutôt que "en stock". */
-  private static readonly SEUIL_STOCK_FAIBLE = 5;
-
-  get etatStock(): 'en-stock' | 'stock-faible' | 'rupture' {
-    if (!this.estDisponible) return 'rupture';
-    if (this.stockAffiche !== null && this.stockAffiche <= ProduitDetailComponent.SEUIL_STOCK_FAIBLE) {
-      return 'stock-faible';
-    }
-    return 'en-stock';
+  get etatStock(): 'en-stock' | 'rupture' {
+    return this.estDisponible ? 'en-stock' : 'rupture';
   }
 
   get varianteLabel(): string | undefined {

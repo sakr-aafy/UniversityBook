@@ -1,193 +1,151 @@
-import { Component, OnInit } from '@angular/core';
-import { forkJoin, of } from 'rxjs';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { forkJoin, of, Subscription } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { DocumentsApiService, DocumentDto, DocumentPayload } from '../../services/documents-api.service';
-import { CategoriesDocumentApiService, CategorieDocumentDto } from '../../services/categories-document-api.service';
-import { DropboxApiService, DropboxEntry } from '../../services/dropbox-api.service';
-
-type ActiveTab    = 'documents' | 'promotions';
-type PromoStatut  = 'active' | 'inactif' | 'expire';
-
-interface DocNumerique extends Omit<DocumentDto, 'dateAjout'> {
-  dateAjout: Date;
-}
+import { HttpEventType } from '@angular/common/http';
+import { AdminDocumentsService, CatalogueDocument, DocumentCatalogueForm } from '../../services/admin-documents.service';
+import { AdminCategoriesService, Categorie } from '../../services/admin-categories.service';
+import { AdminSousCategoriesService, SousCategorie } from '../../services/admin-sous-categories.service';
+import { CategoryDialogService } from '../../services/category-dialog.service';
+import { photoUrl } from '../../shared/photo-url.util';
 
 @Component({
   selector: 'app-fournisseurs',
   templateUrl: './fournisseurs.component.html',
   styleUrls: ['./fournisseurs.component.scss']
 })
-export class FournisseursComponent implements OnInit {
+export class FournisseursComponent implements OnInit, OnDestroy {
 
   constructor(
-    private documentsApi: DocumentsApiService,
-    private categoriesApi: CategoriesDocumentApiService,
-    private dropboxApi: DropboxApiService
+    private documentsApi: AdminDocumentsService,
+    private categoriesApi: AdminCategoriesService,
+    private sousCategoriesApi: AdminSousCategoriesService,
+    private categoryDialogService: CategoryDialogService
   ) {}
 
   // ── Data ──────────────────────────────────────────────────────────────────
-  documents: DocNumerique[] = [];
-  categoriesData: CategorieDocumentDto[] = [];
+  documents: CatalogueDocument[] = [];
+  categoriesData: Categorie[] = [];
 
   get categories(): string[] {
     return this.categoriesData.map(c => c.nom);
   }
 
-  get sousCategoriesParCategorie(): Record<string, string[]> {
-    const map: Record<string, string[]> = {};
-    this.categoriesData.forEach(c => map[c.nom] = c.sousCategories);
-    return map;
-  }
+  private categoryDialogSub?: Subscription;
 
   ngOnInit(): void {
     this.chargerCategories();
     this.chargerDocuments();
+    // Le dialogue partagé "Gérer les catégories" (rendu une fois dans app.component.html,
+    // voir shared/category-dialog) prévient de sa fermeture via cet état plutôt que de
+    // renvoyer les catégories directement — on recharge les nôtres à ce moment-là.
+    this.categoryDialogSub = this.categoryDialogService.etat$.subscribe(etat => {
+      if (!etat.ouvert) this.chargerCategories();
+    });
   }
 
-  private toDocNumerique(dto: DocumentDto): DocNumerique {
-    return { ...dto, dateAjout: new Date(dto.dateAjout) };
+  ngOnDestroy(): void {
+    this.categoryDialogSub?.unsubscribe();
+  }
+
+  imageUrl(chemin?: string): string {
+    return photoUrl(chemin);
   }
 
   private chargerDocuments(): void {
-    this.documentsApi.list().subscribe({
-      next: ({ documents }) => this.documents = documents.map(d => this.toDocNumerique(d)),
+    this.documentsApi.list({ limite: 1000 }).subscribe({
+      next: ({ documents }) => this.documents = documents,
       error: () => { /* best-effort */ }
     });
   }
 
   private chargerCategories(): void {
-    this.categoriesApi.list().subscribe({
+    this.categoriesApi.list({ type: 'documents' }).subscribe({
       next: ({ categories }) => this.categoriesData = categories,
       error: () => { /* best-effort */ }
     });
   }
 
-  // ── Active tab ────────────────────────────────────────────────────────────
-  activeTab: ActiveTab = 'documents';
+  ouvrirGestionCategories(): void {
+    this.categoryDialogService.ouvrir('documents');
+  }
 
-  // ── Documents tab state ───────────────────────────────────────────────────
-  searchQuery        = '';
-  categorieFiltre    = '';
-  typeFiltre         = '';
+  /** Sous-catégories actives de la catégorie sélectionnée dans le formulaire (interrogées par
+   *  l'_id de la catégorie — voir AdminSousCategoriesService — puis stockées par nom sur le
+   *  document, comme categorie). */
+  sousCategoriesDisponibles: SousCategorie[] = [];
+
+  onCategorieChange(): void {
+    const categorie = this.categoriesData.find(c => c.nom === this.form.categorie);
+    this.sousCategoriesDisponibles = [];
+    this.form.sousCategorie = '';
+    if (!categorie) return;
+    this.sousCategoriesApi.list({ categorie: categorie._id }).subscribe({
+      next: res => this.sousCategoriesDisponibles = res.sousCategories,
+      error: () => { /* best-effort */ }
+    });
+  }
+
+  // ── Filters / pagination state ───────────────────────────────────────────
+  searchQuery     = '';
+  categorieFiltre = '';
+  typeFiltre      = ''; // '' | 'payant' | 'gratuit'
 
   currentPage     = 1;
   pageSize        = 10;
   pageSizeOptions = [5, 10, 20, 50];
 
-  sortCol = 'dateAjout';
+  sortCol = 'createdAt';
   sortDir: 'asc' | 'desc' = 'desc';
 
   selectedIds = new Set<string>();
 
-  // ── Promotions tab state ──────────────────────────────────────────────────
-  promoSearch       = '';
-  promoStatutFiltre = '';
-  promoPage         = 1;
-  promoPageSize     = 10;
-
   // ── Modal state ───────────────────────────────────────────────────────────
-  showModalForm         = false;
-  showModalDetail       = false;
-  showModalDelete       = false;
-  showModalPromo        = false;
-  showModalCategories   = false;
+  showModalForm    = false;
+  showModalDetail  = false;
+  showModalDelete  = false;
   isEditMode = false;
-  isPromoEdit = false;
+  enregistrementEnCours = false;
 
-  docDetail: DocNumerique | null = null;
-  docDelete: DocNumerique | null = null;
-  docPromo:  DocNumerique | null = null;
+  docDetail: CatalogueDocument | null = null;
+  docDelete: CatalogueDocument | null = null;
 
-  // ── Navigateur Dropbox (formulaire "Nouveau document") ──────────────────────
-  showModalDropbox   = false;
-  dropboxChemin      = '';
-  dropboxEntrees: DropboxEntry[] = [];
-  dropboxChargement  = false;
-  dropboxErreur      = '';
-
-  // ── Forms ─────────────────────────────────────────────────────────────────
+  // ── Form ──────────────────────────────────────────────────────────────────
   form = {
-    nom: '', categorie: 'Gestion', sousCategorie: '', description: '',
-    fichierDropboxPath: '',
-    prix: 0, prixPromo: 0, debutPromo: '', finPromo: '',
-    typeDoc: 'payant' as 'payant' | 'gratuit',
+    titre: '', categorie: '', sousCategorie: '', description: '', type: '',
+    prix: 0, gratuit: false, actif: true,
   };
 
-  promoForm = {
-    documentId: '', prixPromo: 0, debutPromo: '', finPromo: '',
-  };
-
-  // ── Helper getters ────────────────────────────────────────────────────────
-  get docsPayantsEligibles(): DocNumerique[] {
-    return this.documents.filter(d => d.typeDoc === 'payant');
-  }
+  imageFile: File | null = null;
+  imagePreview = '';
+  fichierFile: File | null = null;
+  fichierNom = '';
+  imagesExistantes: string[] = [];
+  imagesFiles: File[] = [];
+  imagesApercus: string[] = [];
 
   // ── Stat getters ──────────────────────────────────────────────────────────
-  get totalDocs(): number          { return this.documents.length; }
-  get docsPayants(): number        { return this.documents.filter(d => d.typeDoc === 'payant').length; }
-  get docsGratuits(): number       { return this.documents.filter(d => d.typeDoc === 'gratuit').length; }
-  get totalTelechargements(): number { return this.documents.reduce((s, d) => s + d.telechargements, 0); }
-  get revenuTotal(): number        { return this.documents.reduce((s, d) => s + d.prix * d.ventes, 0); }
-
-  get expirantBientot(): number {
-    const now = new Date(), soon = new Date(now.getTime() + 30 * 24 * 3600 * 1000);
-    return this.documents.filter(d => {
-      if (!d.finPromo) return false;
-      const fin = new Date(d.finPromo);
-      return fin >= now && fin <= soon;
-    }).length;
-  }
-
-  // ── Display helpers ───────────────────────────────────────────────────────
-  promoActive(d: DocNumerique): boolean {
-    if (!d.prixPromo || !d.finPromo) return false;
-    const now = new Date(), fin = new Date(d.finPromo);
-    const deb = d.debutPromo ? new Date(d.debutPromo) : now;
-    return now >= deb && now <= fin;
-  }
-
-  getPrix(d: DocNumerique): number {
-    return this.promoActive(d) ? d.prixPromo : d.prix;
-  }
-
-  getPromoStatut(d: DocNumerique): PromoStatut {
-    if (!d.prixPromo || !d.finPromo) return 'inactif';
-    const now = new Date(), fin = new Date(d.finPromo);
-    const deb = d.debutPromo ? new Date(d.debutPromo) : now;
-    if (fin < now) return 'expire';
-    if (deb > now) return 'inactif';
-    return 'active';
-  }
-
-  getDiscountPct(d: DocNumerique): number {
-    if (!d.prix || !d.prixPromo) return 0;
-    return Math.round((1 - d.prixPromo / d.prix) * 100);
-  }
-
-  get promoDiscountPreview(): number {
-    const doc = this.documents.find(d => d.id === this.promoForm.documentId);
-    if (!doc || !doc.prix || !this.promoForm.prixPromo) return 0;
-    return Math.round((1 - Number(this.promoForm.prixPromo) / doc.prix) * 100);
-  }
+  get totalDocs(): number    { return this.documents.length; }
+  get docsPayants(): number  { return this.documents.filter(d => !d.gratuit).length; }
+  get docsGratuits(): number { return this.documents.filter(d => d.gratuit).length; }
 
   // ── Documents tab getters ─────────────────────────────────────────────────
-  get documentsFiltres(): DocNumerique[] {
+  get documentsFiltres(): CatalogueDocument[] {
     let r = [...this.documents];
     if (this.searchQuery) {
       const q = this.searchQuery.toLowerCase();
-      r = r.filter(d => d.nom.toLowerCase().includes(q) || d.categorie.toLowerCase().includes(q));
+      r = r.filter(d => d.titre.toLowerCase().includes(q) || d.categorie.toLowerCase().includes(q));
     }
     if (this.categorieFiltre) r = r.filter(d => d.categorie === this.categorieFiltre);
-    if (this.typeFiltre)      r = r.filter(d => d.typeDoc   === this.typeFiltre);
+    if (this.typeFiltre === 'payant')  r = r.filter(d => !d.gratuit);
+    if (this.typeFiltre === 'gratuit') r = r.filter(d => d.gratuit);
 
     r.sort((a, b) => {
       let va: any, vb: any;
       switch (this.sortCol) {
-        case 'nom':             va = a.nom;             vb = b.nom;             break;
-        case 'categorie':       va = a.categorie;       vb = b.categorie;       break;
-        case 'prix':            va = a.prix;            vb = b.prix;            break;
-        case 'telechargements': va = a.telechargements; vb = b.telechargements; break;
-        default:                va = a.dateAjout.getTime(); vb = b.dateAjout.getTime();
+        case 'titre':     va = a.titre;     vb = b.titre;     break;
+        case 'categorie': va = a.categorie; vb = b.categorie; break;
+        case 'prix':      va = a.prix;      vb = b.prix;      break;
+        default:          va = new Date(a.createdAt).getTime(); vb = new Date(b.createdAt).getTime();
       }
       const cmp = va < vb ? -1 : va > vb ? 1 : 0;
       return this.sortDir === 'asc' ? cmp : -cmp;
@@ -196,7 +154,7 @@ export class FournisseursComponent implements OnInit {
   }
 
   get totalPages(): number { return Math.max(1, Math.ceil(this.documentsFiltres.length / this.pageSize)); }
-  get documentsPagines(): DocNumerique[] { const s = (this.currentPage - 1) * this.pageSize; return this.documentsFiltres.slice(s, s + this.pageSize); }
+  get documentsPagines(): CatalogueDocument[] { const s = (this.currentPage - 1) * this.pageSize; return this.documentsFiltres.slice(s, s + this.pageSize); }
 
   get paginationInfo(): string {
     const total = this.documentsFiltres.length;
@@ -208,25 +166,6 @@ export class FournisseursComponent implements OnInit {
   get hasActiveFilters(): boolean {
     return !!(this.searchQuery || this.categorieFiltre || this.typeFiltre);
   }
-
-  // ── Promotions tab getters ────────────────────────────────────────────────
-  get docsAvecPromo(): DocNumerique[] {
-    return this.documents.filter(d => d.typeDoc === 'payant' && d.prixPromo > 0 && !!d.finPromo);
-  }
-
-  get docsAvecPromoFiltres(): DocNumerique[] {
-    let r = [...this.docsAvecPromo];
-    if (this.promoSearch) {
-      const q = this.promoSearch.toLowerCase();
-      r = r.filter(d => d.nom.toLowerCase().includes(q) || d.categorie.toLowerCase().includes(q));
-    }
-    if (this.promoStatutFiltre) r = r.filter(d => this.getPromoStatut(d) === this.promoStatutFiltre);
-    return r;
-  }
-
-  get promoTotalPages(): number { return Math.max(1, Math.ceil(this.docsAvecPromoFiltres.length / this.promoPageSize)); }
-  get promoPaginees(): DocNumerique[] { const s = (this.promoPage - 1) * this.promoPageSize; return this.docsAvecPromoFiltres.slice(s, s + this.promoPageSize); }
-  get docsPromoExpirees(): number { return this.docsAvecPromo.filter(d => this.getPromoStatut(d) === 'expire').length; }
 
   // ── Page numbers helper ───────────────────────────────────────────────────
   buildPages(cur: number, total: number): (number | -1)[] {
@@ -240,13 +179,12 @@ export class FournisseursComponent implements OnInit {
     return p;
   }
 
-  get pageNumbers(): (number | -1)[]        { return this.buildPages(this.currentPage, this.totalPages); }
-  get promoPageNumbers(): (number | -1)[]   { return this.buildPages(this.promoPage, this.promoTotalPages); }
+  get pageNumbers(): (number | -1)[] { return this.buildPages(this.currentPage, this.totalPages); }
 
   // ── Selection ─────────────────────────────────────────────────────────────
-  get allSelected(): boolean { return this.documentsPagines.length > 0 && this.documentsPagines.every(d => this.selectedIds.has(d.id)); }
+  get allSelected(): boolean { return this.documentsPagines.length > 0 && this.documentsPagines.every(d => this.selectedIds.has(d._id)); }
   get someSelected(): boolean { return this.selectedIds.size > 0; }
-  toggleAll(): void { if (this.allSelected) this.documentsPagines.forEach(d => this.selectedIds.delete(d.id)); else this.documentsPagines.forEach(d => this.selectedIds.add(d.id)); }
+  toggleAll(): void { if (this.allSelected) this.documentsPagines.forEach(d => this.selectedIds.delete(d._id)); else this.documentsPagines.forEach(d => this.selectedIds.add(d._id)); }
   toggleSelect(id: string): void { if (this.selectedIds.has(id)) this.selectedIds.delete(id); else this.selectedIds.add(id); }
 
   // ── Sort ──────────────────────────────────────────────────────────────────
@@ -262,209 +200,138 @@ export class FournisseursComponent implements OnInit {
     this.currentPage = 1;
   }
 
-  // ── Promotions CRUD ───────────────────────────────────────────────────────
-  ouvrirAjoutPromo(): void {
-    this.isPromoEdit = false;
-    this.docPromo    = null;
-    const docId = this.docsPayantsEligibles[0]?.id ?? '';
-    this.promoForm = { documentId: docId, prixPromo: 0, debutPromo: '', finPromo: '' };
-    this.showModalPromo = true;
-  }
-
-  ouvrirModifPromo(d: DocNumerique): void {
-    this.isPromoEdit = true;
-    this.docPromo    = d;
-    this.promoForm   = { documentId: d.id, prixPromo: d.prixPromo, debutPromo: d.debutPromo, finPromo: d.finPromo };
-    this.showModalPromo = true;
-  }
-
-  sauvegarderPromo(): void {
-    if (!this.promoForm.documentId || !this.promoForm.prixPromo || !this.promoForm.finPromo) return;
-    this.documentsApi.update(this.promoForm.documentId, {
-      prixPromo: Number(this.promoForm.prixPromo),
-      debutPromo: this.promoForm.debutPromo,
-      finPromo: this.promoForm.finPromo,
-    }).subscribe({
-      next: ({ document }) => {
-        this.remplacerDocumentLocal(document);
-        this.showModalPromo = false;
-      },
-      error: err => alert(err.error?.message || "Erreur lors de l'enregistrement de la promotion.")
-    });
-  }
-
-  supprimerPromo(d: DocNumerique): void {
-    this.documentsApi.update(d.id, { prixPromo: 0, debutPromo: '', finPromo: '' }).subscribe({
-      next: ({ document }) => this.remplacerDocumentLocal(document),
-      error: err => alert(err.error?.message || 'Erreur lors de la suppression de la promotion.')
-    });
-  }
-
-  togglePromoActive(d: DocNumerique): void {
-    const status = this.getPromoStatut(d);
-    const now = new Date();
-    const payload: Partial<DocumentPayload> = status === 'active'
-      ? { finPromo: new Date(now.getTime() - 86400000).toISOString().slice(0, 10) }
-      : { debutPromo: now.toISOString().slice(0, 10), finPromo: new Date(now.getTime() + 30 * 86400000).toISOString().slice(0, 10) };
-    this.documentsApi.update(d.id, payload).subscribe({
-      next: ({ document }) => this.remplacerDocumentLocal(document),
-      error: err => alert(err.error?.message || 'Erreur lors de la mise à jour de la promotion.')
-    });
-  }
-
-  private remplacerDocumentLocal(dto: DocumentDto): void {
-    const updated = this.toDocNumerique(dto);
-    const idx = this.documents.findIndex(d => d.id === updated.id);
-    if (idx >= 0) this.documents[idx] = updated;
+  private remplacerDocumentLocal(doc: CatalogueDocument): void {
+    const idx = this.documents.findIndex(d => d._id === doc._id);
+    if (idx >= 0) this.documents[idx] = doc;
   }
 
   // ── Documents CRUD ────────────────────────────────────────────────────────
   ouvrirAjout(): void {
     this.isEditMode = false; this.docDetail = null;
-    const categorie = this.categories[0] ?? 'Gestion';
-    this.form = { nom: '', categorie, sousCategorie: this.sousCategoriesParCategorie[categorie]?.[0] ?? '', description: '', fichierDropboxPath: '', prix: 0, prixPromo: 0, debutPromo: '', finPromo: '', typeDoc: 'payant' };
+    this.form = { titre: '', categorie: this.categories[0] ?? '', sousCategorie: '', description: '', type: '', prix: 0, gratuit: false, actif: true };
+    this.sousCategoriesDisponibles = [];
+    if (this.form.categorie) this.onCategorieChange();
+    this.imageFile = null; this.imagePreview = '';
+    this.fichierFile = null; this.fichierNom = '';
+    this.imagesExistantes = []; this.imagesFiles = []; this.imagesApercus = [];
     this.showModalForm = true;
   }
 
-  ouvrirModification(d: DocNumerique): void {
+  ouvrirModification(d: CatalogueDocument): void {
     this.isEditMode = true; this.docDetail = d;
-    this.form = { nom: d.nom, categorie: d.categorie, sousCategorie: d.sousCategorie, description: d.description, fichierDropboxPath: d.fichierDropboxPath, prix: d.prix, prixPromo: d.prixPromo, debutPromo: d.debutPromo, finPromo: d.finPromo, typeDoc: d.typeDoc };
+    this.form = { titre: d.titre, categorie: d.categorie, sousCategorie: d.sousCategorie, description: d.description, type: d.type, prix: d.prix, gratuit: d.gratuit, actif: d.actif };
+    const categorie = this.categoriesData.find(c => c.nom === d.categorie);
+    this.sousCategoriesDisponibles = [];
+    if (categorie) {
+      this.sousCategoriesApi.list({ categorie: categorie._id }).subscribe({
+        next: res => this.sousCategoriesDisponibles = res.sousCategories,
+        error: () => { /* best-effort */ }
+      });
+    }
+    this.imageFile = null; this.imagePreview = d.image || '';
+    this.fichierFile = null; this.fichierNom = d.fichier ? (d.fichier.split('/').pop() || '') : '';
+    this.imagesExistantes = [...(d.images || [])]; this.imagesFiles = []; this.imagesApercus = [];
     this.showModalForm = true;
+  }
+
+  onImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    this.imageFile = file;
+    const lecteur = new FileReader();
+    lecteur.onload = () => this.imagePreview = lecteur.result as string;
+    lecteur.readAsDataURL(file);
+  }
+
+  retirerImage(): void {
+    this.imageFile = null;
+    this.imagePreview = '';
+  }
+
+  onFichierSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    this.fichierFile = file;
+    this.fichierNom = file.name;
+  }
+
+  detacherFichier(): void {
+    this.fichierFile = null;
+    this.fichierNom = '';
+  }
+
+  onImagesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const fichiers = Array.from(input.files || []);
+    fichiers.forEach(f => {
+      this.imagesFiles.push(f);
+      const lecteur = new FileReader();
+      lecteur.onload = () => this.imagesApercus.push(lecteur.result as string);
+      lecteur.readAsDataURL(f);
+    });
+    input.value = '';
+  }
+
+  retirerImageExistante(url: string): void {
+    this.imagesExistantes = this.imagesExistantes.filter(u => u !== url);
+  }
+
+  retirerNouvelleImage(index: number): void {
+    this.imagesFiles.splice(index, 1);
+    this.imagesApercus.splice(index, 1);
   }
 
   sauvegarder(): void {
-    if (!this.form.nom.trim()) return;
-    const payload: DocumentPayload = {
-      nom: this.form.nom, categorie: this.form.categorie, sousCategorie: this.form.sousCategorie,
-      description: this.form.description, fichierDropboxPath: this.form.fichierDropboxPath,
-      prix: this.form.prix, prixPromo: this.form.prixPromo,
-      debutPromo: this.form.debutPromo, finPromo: this.form.finPromo, typeDoc: this.form.typeDoc
+    if (!this.form.titre.trim() || this.enregistrementEnCours) return;
+    this.enregistrementEnCours = true;
+
+    const payload: DocumentCatalogueForm = {
+      titre: this.form.titre.trim(),
+      description: this.form.description,
+      categorie: this.form.categorie,
+      sousCategorie: this.form.sousCategorie,
+      type: this.form.type,
+      prix: this.form.gratuit ? 0 : Number(this.form.prix) || 0,
+      gratuit: this.form.gratuit,
+      auteur: '',
+      faculte: '',
+      matiereEnseignee: '',
+      semestre: '',
+      actif: this.form.actif
     };
-    if (this.isEditMode && this.docDetail) {
-      this.documentsApi.update(this.docDetail.id, payload).subscribe({
-        next: ({ document }) => {
-          this.remplacerDocumentLocal(document);
-          this.showModalForm = false;
-        },
-        error: err => alert(err.error?.message || 'Erreur lors de la mise à jour du document.')
-      });
-    } else {
-      this.documentsApi.create(payload).subscribe({
-        next: ({ document }) => {
-          this.documents.unshift(this.toDocNumerique(document));
-          this.showModalForm = false;
-        },
-        error: err => alert(err.error?.message || "Erreur lors de l'enregistrement du document.")
-      });
-    }
-  }
 
-  // ── Navigateur Dropbox ────────────────────────────────────────────────────
-  /** Ouvre le sélecteur de fichier Dropbox pour lier un document existant au lieu de le
-   * re-décrire manuellement — démarre au dossier déjà lié s'il y en a un, sinon à la racine. */
-  ouvrirDropboxBrowser(): void {
-    this.showModalDropbox = true;
-    const depart = this.form.fichierDropboxPath
-      ? this.form.fichierDropboxPath.split('/').slice(0, -1).join('/')
-      : '';
-    this.naviguerDropbox(depart);
-  }
+    const requete = this.isEditMode && this.docDetail
+      ? this.documentsApi.update(this.docDetail._id, payload, this.imageFile, this.fichierFile, this.imagesFiles, this.imagesExistantes)
+      : this.documentsApi.create(payload, this.imageFile, this.fichierFile, this.imagesFiles, this.imagesExistantes);
 
-  fermerDropboxBrowser(): void {
-    this.showModalDropbox = false;
-  }
-
-  naviguerDropbox(chemin: string): void {
-    this.dropboxChargement = true;
-    this.dropboxErreur = '';
-    this.dropboxApi.list(chemin).subscribe({
-      next: ({ chemin: c, entrees }) => {
-        this.dropboxChemin = c === '/' ? '' : c;
-        this.dropboxEntrees = entrees;
-        this.dropboxChargement = false;
+    requete.subscribe({
+      next: event => {
+        if (event.type !== HttpEventType.Response || !event.body) return;
+        const doc = event.body.document;
+        if (this.isEditMode) this.remplacerDocumentLocal(doc);
+        else this.documents.unshift(doc);
+        this.enregistrementEnCours = false;
+        this.showModalForm = false;
       },
       error: err => {
-        this.dropboxErreur = err.error?.message || 'Erreur lors du chargement du dossier Dropbox.';
-        this.dropboxChargement = false;
+        this.enregistrementEnCours = false;
+        alert(err.error?.message || "Erreur lors de l'enregistrement du document.");
       }
     });
   }
 
-  ouvrirDropboxEntree(entree: DropboxEntry): void {
-    if (entree.type === 'dossier') {
-      this.naviguerDropbox(entree.chemin);
-    } else {
-      this.form.fichierDropboxPath = entree.chemin;
-      this.showModalDropbox = false;
-    }
-  }
+  ouvrirConsulter(d: CatalogueDocument): void { this.docDetail = d; this.showModalDetail = true; }
 
-  dropboxRemonter(): void {
-    const parent = this.dropboxChemin.split('/').slice(0, -1).join('/');
-    this.naviguerDropbox(parent);
-  }
-
-  detacherFichierDropbox(): void {
-    this.form.fichierDropboxPath = '';
-  }
-
-  /** Réinitialise la sous-catégorie sélectionnée quand la catégorie change (options dépendantes). */
-  onCategorieChange(): void {
-    const options = this.sousCategoriesParCategorie[this.form.categorie] ?? [];
-    this.form.sousCategorie = options[0] ?? '';
-  }
-
-  // ── Gestion des catégories / sous-catégories ─────────────────────────────
-  newCategorieNom = '';
-  newSousCategorieCategorie = '';
-  newSousCategorieNom = '';
-
-  ouvrirGestionCategories(): void {
-    this.newCategorieNom = '';
-    this.newSousCategorieCategorie = this.form.categorie || this.categories[0] || '';
-    this.newSousCategorieNom = '';
-    this.showModalCategories = true;
-  }
-
-  ajouterCategorie(): void {
-    const nom = this.newCategorieNom.trim();
-    if (!nom || this.categories.includes(nom)) return;
-    this.categoriesApi.create(nom).subscribe({
-      next: ({ categorie }) => {
-        this.categoriesData.push(categorie);
-        this.newCategorieNom = '';
-        this.newSousCategorieCategorie = categorie.nom;
-      },
-      error: err => alert(err.error?.message || 'Erreur lors de la création de la catégorie.')
-    });
-  }
-
-  ajouterSousCategorie(): void {
-    const catNom = this.newSousCategorieCategorie;
-    const nom = this.newSousCategorieNom.trim();
-    if (!catNom || !nom) return;
-    const cat = this.categoriesData.find(c => c.nom === catNom);
-    if (!cat) return;
-    this.categoriesApi.ajouterSousCategorie(cat.id, nom).subscribe({
-      next: ({ categorie }) => {
-        const idx = this.categoriesData.findIndex(c => c.id === categorie.id);
-        if (idx >= 0) this.categoriesData[idx] = categorie;
-        this.newSousCategorieNom = '';
-      },
-      error: err => alert(err.error?.message || "Erreur lors de l'ajout de la sous-catégorie.")
-    });
-  }
-
-  ouvrirConsulter(d: DocNumerique): void { this.docDetail = d; this.showModalDetail = true; }
-
-  ouvrirSuppression(d: DocNumerique): void { this.docDelete = d; this.showModalDelete = true; }
+  ouvrirSuppression(d: CatalogueDocument): void { this.docDelete = d; this.showModalDelete = true; }
 
   supprimer(): void {
     if (!this.docDelete) return;
-    const id = this.docDelete.id;
+    const id = this.docDelete._id;
     this.documentsApi.remove(id).subscribe({
       next: () => {
-        this.documents = this.documents.filter(d => d.id !== id);
+        this.documents = this.documents.filter(d => d._id !== id);
         this.selectedIds.delete(id);
         this.showModalDelete = false; this.docDelete = null;
         if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
@@ -480,16 +347,9 @@ export class FournisseursComponent implements OnInit {
     const ids = [...this.selectedIds];
     forkJoin(ids.map(id => this.documentsApi.remove(id).pipe(catchError(() => of(null))))).subscribe(resultats => {
       const supprimes = new Set(ids.filter((_, i) => resultats[i] !== null));
-      this.documents = this.documents.filter(d => !supprimes.has(d.id));
+      this.documents = this.documents.filter(d => !supprimes.has(d._id));
       this.selectedIds.clear();
       if (this.currentPage > this.totalPages) this.currentPage = this.totalPages;
-    });
-  }
-
-  telecharger(d: DocNumerique): void {
-    this.documentsApi.telecharger(d.id).subscribe({
-      next: ({ document }) => this.remplacerDocumentLocal(document),
-      error: () => { /* best-effort */ }
     });
   }
 }

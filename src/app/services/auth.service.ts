@@ -12,7 +12,9 @@ export interface RegisterPayload {
 }
 
 export interface LoginPayload {
-  email: string;
+  /** Email OU numéro de téléphone — accepte aussi les identifiants carte fidélité (client
+   *  créé/importé côté caisse, voir auth.controller.js#login). */
+  identifiant: string;
   motDePasse: string;
 }
 

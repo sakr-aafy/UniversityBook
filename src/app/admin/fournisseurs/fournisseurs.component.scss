@@ -31,7 +31,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   border: none;
   transition: all 0.15s;
   white-space: nowrap;
-  .material-symbols-rounded { font-size: 18px; }
+  .fa-solid { font-size: 18px; }
   &:disabled { opacity: .5; cursor: not-allowed; }
 }
 
@@ -62,7 +62,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   color: $gray400;
   margin-bottom: 12px;
 
-  .material-symbols-rounded { font-size: 16px; }
+  .fa-solid { font-size: 16px; }
   .doc-bc-sep    { color: $gray300; }
   .doc-bc-active { color: $navy; font-weight: 500; }
 }
@@ -169,7 +169,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   justify-content: center;
   flex-shrink: 0;
 
-  .material-symbols-rounded {
+  .fa-solid {
     font-size: 22px;
     font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
   }
@@ -257,7 +257,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   display: flex;
   align-items: center;
 
-  .material-symbols-rounded { font-size: 16px; }
+  .fa-solid { font-size: 16px; }
   &:hover { color: $gray700; }
 }
 
@@ -291,7 +291,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   transition: all 0.15s;
   white-space: nowrap;
 
-  .material-symbols-rounded { font-size: 17px; }
+  .fa-solid { font-size: 17px; }
   .doc-caret { font-size: 16px; }
 
   &.active, &:hover { border-color: $navy; color: $navy; background: rgba($navy, .04); }
@@ -310,7 +310,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   color: $gray400;
   transition: all 0.15s;
 
-  .material-symbols-rounded { font-size: 18px; }
+  .fa-solid { font-size: 18px; }
   &:hover { border-color: $red; color: $red; background: rgba($red, .05); }
 }
 
@@ -481,6 +481,24 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
 
 .doc-nom-text  { font-weight: 600; color: $gray900; }
 
+.doc-nom-thumb {
+  width: 32px; height: 32px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.doc-check-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: $gray700;
+  cursor: pointer;
+
+  input[type="checkbox"] { width: 15px; height: 15px; accent-color: $navy; cursor: pointer; }
+}
+
 .doc-version-chip {
   font-size: 11px;
   font-weight: 600;
@@ -500,7 +518,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   color: $orange;
   margin-top: 2px;
 
-  .material-symbols-rounded { font-size: 13px; }
+  .fa-solid { font-size: 13px; }
 }
 
 .doc-cat-badge {
@@ -616,7 +634,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   cursor: pointer;
   transition: all 0.15s;
 
-  .material-symbols-rounded {
+  .fa-solid {
     font-size: 16px;
     font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
   }
@@ -638,7 +656,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   padding: 40px 0;
   color: $gray400;
 
-  .material-symbols-rounded {
+  .fa-solid {
     font-size: 48px;
     font-variation-settings: 'FILL' 0, 'wght' 200, 'GRAD' 0, 'opsz' 48;
   }
@@ -673,7 +691,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   transition: all 0.15s;
   padding: 0 6px;
 
-  .material-symbols-rounded { font-size: 18px; }
+  .fa-solid { font-size: 18px; }
 
   &:hover:not(:disabled):not(.active) { border-color: $navy; color: $navy; }
   &.active  { background: $navy; color: $white; border-color: $navy; }
@@ -719,7 +737,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   border-bottom: 1px solid $gray100;
   padding-bottom: 12px;
 
-  .material-symbols-rounded {
+  .fa-solid {
     font-size: 18px;
     color: $navy;
     font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
@@ -937,13 +955,13 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   font-weight: 700;
   color: $gray900;
 
-  .material-symbols-rounded {
+  .fa-solid {
     font-size: 20px;
     color: $navy;
     font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
   }
 
-  &.danger { color: $red; .material-symbols-rounded { color: $red; } }
+  &.danger { color: $red; .fa-solid { color: $red; } }
 }
 
 .doc-modal-close {
@@ -959,7 +977,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   color: $gray600;
   transition: background 0.15s;
 
-  .material-symbols-rounded { font-size: 18px; }
+  .fa-solid { font-size: 18px; }
   &:hover { background: $gray200; }
 }
 
@@ -1012,7 +1030,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   cursor: pointer;
   transition: background .12s, color .12s;
 
-  .material-symbols-rounded { font-size: 17px; }
+  .fa-solid { font-size: 17px; }
 
   &:hover { background: #f3f4f6; color: #1e3a5f; }
 }
@@ -1053,7 +1071,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   font-size: 12.5px;
   color: $gray900;
 
-  .material-symbols-rounded:first-child { font-size: 17px; color: $navy; flex-shrink: 0; }
+  .fa-solid:first-child { font-size: 17px; color: $navy; flex-shrink: 0; }
 }
 
 .doc-dropbox-path {
@@ -1070,7 +1088,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   align-items: center;
   gap: 6px;
   justify-content: center;
-  .material-symbols-rounded { font-size: 17px; }
+  .fa-solid { font-size: 17px; }
 }
 
 .doc-dropbox-path-row {
@@ -1100,7 +1118,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   background: #fef2f2;
   color: $red;
   font-size: 12.5px;
-  .material-symbols-rounded { font-size: 17px; }
+  .fa-solid { font-size: 17px; }
 }
 
 .doc-dropbox-loading {
@@ -1165,7 +1183,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   padding: 32px 16px;
   color: $gray600;
   font-size: 12.5px;
-  .material-symbols-rounded { font-size: 28px; opacity: .5; }
+  .fa-solid { font-size: 28px; opacity: .5; }
 }
 
 .doc-field { display: flex; flex-direction: column; gap: 5px; }
@@ -1229,7 +1247,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   transition: all 0.15s;
   font-family: inherit;
 
-  .material-symbols-rounded { font-size: 16px; }
+  .fa-solid { font-size: 16px; }
 
   & + .doc-type-btn { border-left: 1.5px solid $gray200; }
   &.active          { background: $navy; color: $white; }
@@ -1351,7 +1369,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   min-width: 100px;
   flex-shrink: 0;
 
-  .material-symbols-rounded {
+  .fa-solid {
     font-size: 24px;
     font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
   }
@@ -1435,7 +1453,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   font-size: 13px;
   color: #92400e;
 
-  .material-symbols-rounded {
+  .fa-solid {
     font-size: 18px;
     flex-shrink: 0;
     font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
@@ -1472,7 +1490,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   font-family: inherit;
   position: relative;
 
-  .material-symbols-rounded {
+  .fa-solid {
     font-size: 18px;
     font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
   }
@@ -1499,7 +1517,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   &.tab-alert {
     color: $orange;
 
-    .material-symbols-rounded { color: $orange; }
+    .fa-solid { color: $orange; }
     &:hover:not(.active) { background: rgba($orange, .08); }
   }
 }
@@ -1544,7 +1562,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   color: $gray600;
   transition: all 0.15s;
 
-  .material-symbols-rounded {
+  .fa-solid {
     font-size: 20px;
     font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
     transition: font-variation-settings 0.2s;
@@ -1608,7 +1626,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   font-weight: 700;
   color: $gray900;
 
-  .material-symbols-rounded { font-size: 17px; color: $navy; }
+  .fa-solid { font-size: 17px; color: $navy; }
 }
 
 .doc-np-badge {
@@ -1667,7 +1685,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   justify-content: center;
   flex-shrink: 0;
 
-  .material-symbols-rounded {
+  .fa-solid {
     font-size: 17px;
     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20;
   }
@@ -1710,7 +1728,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   color: $gray400;
   font-size: 13px;
 
-  .material-symbols-rounded { font-size: 20px; color: $green; }
+  .fa-solid { font-size: 20px; color: $green; }
 }
 
 // ── Entrée en stock button ────────────────────────────────────────────────
@@ -1741,7 +1759,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   font-weight: 700;
   color: $gray900;
 
-  .material-symbols-rounded {
+  .fa-solid {
     font-size: 20px;
     color: $navy;
     font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 20;
@@ -1801,7 +1819,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   padding: 16px 20px;
   flex: 1;
 
-  .material-symbols-rounded {
+  .fa-solid {
     font-size: 26px;
     font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
     flex-shrink: 0;
@@ -1813,11 +1831,11 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
 .sf-kpi-val { font-size: 22px; font-weight: 700; color: $gray900; line-height: 1.1; }
 .sf-kpi-lbl { font-size: 12px; font-weight: 500; color: $gray400; }
 
-.sf-kpi-warn   { .material-symbols-rounded { color: $orange; } border-left: 3px solid $orange; }
-.sf-kpi-danger { .material-symbols-rounded { color: $red;    } border-left: 3px solid $red;    }
-.sf-kpi-info   { .material-symbols-rounded { color: $blue;   } border-left: 3px solid $blue;   }
+.sf-kpi-warn   { .fa-solid { color: $orange; } border-left: 3px solid $orange; }
+.sf-kpi-danger { .fa-solid { color: $red;    } border-left: 3px solid $red;    }
+.sf-kpi-info   { .fa-solid { color: $blue;   } border-left: 3px solid $blue;   }
 
-.sf-kpi-promo-active { .material-symbols-rounded { color: $purple; } border-left: 3px solid $purple; }
+.sf-kpi-promo-active { .fa-solid { color: $purple; } border-left: 3px solid $purple; }
 
 .doc-stock-status {
   display: inline-flex;
@@ -1934,7 +1952,7 @@ $shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
   color: $orange;
   margin-top: 4px;
 
-  .material-symbols-rounded { font-size: 14px; }
+  .fa-solid { font-size: 14px; }
 }
 
 // ── Stat card warning variant ─────────────────────────────────────────────

@@ -24,12 +24,14 @@
         </p>
 
         <div class="hero-boutons ub-anim-hero-in" style="animation-delay:.35s">
-          <a routerLink="/boutique" class="btn btn-accent px-4 py-3 d-flex align-items-center gap-2 fs-6 ub-ripple hero-btn-principal">
+          <a routerLink="/boutique"
+            class="btn btn-accent px-4 py-3 d-flex align-items-center gap-2 fs-6 ub-ripple hero-btn-principal">
             <i class="fa-solid fa-cart-shopping"></i>
             Découvrir la boutique
             <i class="fa-solid fa-arrow-right hero-btn-arrow"></i>
           </a>
-          <a routerLink="/boutique" class="btn btn-outline-dark-ub px-4 py-3 d-flex align-items-center gap-2 fs-6 hero-btn-secondaire ub-ripple">
+          <a routerLink="/boutique"
+            class="btn btn-outline-dark-ub px-4 py-3 d-flex align-items-center gap-2 fs-6 hero-btn-secondaire ub-ripple">
             <i class="fa-solid fa-file-lines" style="color:var(--accent)"></i>
             Explorer les documents
           </a>
@@ -47,24 +49,24 @@
       </div>
 
       <!-- Colonne visuels (droite, 60%) -->
-      <div class="hero-col-visuel ub-anim-hero-slide-in"
-           (mouseenter)="pauseGalerieAutoplay()" (mouseleave)="reprendreGalerieAutoplay()"
-           (touchstart)="onHeroTouchStart($event)" (touchend)="onHeroTouchEnd($event)">
+      <div class="hero-col-visuel ub-anim-hero-slide-in" (mouseenter)="pauseGalerieAutoplay()"
+        (mouseleave)="reprendreGalerieAutoplay()" (touchstart)="onHeroTouchStart($event)"
+        (touchend)="onHeroTouchEnd($event)">
 
         <div class="hero-gallery">
           <!-- Image secondaire arrière -->
           <div class="hero-gallery-img hero-gallery-img--back"
-               [style.background-image]="'url(' + heroGalleryImages[heroImgSecondaire2].image + '), ' + heroGalleryImages[heroImgSecondaire2].gradient">
+            [style.background-image]="'url(' + heroGalleryImages[heroImgSecondaire2].image + '), ' + heroGalleryImages[heroImgSecondaire2].gradient">
           </div>
 
           <!-- Image secondaire avant -->
           <div class="hero-gallery-img hero-gallery-img--front"
-               [style.background-image]="'url(' + heroGalleryImages[heroImgSecondaire1].image + '), ' + heroGalleryImages[heroImgSecondaire1].gradient">
+            [style.background-image]="'url(' + heroGalleryImages[heroImgSecondaire1].image + '), ' + heroGalleryImages[heroImgSecondaire1].gradient">
           </div>
 
           <!-- Image principale -->
           <div class="hero-gallery-img hero-gallery-img--main"
-               [style.background-image]="'url(' + heroGalleryImages[heroImgActif].image + '), ' + heroGalleryImages[heroImgActif].gradient">
+            [style.background-image]="'url(' + heroGalleryImages[heroImgActif].image + '), ' + heroGalleryImages[heroImgActif].gradient">
             <span class="hero-gallery-label">{{ heroGalleryImages[heroImgActif].label }}</span>
           </div>
         </div>
@@ -81,11 +83,8 @@
 
         <!-- Indicateurs -->
         <div class="hero-gallery-dots">
-          <button *ngFor="let img of heroGalleryImages; let i = index"
-                  class="hero-dot"
-                  [class.active]="i === heroImgActif"
-                  (click)="allerAGalerieImage(i)"
-                  [attr.aria-label]="'Voir ' + img.label">
+          <button *ngFor="let img of heroGalleryImages; let i = index" class="hero-dot"
+            [class.active]="i === heroImgActif" (click)="allerAGalerieImage(i)" [attr.aria-label]="'Voir ' + img.label">
           </button>
         </div>
       </div>
@@ -94,7 +93,103 @@
   </div>
 </section>
 
+<div class="text-center mb-5">
+  <h2 class="fw-bold mb-3" style="font-size:clamp(26px,3vw,34px);">
+    Nos <span style="color:var(--accent)">Cathegories</span>
+  </h2>
+  <div class="avantages-underline">
+    <span class="seg-1"></span><span class="seg-2"></span>
+  </div>
+</div>
 
+
+<!-- ══════════════════════════ CATÉGORIES + CARROUSELS ══════════════════════════ -->
+<section class="py-4" *ngFor="let cat of categorySections">
+  <div class="container-xl px-4">
+
+    <div class="row g-4 align-items-stretch">
+
+      <!-- Carte catégorie (gauche) -->
+      <div class="col-12 col-lg-4">
+        <a [routerLink]="cat.lien" [queryParams]="{domaine: cat.key}" class="cat-card-lottie"
+          [style.background]="cat.gradient">
+          <span class="cat-card-lottie-blob cat-card-lottie-blob-1"></span>
+          <span class="cat-card-lottie-blob cat-card-lottie-blob-2"></span>
+
+          <div class="cat-card-lottie-anim">
+            <app-lottie-player [path]="cat.lottiePath" [fallbackIcon]="cat.icone" [size]="150"></app-lottie-player>
+          </div>
+
+          <h3 class="cat-card-lottie-titre">{{ cat.titre }}</h3>
+          <p class="cat-card-lottie-desc">{{ cat.description }}</p>
+
+          <span class="cat-card-lottie-btn">
+            {{ cat.ctaLabel }}
+            <i class="fa-solid fa-arrow-right"></i>
+          </span>
+        </a>
+      </div>
+
+      <!-- Carrousel produits (droite) — masqué sur mobile -->
+      <div class="col-12 col-lg-8 d-none d-md-block">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h4 class="fw-bold mb-0" style="font-size:19px;color:#1B2430;">{{ cat.carouselTitre }}</h4>
+          <div class="d-flex align-items-center gap-3">
+            <a [routerLink]="cat.lien" [queryParams]="{domaine: cat.key}"
+              class="small fw-semibold d-none d-lg-inline-flex align-items-center gap-1" style="color:var(--accent);">
+              Voir tout
+              <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i>
+            </a>
+            <div class="d-flex gap-2">
+              <button class="carousel-arrow" (click)="faireDefiler(track, -1)" aria-label="Précédent">
+                <i class="fa-solid fa-chevron-left"></i>
+              </button>
+              <button class="carousel-arrow" (click)="faireDefiler(track, 1)" aria-label="Suivant">
+                <i class="fa-solid fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="cat-carousel-track" #track>
+          <div class="cat-carousel-card" *ngFor="let p of produitsDe(cat); trackBy: trackById"
+            (click)="ouvrirCategorie(cat.key)">
+            <div class="cat-carousel-visuel" [style.background]="p.iconeBg">
+              <span *ngIf="p.badge" class="produit-badge" [class.badge-bestseller]="p.badge === 'Best-seller'"
+                [class.badge-gratuit]="p.badge === 'Gratuit'" [class.badge-premium]="p.badge === 'Premium'">
+                {{ p.badge }}
+              </span>
+              <button class="cat-carousel-checkbox" [class.checked]="estDansComparateur(p.id)"
+                (click)="toggleComparaison(p, cat.titre, $event)" aria-label="Ajouter au comparateur">
+                <i class="fa-solid fa-check" *ngIf="estDansComparateur(p.id)"></i>
+              </button>
+              <img *ngIf="p.images && p.images.length > 0" [src]="p.images[0]" [alt]="p.titre" class="cat-carousel-img">
+              <i *ngIf="!p.images || p.images.length === 0" class="fa-solid {{ p.icone }} cat-carousel-icon"></i>
+            </div>
+            <div class="cat-carousel-body">
+              <h4 class="cat-carousel-titre">{{ p.titre }}</h4>
+              <div class="d-flex align-items-center gap-2 mt-2 flex-wrap">
+                <span class="cat-carousel-prix" [class.gratuit]="p.prix === 0">{{ formatPrix(p.prix) }}</span>
+                <span *ngIf="p.ancienPrix" class="cat-carousel-old-prix">{{ formatPrix(p.ancienPrix) }}</span>
+              </div>
+              <span *ngIf="p.ancienPrix && p.ancienPrix > p.prix" class="cat-carousel-economie">
+                Économisez {{ formatPrix(p.ancienPrix - p.prix) }}
+              </span>
+              <div class="d-flex align-items-center justify-content-end mt-2">
+                <button class="cat-carousel-add" (click)="ajouterPanier(p, cat.titre); $event.stopPropagation()"
+                  aria-label="Ajouter au panier">
+                  <i class="fa-solid fa-cart-plus"></i>
+                  Ajouter
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
 <!-- ══════════════════════════ POURQUOI CHOISIR UNIVERSITY BOOK ══════════════════════════ -->
 <section class="py-5" ubReveal>
   <div class="container-xl px-4">
@@ -131,110 +226,12 @@
     </div>
   </div>
 </section>
-<div class="text-center mb-5">
-        <h2 class="fw-bold mb-3" style="font-size:clamp(26px,3vw,34px);">
-          Nos <span style="color:var(--accent)">Cathegories</span>
-        </h2>
-        <div class="avantages-underline">
-          <span class="seg-1"></span><span class="seg-2"></span>
-        </div>
-      </div>
 
-
-<!-- ══════════════════════════ CATÉGORIES + CARROUSELS ══════════════════════════ -->
-<section class="py-4" *ngFor="let cat of categorySections">
-  <div class="container-xl px-4">
-   
-    <div class="row g-4 align-items-stretch">
-      
-      <!-- Carte catégorie (gauche) -->
-      <div class="col-12 col-lg-4">
-        <a [routerLink]="cat.lien" [queryParams]="{domaine: cat.key}" class="cat-card-lottie" [style.background]="cat.gradient">
-          <span class="cat-card-lottie-blob cat-card-lottie-blob-1"></span>
-          <span class="cat-card-lottie-blob cat-card-lottie-blob-2"></span>
-
-          <div class="cat-card-lottie-anim">
-            <app-lottie-player [path]="cat.lottiePath" [fallbackIcon]="cat.icone" [size]="150"></app-lottie-player>
-          </div>
-
-          <h3 class="cat-card-lottie-titre">{{ cat.titre }}</h3>
-          <p class="cat-card-lottie-desc">{{ cat.description }}</p>
-
-          <span class="cat-card-lottie-btn">
-            {{ cat.ctaLabel }}
-            <i class="fa-solid fa-arrow-right"></i>
-          </span>
-        </a>
-      </div>
-
-      <!-- Carrousel produits (droite) — masqué sur mobile -->
-      <div class="col-12 col-lg-8 d-none d-md-block">
-        <div class="d-flex align-items-center justify-content-between mb-3">
-          <h4 class="fw-bold mb-0" style="font-size:19px;color:#1B2430;">{{ cat.carouselTitre }}</h4>
-          <div class="d-flex align-items-center gap-3">
-            <a [routerLink]="cat.lien" [queryParams]="{domaine: cat.key}" class="small fw-semibold d-none d-lg-inline-flex align-items-center gap-1"
-               style="color:var(--accent);">
-              Voir tout
-              <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i>
-            </a>
-            <div class="d-flex gap-2">
-              <button class="carousel-arrow" (click)="faireDefiler(track, -1)" aria-label="Précédent">
-                <i class="fa-solid fa-chevron-left"></i>
-              </button>
-              <button class="carousel-arrow" (click)="faireDefiler(track, 1)" aria-label="Suivant">
-                <i class="fa-solid fa-chevron-right"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="cat-carousel-track" #track>
-          <div class="cat-carousel-card" *ngFor="let p of produitsDe(cat); trackBy: trackById" (click)="ouvrirCategorie(cat.key)">
-            <div class="cat-carousel-visuel" [style.background]="p.iconeBg">
-              <span *ngIf="p.badge" class="produit-badge"
-                    [class.badge-bestseller]="p.badge === 'Best-seller'"
-                    [class.badge-gratuit]="p.badge === 'Gratuit'"
-                    [class.badge-premium]="p.badge === 'Premium'">
-                {{ p.badge }}
-              </span>
-              <button class="cat-carousel-checkbox"
-                      [class.checked]="estDansComparateur(p.id)"
-                      (click)="toggleComparaison(p, cat.titre, $event)"
-                      aria-label="Ajouter au comparateur">
-                <i class="fa-solid fa-check" *ngIf="estDansComparateur(p.id)"></i>
-              </button>
-              <img *ngIf="p.images && p.images.length > 0" [src]="p.images[0]" [alt]="p.titre" class="cat-carousel-img">
-              <i *ngIf="!p.images || p.images.length === 0" class="fa-solid {{ p.icone }} cat-carousel-icon"></i>
-            </div>
-            <div class="cat-carousel-body">
-              <h4 class="cat-carousel-titre">{{ p.titre }}</h4>
-              <div class="d-flex align-items-center gap-2 mt-2 flex-wrap">
-                <span class="cat-carousel-prix" [class.gratuit]="p.prix === 0">{{ formatPrix(p.prix) }}</span>
-                <span *ngIf="p.ancienPrix" class="cat-carousel-old-prix">{{ formatPrix(p.ancienPrix) }}</span>
-              </div>
-              <span *ngIf="p.ancienPrix && p.ancienPrix > p.prix" class="cat-carousel-economie">
-                Économisez {{ formatPrix(p.ancienPrix - p.prix) }}
-              </span>
-              <div class="d-flex align-items-center justify-content-end mt-2">
-                <button class="cat-carousel-add" (click)="ajouterPanier(p, cat.titre); $event.stopPropagation()"
-                        aria-label="Ajouter au panier">
-                  <i class="fa-solid fa-cart-plus"></i>
-                  Ajouter
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
 
 
 <!-- ══════════════════════════ OFFRE SPÉCIALE + PRÊT À COMMENCER ══════════════════════════ -->
 <section class="py-4">
-  
+
   <div class="container-xl px-4">
     <div class="row g-4 align-items-stretch">
       <div class="text-center mb-5">
@@ -254,7 +251,7 @@
             <div class="col-12 col-md-7">
               <div class="promo-content">
                 <span class="badge rounded-pill px-3 py-2 mb-3 d-inline-flex align-items-center gap-2"
-                      style="background:rgba(255,255,255,.15);color:#fff;font-size:13px;font-weight:600;width:fit-content;">
+                  style="background:rgba(255,255,255,.15);color:#fff;font-size:13px;font-weight:600;width:fit-content;">
                   <i class="fa-solid fa-stopwatch"></i>
                   Offre limitée
                 </span>
@@ -264,8 +261,7 @@
                 <p class="mb-4" style="color:rgba(255,255,255,.85);font-size:15.5px;line-height:1.7;max-width:400px;">
                   Profitez de réductions exclusives sur une sélection de produits.
                 </p>
-                <a routerLink="/boutique"
-                   class="promo-cta-btn">
+                <a routerLink="/boutique" class="promo-cta-btn">
                   <i class="fa-solid fa-tag"></i>
                   Profiter des offres
                   <i class="fa-solid fa-arrow-right"></i>
@@ -276,7 +272,8 @@
             <div class="col-12 col-md-5">
               <div class="promo-visual">
                 <div class="promo-dots-pattern"></div>
-                <img [src]="promoImage" alt="Fournitures scolaires en promotion" loading="lazy" decoding="async" class="promo-visual-image">
+                <img [src]="promoImage" alt="Fournitures scolaires en promotion" loading="lazy" decoding="async"
+                  class="promo-visual-image">
                 <span class="promo-mini-tag">-30%</span>
                 <span class="promo-discount-circle">
                   <small>Jusqu'à</small>
@@ -318,12 +315,13 @@
 
           <div class="d-flex flex-column gap-2 mt-auto">
             <a routerLink="/register" class="btn btn-accent d-flex align-items-center justify-content-center gap-2 py-3"
-               style="border-radius:12px;">
+              style="border-radius:12px;">
               <i class="fa-solid fa-user-plus"></i>
               Créer un compte
               <i class="fa-solid fa-arrow-right ms-auto"></i>
             </a>
-            <a routerLink="/login" class="btn-outline-accent d-flex align-items-center justify-content-center gap-2 py-3">
+            <a routerLink="/login"
+              class="btn-outline-accent d-flex align-items-center justify-content-center gap-2 py-3">
               <i class="fa-solid fa-right-to-bracket"></i>
               Se connecter
               <i class="fa-solid fa-arrow-right ms-auto"></i>

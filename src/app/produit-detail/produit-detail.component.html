@@ -22,7 +22,7 @@
       <div class="pdd-breadcrumb mb-4">
         <a routerLink="/boutique">Boutique</a>
         <i class="fa-solid fa-chevron-right"></i>
-        <span>{{ p.domaine === 'documents' ? 'Documents' : 'Fournitures scolaires' }}</span>
+        <a [routerLink]="['/boutique']" [queryParams]="{domaine: p.domaine}">{{ p.domaine === 'documents' ? 'Documents' : 'Fournitures scolaires' }}</a>
         <i class="fa-solid fa-chevron-right"></i>
         <span class="pdd-breadcrumb-current">{{ p.titre }}</span>
       </div>
@@ -32,11 +32,13 @@
 
         <!-- ─── Colonne gauche : galerie ─── -->
         <div class="pdd-gallery">
-          <div class="pdd-gallery-main" [style.background]="aDesImages ? '#fff' : p.iconeBg">
+          <div class="pdd-gallery-main" [style.background]="aDesImages ? '#fff' : p.iconeBg"
+               [class.pdd-clickable]="aDesImages" (click)="ouvrirModalImage()">
             <span *ngIf="p.badge" class="pdd-badge" [class.badge-bestseller]="p.badge === 'Best-seller'" [class.badge-gratuit]="p.badge === 'Gratuit'">{{ p.badge }}</span>
             <span *ngIf="pourcentagePromo(p) > 0" class="pdd-badge badge-promo">-{{ pourcentagePromo(p) }}%</span>
             <img *ngIf="aDesImages" [src]="imageUrl(imageActive)" [alt]="p.titre" class="pdd-gallery-img">
             <i *ngIf="!aDesImages" class="fa-solid {{ p.icone }} pdd-gallery-icon" [class]="'pdd-tint-' + imageActive"></i>
+            <span *ngIf="aDesImages" class="pdd-gallery-zoom-hint"><i class="fa-solid fa-expand"></i></span>
           </div>
           <div class="pdd-thumbs" *ngIf="galerie.length > 1">
             <button *ngFor="let i of galerie; trackBy: trackByValue" class="pdd-thumb"
@@ -64,13 +66,11 @@
           <div class="d-flex align-items-center gap-3 flex-wrap pdd-meta">
             <span><i class="fa-solid fa-hashtag me-1"></i>{{ reference(p) }}</span>
             <span><i class="fa-solid fa-barcode me-1"></i>{{ p.sku }}</span>
-            <span [style.color]="etatStock === 'rupture' ? '#8C2433' : (etatStock === 'stock-faible' ? '#C2410C' : '#166534')">
+            <span [style.color]="etatStock === 'rupture' ? '#8C2433' : '#166534'">
               <i class="fa-solid"
                  [class.fa-circle-check]="etatStock === 'en-stock'"
-                 [class.fa-triangle-exclamation]="etatStock === 'stock-faible'"
                  [class.fa-circle-xmark]="etatStock === 'rupture'"></i>
-              {{ etatStock === 'en-stock' ? 'En stock' : (etatStock === 'stock-faible' ? 'Stock faible' : 'Rupture de stock') }}
-              <ng-container *ngIf="etatStock !== 'rupture' && stockAffiche !== null"> ({{ stockAffiche }} restants)</ng-container>
+              {{ etatStock === 'en-stock' ? 'En stock' : 'Rupture de stock' }}
             </span>
           </div>
 
@@ -146,6 +146,23 @@
           </div>
 
         </div>
+      </div>
+
+      <!-- ══ MODAL IMAGE (lightbox) ══ -->
+      <div class="pdd-img-modal-overlay" *ngIf="modalImageOuvert" (click)="fermerModalImage()">
+        <button class="pdd-img-modal-close" (click)="fermerModalImage()" aria-label="Fermer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+        <button class="pdd-img-modal-nav pdd-img-modal-prev" *ngIf="galerie.length > 1"
+                (click)="imageModalPrecedente(); $event.stopPropagation()" aria-label="Image précédente">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <img [src]="imageUrl(imageActive)" [alt]="p.titre" class="pdd-img-modal-img" (click)="$event.stopPropagation()">
+        <button class="pdd-img-modal-nav pdd-img-modal-next" *ngIf="galerie.length > 1"
+                (click)="imageModalSuivante(); $event.stopPropagation()" aria-label="Image suivante">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <span class="pdd-img-modal-compteur" *ngIf="galerie.length > 1">{{ imageActive + 1 }}/{{ galerie.length }}</span>
       </div>
 
       <!-- ══ ONGLETS ══ -->

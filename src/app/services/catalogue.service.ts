@@ -230,7 +230,16 @@ export class CatalogueService {
       marque: p.marque || undefined,
       codeBarres: p.codeBarres || undefined,
       stock: p.stock,
-      images: (p.image ? [p.image] : p.images) || undefined,
+      // Image principale (p.image, "Image du produit" en caisse) en premier, suivie de la
+      // galerie "Ajouter sur Site Internet" (p.images, voir syncProduitSite.js) — les deux
+      // champs sont saisis séparément en caisse et peuvent contenir des photos différentes ; ne
+      // garder que la galerie (comme avant) faisait disparaître l'image principale dès qu'une
+      // galerie existait. Dédoublonnée si la principale a aussi été ajoutée dans la galerie.
+      images: (() => {
+        const galerie = (p.images || []).filter(img => img !== p.image);
+        const toutes = p.image ? [p.image, ...galerie] : galerie;
+        return toutes.length > 0 ? toutes : undefined;
+      })(),
       description: p.description || undefined,
       couleurs: p.couleurs && p.couleurs.length > 0 ? p.couleurs : undefined,
       formats: p.formats && p.formats.length > 0 ? p.formats : undefined

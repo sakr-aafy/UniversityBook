@@ -6,7 +6,7 @@ import { AuthService, AuthUser } from '../services/auth.service';
 import { BoutiqueFavoritesService } from '../services/boutique-favorites.service';
 import { NotificationsService, AppNotification } from '../services/notifications.service';
 import { ConfirmDialogService } from '../services/confirm-dialog.service';
-import { CatalogueService, CategorieArbre } from '../services/catalogue.service';
+import { CatalogueService } from '../services/catalogue.service';
 import { photoUrl } from '../shared/photo-url.util';
 
 export interface SousCategorieFourniture {
@@ -17,6 +17,11 @@ export interface SousCategorieFourniture {
 export interface CategorieFourniture {
   nom: string;
   sousCategories: SousCategorieFourniture[];
+}
+
+export interface CategorieDocument {
+  nom: string;
+  sousCategories: { nom: string }[];
 }
 
 @Component({
@@ -72,11 +77,24 @@ export class HeaderComponent implements OnInit, OnDestroy {
     return photoUrl(this.currentUser?.photo);
   }
 
-  /** Catégories réelles (Category collection), alimentent le mega-menu — plus aucun
-   *  contenu codé en dur : ajouter une catégorie/sous-catégorie en admin la fait apparaître
-   *  ici automatiquement (au prochain chargement de `catalogueService`). */
-  get categoriesDocuments(): CategorieArbre[] {
-    return this.catalogueService.categories.filter(c => c.type === 'documents');
+  /** Arbre Catégorie > Sous-catégorie construit dynamiquement à partir des documents réellement
+   *  publiés (synchronisés depuis la caisse, voir caisse/pages/fournisseurs et
+   *  backend/controllers/syncDocumentSite.js) — même principe que categoriesFournituresArbre
+   *  ci-dessous : reflète exactement les catégories/sous-catégories gérées en caisse plutôt qu'une
+   *  collection Category admin séparée qui pouvait en diverger (jamais de lien mort vers une
+   *  catégorie sans document derrière, se met à jour tout seul dès qu'un document est
+   *  publié/dépublié). */
+  get categoriesDocuments(): CategorieDocument[] {
+    const documents = this.catalogueService.produits.filter(p => p.domaine === 'documents' && p.categorie);
+    const parCategorie = new Map<string, Set<string>>();
+    documents.forEach(d => {
+      if (!parCategorie.has(d.categorie)) parCategorie.set(d.categorie, new Set());
+      if (d.sousCategorie) parCategorie.get(d.categorie)!.add(d.sousCategorie);
+    });
+    return [...parCategorie.entries()].map(([nom, sousSet]) => ({
+      nom,
+      sousCategories: [...sousSet].map(sousNom => ({ nom: sousNom }))
+    }));
   }
 
   /** Arbre Catégorie > Sous-catégorie > Sous-sous-catégorie construit dynamiquement à partir des
@@ -141,7 +159,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
     });
     this.authSub = this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
-      if (user) {
+      // Les notifications sont un espace client (backend : requireUser) — un admin connecté
+      // (qui parcourt aussi les pages publiques avec ce même header) reçoit systématiquement
+      // un 403 sur cet appel, les notifications admin passant par un système séparé.
+      if (user && user.role === 'user') {
         this.chargerNotifications();
       } else {
         this.notifications = [];

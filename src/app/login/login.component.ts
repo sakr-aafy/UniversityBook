@@ -9,7 +9,7 @@ import { AuthService } from '../services/auth.service';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
-  email: string = '';
+  identifiant: string = '';
   motDePasse: string = '';
   souvenir: boolean = false;
   showPassword: boolean = false;
@@ -26,13 +26,13 @@ export class LoginComponent {
   login(): void {
     this.erreur = '';
 
-    if (!this.email || !this.motDePasse) {
-      this.erreur = 'Veuillez saisir votre email et votre mot de passe.';
+    if (!this.identifiant || !this.motDePasse) {
+      this.erreur = 'Veuillez saisir votre email (ou téléphone) et votre mot de passe.';
       return;
     }
 
     this.chargement = true;
-    this.authService.login({ email: this.email, motDePasse: this.motDePasse }).subscribe({
+    this.authService.login({ identifiant: this.identifiant, motDePasse: this.motDePasse }).subscribe({
       next: () => {
         this.chargement = false;
         this.router.navigate([this.authService.espaceUrl]);

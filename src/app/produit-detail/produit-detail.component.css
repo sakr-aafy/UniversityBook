@@ -82,6 +82,89 @@
 .pdd-gallery-main:hover .pdd-gallery-img {
   transform: scale(1.06);
 }
+.pdd-gallery-main.pdd-clickable { cursor: zoom-in; }
+
+/* Indice discret (loupe) au survol de la grande image — invite à cliquer pour l'agrandir. */
+.pdd-gallery-zoom-hint {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: rgba(27,36,48,.55);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity .18s, transform .18s;
+  pointer-events: none;
+  z-index: 1;
+}
+.pdd-gallery-main:hover .pdd-gallery-zoom-hint {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Modal image (lightbox plein écran) ── */
+.pdd-img-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,17,23,.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  padding: 40px;
+  animation: pdd-modal-fade .18s ease both;
+}
+@keyframes pdd-modal-fade { from { opacity: 0; } to { opacity: 1; } }
+.pdd-img-modal-img {
+  max-width: 88vw;
+  max-height: 86vh;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 24px 64px -20px rgba(0,0,0,.5);
+  cursor: default;
+}
+.pdd-img-modal-close,
+.pdd-img-modal-nav {
+  position: absolute;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,.12);
+  color: #fff;
+  font-size: 17px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background .18s, transform .18s;
+}
+.pdd-img-modal-close:hover,
+.pdd-img-modal-nav:hover { background: rgba(255,255,255,.22); }
+.pdd-img-modal-close { top: 24px; right: 28px; }
+.pdd-img-modal-nav { top: 50%; transform: translateY(-50%); }
+.pdd-img-modal-nav:hover { transform: translateY(-50%) scale(1.06); }
+.pdd-img-modal-prev { left: 24px; }
+.pdd-img-modal-next { right: 24px; }
+.pdd-img-modal-compteur {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 5px 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.12);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+@media (max-width: 576px) {
+  .pdd-img-modal-overlay { padding: 16px; }
+  .pdd-img-modal-nav { width: 38px; height: 38px; font-size: 14px; }
+  .pdd-img-modal-prev { left: 10px; }
+  .pdd-img-modal-next { right: 10px; }
+}
 
 .pdd-tint-0 { filter: none; }
 .pdd-tint-1 { filter: brightness(1.15) saturate(1.2); }

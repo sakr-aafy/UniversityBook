@@ -43,6 +43,7 @@ export interface DocumentCatalogueForm {
   faculte: string;
   matiereEnseignee: string;
   semestre: string;
+  actif?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -114,6 +115,7 @@ export class AdminDocumentsService {
     formData.append('faculte', data.faculte || '');
     formData.append('matiereEnseignee', data.matiereEnseignee || '');
     formData.append('semestre', data.semestre || '');
+    if (data.actif !== undefined) formData.append('actif', String(data.actif));
     if (image) formData.append('image', image);
     if (fichier) formData.append('fichier', fichier);
     if (imagesExistantes) formData.append('imagesExistantes', JSON.stringify(imagesExistantes));

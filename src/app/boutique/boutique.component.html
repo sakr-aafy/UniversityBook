@@ -271,7 +271,7 @@
               class="produit-img-dot" [class.active]="i === indexImageActuel(p)"></span>
       </div>
       <span class="produit-img-compteur" *ngIf="p.images && p.images.length > 1">
-        {{ indexImageActuel(p) + 1 }}/{{ p.images.length }}
+        <i class="fa-solid fa-images"></i>{{ indexImageActuel(p) + 1 }}/{{ p.images.length }}
       </span>
 
       <!-- Badges -->
@@ -400,8 +400,9 @@
     </button>
   </div>
 
-  <!-- Catégories (uniquement pour le domaine Documents) -->
-  <details class="filtre-accordion" open *ngIf="domaineActif === 'documents'">
+  <!-- Catégories (les deux domaines — filtrerCategorie/categories filtrent déjà par
+       domaineActif, seule cette condition les cachait pour les Fournitures scolaires) -->
+  <details class="filtre-accordion" open *ngIf="categories.length > 0">
     <summary class="filtre-accordion-titre">
       Catégorie <i class="fa-solid fa-chevron-down filtre-accordion-chevron"></i>
     </summary>

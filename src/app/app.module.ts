@@ -31,6 +31,7 @@ import { FavorisComponent } from './user/favoris/favoris.component';
 import { PanierComponent as UserPanierComponent } from './user/panier/panier.component';
 import { PaiementsComponent } from './user/paiements/paiements.component';
 import { ProfilComponent } from './user/profil/profil.component';
+import { TicketsFacturesComponent } from './user/tickets-factures/tickets-factures.component';
 
 import { AdminLayoutComponent } from './admin/admin-layout/admin-layout.component';
 import { DashbordAdminComponent } from './admin/dashbord-admin/dashbord-admin.component';
@@ -66,6 +67,7 @@ import { AdminProfilComponent } from './admin/profil/admin-profil.component';
     UserPanierComponent,
     PaiementsComponent,
     ProfilComponent,
+    TicketsFacturesComponent,
     AdminLayoutComponent,
     DashbordAdminComponent,
     UtilisateursComponent,

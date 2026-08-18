@@ -1,0 +1,214 @@
+<div class="p-4 p-lg-5">
+  <h1 class="font-spectral fw-bold mb-2" style="font-size:24px;">Mes tickets &amp; factures</h1>
+  <p class="mb-4" style="color:#6B7480;font-size:14.5px;">Historique de vos achats effectués en magasin.</p>
+
+  <!-- Onglets -->
+  <div class="ub-tk-tabs mb-4">
+    <button class="ub-tk-tab" [class.active]="ongletActif==='tickets'" (click)="changerOnglet('tickets')">
+      <i class="fa-solid fa-receipt me-2"></i>Tickets de caisse
+      <span class="ub-tk-tab-count" *ngIf="tickets.length > 0">{{ tickets.length }}</span>
+    </button>
+    <button class="ub-tk-tab" [class.active]="ongletActif==='factures'" (click)="changerOnglet('factures')">
+      <i class="fa-solid fa-file-invoice me-2"></i>Factures
+      <span class="ub-tk-tab-count" *ngIf="factures.length > 0">{{ factures.length }}</span>
+    </button>
+  </div>
+
+  <div class="d-flex justify-content-center py-5" *ngIf="chargement">
+    <i class="fa-solid fa-spinner fa-spin fa-2x" style="color:var(--accent)"></i>
+  </div>
+
+  <div class="alert alert-danger" *ngIf="erreur && !chargement">{{ erreur }}</div>
+
+  <ng-container *ngIf="!chargement && !erreur">
+
+    <!-- ── Tickets ── -->
+    <ng-container *ngIf="ongletActif==='tickets'">
+      <div class="ub-tk-empty" *ngIf="tickets.length === 0">
+        <i class="fa-solid fa-receipt"></i>
+        <p class="mb-0">Aucun ticket de caisse pour le moment.</p>
+        <p class="small text-secondary mb-0">Vos achats en magasin (associés à votre carte fidélité) apparaîtront ici.</p>
+      </div>
+
+      <div class="ub-tk-list" *ngIf="tickets.length > 0">
+        <div class="ub-tk-card" *ngFor="let t of tickets; trackBy: trackByTicket" (click)="voirTicket(t)">
+          <div class="ub-tk-card-top">
+            <div>
+              <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                <span class="fw-bold" style="font-size:15.5px;color:#1B2430;">Ticket #{{ t.numero }}</span>
+                <span class="ub-tk-badge" [style.color]="statutTicketInfo(t.statut).couleur" [style.background]="statutTicketInfo(t.statut).fond">
+                  <i class="fa-solid {{ statutTicketInfo(t.statut).icone }} me-1"></i>{{ statutTicketInfo(t.statut).label }}
+                </span>
+              </div>
+              <span class="small text-secondary">
+                <i class="fa-regular fa-calendar me-1"></i>{{ t.date | date:'dd/MM/yyyy' }}
+                <i class="fa-regular fa-clock ms-2 me-1"></i>{{ t.date | date:'HH:mm' }}
+              </span>
+            </div>
+            <div class="text-end">
+              <div class="fw-bold font-spectral" style="font-size:18px;color:var(--accent);">{{ t.totalTTC | number:'1.3-3' }} د.ت</div>
+              <span class="small text-secondary">{{ nombreArticlesTicket(t) }} article{{ nombreArticlesTicket(t) > 1 ? 's' : '' }}</span>
+            </div>
+          </div>
+          <div class="ub-tk-card-meta">
+            <div class="ub-tk-meta-item"><i class="fa-solid fa-wallet"></i>{{ t.modePaiement }}</div>
+            <div class="ub-tk-meta-item" *ngIf="t.remiseGlobale > 0 || t.remiseFidelite > 0">
+              <i class="fa-solid fa-tag"></i>Remise appliquée
+            </div>
+            <div class="ub-tk-meta-item" *ngIf="t.pointsGagnes > 0"><i class="fa-solid fa-star"></i>+{{ t.pointsGagnes }} points</div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ── Factures ── -->
+    <ng-container *ngIf="ongletActif==='factures'">
+      <div class="ub-tk-empty" *ngIf="factures.length === 0">
+        <i class="fa-solid fa-file-invoice"></i>
+        <p class="mb-0">Aucune facture pour le moment.</p>
+      </div>
+
+      <div class="ub-tk-list" *ngIf="factures.length > 0">
+        <div class="ub-tk-card" *ngFor="let f of factures; trackBy: trackByFacture" (click)="voirFacture(f)">
+          <div class="ub-tk-card-top">
+            <div>
+              <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                <span class="fw-bold" style="font-size:15.5px;color:#1B2430;">{{ f.numFacture }}</span>
+                <span class="ub-tk-badge" [style.color]="statutFactureInfo(f.statut).couleur" [style.background]="statutFactureInfo(f.statut).fond">
+                  <i class="fa-solid {{ statutFactureInfo(f.statut).icone }} me-1"></i>{{ statutFactureInfo(f.statut).label }}
+                </span>
+              </div>
+              <span class="small text-secondary"><i class="fa-regular fa-calendar me-1"></i>{{ f.date }}</span>
+            </div>
+            <div class="text-end">
+              <div class="fw-bold font-spectral" style="font-size:18px;color:var(--accent);">{{ f.total | number:'1.3-3' }} د.ت</div>
+              <span class="small text-secondary" *ngIf="f.numTicket">Ticket(s) {{ f.numTicket }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+  </ng-container>
+</div>
+
+<!-- ═══ MODAL — Détail ticket ═══ -->
+<div class="ub-tk-modal-overlay" *ngIf="ticketSelectionne" (click)="fermerTicket()">
+  <div class="ub-tk-modal" (click)="$event.stopPropagation()">
+    <div class="d-flex justify-content-between align-items-start mb-4">
+      <div>
+        <h2 class="fw-bold mb-1" style="font-size:20px;">Ticket #{{ ticketSelectionne.numero }}</h2>
+        <span class="ub-tk-badge" [style.color]="statutTicketInfo(ticketSelectionne.statut).couleur" [style.background]="statutTicketInfo(ticketSelectionne.statut).fond">
+          <i class="fa-solid {{ statutTicketInfo(ticketSelectionne.statut).icone }} me-1"></i>{{ statutTicketInfo(ticketSelectionne.statut).label }}
+        </span>
+      </div>
+      <button class="btn btn-sm btn-outline-dark-ub" (click)="fermerTicket()" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-4">
+        <p class="small text-secondary mb-1">Date</p>
+        <p class="fw-semibold mb-0">{{ ticketSelectionne.date | date:'dd/MM/yyyy HH:mm' }}</p>
+      </div>
+      <div class="col-6 col-md-4">
+        <p class="small text-secondary mb-1">Paiement</p>
+        <p class="fw-semibold mb-0">{{ ticketSelectionne.modePaiement }}</p>
+      </div>
+      <div class="col-6 col-md-4">
+        <p class="small text-secondary mb-1">Code-barres</p>
+        <p class="fw-semibold mb-0">{{ ticketSelectionne.codeBarre }}</p>
+      </div>
+    </div>
+
+    <p class="small text-secondary mb-2 fw-semibold">Articles</p>
+    <div class="table-responsive mb-3">
+      <table class="table align-middle">
+        <thead>
+          <tr class="text-secondary small">
+            <th>Article</th>
+            <th class="text-end">Qté</th>
+            <th class="text-end">P.U.</th>
+            <th class="text-end">Remise</th>
+            <th class="text-end">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let l of ticketSelectionne.lignes">
+            <td>{{ l.designation }}</td>
+            <td class="text-end">{{ l.qte }}</td>
+            <td class="text-end">{{ l.prixUnitaire | number:'1.3-3' }} د.ت</td>
+            <td class="text-end">{{ l.remisePct > 0 ? '-' + l.remisePct + '%' : '—' }}</td>
+            <td class="text-end fw-semibold">{{ l.totalLigne | number:'1.3-3' }} د.ت</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex flex-column align-items-end gap-1 mb-4">
+      <span class="small text-secondary">Sous-total : {{ ticketSelectionne.sousTotal | number:'1.3-3' }} د.ت</span>
+      <span class="small text-secondary" *ngIf="ticketSelectionne.remiseGlobale > 0">Remise : − {{ ticketSelectionne.remiseGlobale | number:'1.3-3' }} د.ت</span>
+      <span class="small text-secondary" *ngIf="ticketSelectionne.remiseFidelite > 0">Remise fidélité : − {{ ticketSelectionne.remiseFidelite | number:'1.3-3' }} د.ت</span>
+      <span class="fw-bold" style="font-size:18px;color:var(--accent);">Total : {{ ticketSelectionne.totalTTC | number:'1.3-3' }} د.ت</span>
+    </div>
+
+    <button class="btn btn-outline-dark-ub" (click)="imprimer()"><i class="fa-solid fa-print me-2"></i>Imprimer</button>
+  </div>
+</div>
+
+<!-- ═══ MODAL — Détail facture ═══ -->
+<div class="ub-tk-modal-overlay" *ngIf="factureSelectionnee" (click)="fermerFacture()">
+  <div class="ub-tk-modal" (click)="$event.stopPropagation()">
+    <div class="d-flex justify-content-between align-items-start mb-4">
+      <div>
+        <h2 class="fw-bold mb-1" style="font-size:20px;">{{ factureSelectionnee.numFacture }}</h2>
+        <span class="ub-tk-badge" [style.color]="statutFactureInfo(factureSelectionnee.statut).couleur" [style.background]="statutFactureInfo(factureSelectionnee.statut).fond">
+          <i class="fa-solid {{ statutFactureInfo(factureSelectionnee.statut).icone }} me-1"></i>{{ statutFactureInfo(factureSelectionnee.statut).label }}
+        </span>
+      </div>
+      <button class="btn btn-sm btn-outline-dark-ub" (click)="fermerFacture()" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-6 col-md-4">
+        <p class="small text-secondary mb-1">Date</p>
+        <p class="fw-semibold mb-0">{{ factureSelectionnee.date }}</p>
+      </div>
+      <div class="col-6 col-md-4" *ngIf="factureSelectionnee.numTicket">
+        <p class="small text-secondary mb-1">Ticket(s) associé(s)</p>
+        <p class="fw-semibold mb-0">{{ factureSelectionnee.numTicket }}</p>
+      </div>
+      <div class="col-6 col-md-4" *ngIf="factureSelectionnee.timbreFiscal > 0">
+        <p class="small text-secondary mb-1">Timbre fiscal</p>
+        <p class="fw-semibold mb-0">{{ factureSelectionnee.timbreFiscal | number:'1.3-3' }} د.ت</p>
+      </div>
+    </div>
+
+    <p class="small text-secondary mb-2 fw-semibold">Articles</p>
+    <div class="table-responsive mb-3">
+      <table class="table align-middle">
+        <thead>
+          <tr class="text-secondary small">
+            <th>Article</th>
+            <th class="text-end">Qté</th>
+            <th class="text-end">P.U. HT</th>
+            <th class="text-end">Total TTC</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let l of factureSelectionnee.produits">
+            <td>{{ l.designation }}</td>
+            <td class="text-end">{{ l.qty }}</td>
+            <td class="text-end">{{ l.prixHT | number:'1.3-3' }} د.ت</td>
+            <td class="text-end fw-semibold">{{ l.totalTTC | number:'1.3-3' }} د.ت</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-content-end mb-4">
+      <span class="fw-bold" style="font-size:18px;color:var(--accent);">Total : {{ factureSelectionnee.total | number:'1.3-3' }} د.ت</span>
+    </div>
+
+    <button class="btn btn-outline-dark-ub" (click)="imprimer()"><i class="fa-solid fa-print me-2"></i>Imprimer</button>
+  </div>
+</div>

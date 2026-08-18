@@ -104,10 +104,10 @@
             </a>
             <ul class="list-unstyled mb-0">
               <li *ngFor="let cat of categoriesDocuments; trackBy: trackByNom" class="dropdown-submenu position-relative"
-                  (mouseenter)="openSub(cat._id)" (mouseleave)="closeSub()">
+                  (mouseenter)="openSub('doc:' + cat.nom)" (mouseleave)="closeSub()">
                 <a class="dropdown-item rounded-3 d-flex justify-content-between align-items-center"
                    style="font-size:14.5px;font-weight:500;"
-                   [style.color]="boutiqueSub===cat._id ? 'var(--accent)' : 'inherit'"
+                   [style.color]="boutiqueSub===('doc:' + cat.nom) ? 'var(--accent)' : 'inherit'"
                    [routerLink]="['/boutique']" [queryParams]="{domaine:'documents', categorie: cat.nom}"
                    (click)="fermerMegaMenu()">
                   {{ cat.nom }}
@@ -115,7 +115,7 @@
                 </a>
                 <ul class="dropdown-menu border-0 shadow-lg p-2" *ngIf="cat.sousCategories.length > 0"
                     style="top:-11px;left:100%;border-top:3px solid var(--accent)!important;border-radius:12px;min-width:230px;"
-                    [class.show]="boutiqueSub===cat._id">
+                    [class.show]="boutiqueSub===('doc:' + cat.nom)">
                   <li *ngFor="let sc of cat.sousCategories; trackBy: trackByNom">
                     <a class="dropdown-item rounded-3" style="font-size:14.5px"
                        [routerLink]="['/boutique']" [queryParams]="{domaine:'documents', categorie: cat.nom, sousCategorie: sc.nom}"
@@ -214,8 +214,8 @@
         <span class="ub-icon-badge" *ngIf="favorisCount > 0">{{ favorisCount }}</span>
       </a>
 
-      <!-- Notifications -->
-      <div class="position-relative" *ngIf="currentUser">
+      <!-- Notifications (espace client uniquement — voir header.component.ts) -->
+      <div class="position-relative" *ngIf="currentUser && currentUser.role === 'user'">
         <button class="ub-icon-link position-relative" (click)="toggleNotifications(); $event.stopPropagation()" aria-label="Notifications">
           <i class="fa-regular fa-bell fs-5"></i>
           <span class="ub-icon-badge" *ngIf="notifNonLues > 0">{{ notifNonLues }}</span>
@@ -340,11 +340,11 @@
             <i class="fa-solid fa-book me-2"></i>Documents numériques
           </a>
           <div class="accordion" *ngIf="categoriesDocuments.length > 0">
-            <div class="accordion-item border-0 border-bottom" *ngFor="let cat of categoriesDocuments; trackBy: trackByNom">
+            <div class="accordion-item border-0 border-bottom" *ngFor="let cat of categoriesDocuments; trackBy: trackByNom; let ci = index">
               <h2 class="accordion-header">
                 <ng-container *ngIf="cat.sousCategories.length > 0; else lienSimpleDoc">
                   <button class="accordion-button collapsed bg-white fw-500 ps-2 shadow-none small"
-                          type="button" data-bs-toggle="collapse" [attr.data-bs-target]="'#sub-' + cat._id">
+                          type="button" data-bs-toggle="collapse" [attr.data-bs-target]="'#sub-d-' + ci">
                     {{ cat.nom }}
                   </button>
                 </ng-container>
@@ -354,7 +354,7 @@
                      (click)="closeMenu()">{{ cat.nom }}</a>
                 </ng-template>
               </h2>
-              <div [id]="'sub-' + cat._id" class="accordion-collapse collapse" *ngIf="cat.sousCategories.length > 0">
+              <div [id]="'sub-d-' + ci" class="accordion-collapse collapse" *ngIf="cat.sousCategories.length > 0">
                 <div class="accordion-body ps-4 py-1">
                   <a class="d-block py-2 small text-secondary" *ngFor="let sc of cat.sousCategories; trackBy: trackByNom"
                      [routerLink]="['/boutique']" [queryParams]="{domaine:'documents', categorie: cat.nom, sousCategorie: sc.nom}"

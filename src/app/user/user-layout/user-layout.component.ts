@@ -31,6 +31,7 @@ export class UserLayoutComponent implements OnInit, OnDestroy {
     { label: 'Mes documents', icon: 'fa-book', route: '/user/documents', compteurCle: 'documents' },
     { label: 'Mes favoris', icon: 'fa-heart', route: '/user/favoris', compteurCle: 'favoris' },
     { label: 'Mes commandes', icon: 'fa-box', route: '/user/commandes', compteurCle: 'enAttente' },
+    { label: 'Tickets & factures', icon: 'fa-receipt', route: '/user/tickets-factures' },
     { label: 'Paiements', icon: 'fa-credit-card', route: '/user/paiements' },
     { label: 'Mon profil', icon: 'fa-user', route: '/user/profil' }
   ];
