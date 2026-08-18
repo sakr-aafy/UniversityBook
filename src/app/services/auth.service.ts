@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, tap, throwError, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface RegisterPayload {
@@ -36,6 +37,20 @@ export interface AuthResponse {
   user: AuthUser;
 }
 
+/**
+ * Réponse de POST /auth/login : la connexion nécessite désormais toujours une vérification par
+ * code OTP envoyé par e-mail (voir auth.controller.js#login/verifierOtpConnexion), sauf pour les
+ * rares comptes sans e-mail réel (client caisse sans adresse) où `otpRequired` est false et le
+ * jeton est déjà fourni.
+ */
+export interface LoginResult {
+  otpRequired: boolean;
+  message: string;
+  otpSession?: string;
+  token?: string;
+  user?: AuthUser;
+}
+
 const TOKEN_KEY = 'ub_token';
 const USER_KEY = 'ub_user';
 
@@ -54,10 +69,43 @@ export class AuthService {
       .pipe(tap(res => this.stocker(res)));
   }
 
-  login(payload: LoginPayload): Observable<AuthResponse> {
+  login(payload: LoginPayload): Observable<LoginResult> {
+    return this.http.post<LoginResult>(`${this.apiUrl}/login`, payload).pipe(
+      tap(res => { if (!res.otpRequired && res.token && res.user) this.stocker(res as AuthResponse); })
+    );
+  }
+
+  /** Étape 2 de la connexion : vérifie le code OTP reçu par e-mail (POST /auth/verifier-otp-connexion). */
+  verifierOtpConnexion(otpSession: string, code: string): Observable<AuthResponse> {
     return this.http
-      .post<AuthResponse>(`${this.apiUrl}/login`, payload)
+      .post<AuthResponse>(`${this.apiUrl}/verifier-otp-connexion`, { otpSession, code })
       .pipe(tap(res => this.stocker(res)));
+  }
+
+  /** "Mot de passe oublié" — étape 1 : demande l'envoi d'un code OTP par e-mail. */
+  demanderOtp(email: string): Observable<string | null> {
+    return this.http.post(`${this.apiUrl}/mot-de-passe-oublie`, { email }).pipe(
+      map(() => null),
+      catchError(err => of(err.error?.message || "Erreur lors de l'envoi du code."))
+    );
+  }
+
+  /** "Mot de passe oublié" — étape 2 : vérifie le code OTP saisi, renvoie un jeton de réinitialisation. */
+  verifierOtp(email: string, code: string): Observable<{ resetToken: string | null; error: string | null }> {
+    return this.http.post<{ resetToken: string }>(`${this.apiUrl}/mot-de-passe-oublie/verifier`, { email, code }).pipe(
+      map(res => ({ resetToken: res.resetToken, error: null })),
+      catchError(err => of({ resetToken: null, error: err.error?.message || 'Code incorrect ou expiré.' }))
+    );
+  }
+
+  /** "Mot de passe oublié" — étape 3 : applique le nouveau mot de passe. */
+  reinitialiserMotDePasse(email: string, resetToken: string, nouveauMotDePasse: string): Observable<string | null> {
+    return this.http.post(`${this.apiUrl}/mot-de-passe-oublie/nouveau-mot-de-passe`, {
+      email, resetToken, nouveauMotDePasse
+    }).pipe(
+      map(() => null),
+      catchError(err => of(err.error?.message || 'Erreur lors de la réinitialisation du mot de passe.'))
+    );
   }
 
   /**

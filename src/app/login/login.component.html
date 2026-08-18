@@ -38,7 +38,9 @@
             Connectez-vous pour accéder à vos ressources et commandes.
           </p>
           <br>
-          <form (ngSubmit)="login()">
+
+          <!-- ═══ Étape identifiant / mot de passe ═══ -->
+          <form *ngIf="!otpRequis" (ngSubmit)="login()">
 
             <!-- Message d'erreur -->
             <div class="mb-4" *ngIf="erreur">
@@ -46,7 +48,7 @@
                 <i class="fa-solid fa-circle-exclamation me-2"></i>{{ erreur }}
               </div>
             </div>
-            
+
 
             <!-- Email ou téléphone -->
             <div class="mb-4">
@@ -66,7 +68,7 @@
             <div class="mb-3">
               <div class="d-flex justify-content-between align-items-center mb-1">
                 <label class="form-label ub-label mb-0">Mot de passe</label>
-                <a href="#" class="small text-decoration-none" style="color:var(--accent);">
+                <a href="javascript:void(0)" class="small text-decoration-none" style="color:var(--accent);" (click)="openForgotModal()">
                   Mot de passe oublié ?
                 </a>
               </div>
@@ -137,8 +139,70 @@
 
           </form>
 
+          <!-- ═══ Étape vérification OTP (2FA connexion) ═══ -->
+          <form *ngIf="otpRequis" (ngSubmit)="verifierOtpLogin()">
+
+            <div class="mb-4" *ngIf="otpErreur">
+              <div class="alert alert-danger py-2 px-3 mb-0" style="font-size:14px;border-radius:12px;">
+                <i class="fa-solid fa-circle-exclamation me-2"></i>{{ otpErreur }}
+              </div>
+            </div>
+
+            <p class="mb-4" style="font-size:14px;color:#6B7480;">
+              Un code de vérification à 6 chiffres a été envoyé à
+              <strong style="color:#1B2430;">{{ identifiant }}</strong>.
+            </p>
+
+            <div class="mb-4">
+              <label class="form-label ub-label">Code de vérification</label>
+              <div class="input-group-ub">
+                <i class="fa-solid fa-shield-halved input-icon-ub" style="color:#9AA0A8"></i>
+                <input type="text" inputmode="numeric" maxlength="6"
+                       class="form-control ub-input"
+                       placeholder="123456"
+                       style="letter-spacing:6px;font-weight:700;"
+                       [(ngModel)]="otpCode"
+                       name="otpCode"
+                       autocomplete="one-time-code"
+                       required>
+              </div>
+            </div>
+
+            <p class="small mb-4" style="color:#9AA0A8;">
+              <ng-container *ngIf="otpResendCooldown > 0">
+                Renvoyer le code dans <strong>{{ otpResendCooldown }}s</strong>
+              </ng-container>
+              <ng-container *ngIf="otpResendCooldown === 0">
+                Vous n'avez pas reçu le code ?
+                <a href="javascript:void(0)" style="color:var(--accent);" (click)="renvoyerOtpLogin()">Renvoyer</a>
+              </ng-container>
+            </p>
+
+            <button type="submit"
+                    class="btn btn-accent w-100 py-3 rounded-pill fw-semibold mb-3"
+                    style="font-size:16px;"
+                    [disabled]="otpChargement || otpCode.length < 6">
+              <span *ngIf="!otpChargement">
+                <i class="fa-solid fa-circle-check me-2"></i>
+                Vérifier le code
+              </span>
+              <span *ngIf="otpChargement">
+                <i class="fa-solid fa-spinner fa-spin me-2"></i>
+                Vérification...
+              </span>
+            </button>
+
+            <button type="button"
+                    class="btn w-100 py-2 fw-semibold"
+                    style="border:1px solid #ECEDEF;border-radius:12px;font-size:14px;color:#6B7480;background:#fff;"
+                    (click)="annulerOtpLogin()">
+              Retour
+            </button>
+
+          </form>
+
           <!-- Lien inscription -->
-          <p class="text-center mb-0 small" style="color:#6B7480;">
+          <p class="text-center mb-0 small" *ngIf="!otpRequis" style="color:#6B7480;">
             Pas encore de compte ?
             <a routerLink="/register" class="fw-semibold text-decoration-none" style="color:var(--accent);">
               Créer un compte gratuit
@@ -159,3 +223,166 @@
     </div>
   </div>
 </section>
+
+<!-- ══════════════════════════════════════════════════════
+     MODALE : MOT DE PASSE OUBLIÉ
+══════════════════════════════════════════════════════ -->
+<div class="ub-modal-backdrop"
+     *ngIf="showForgotModal"
+     (click)="onBackdropClick($event)"
+     role="dialog" aria-modal="true" aria-labelledby="forgot-modal-title">
+  <div class="ub-modal-box">
+
+    <div class="ub-modal-header">
+      <button type="button" class="ub-modal-back" *ngIf="forgotStep === 2 && !forgotResetSuccess"
+              (click)="forgotStep = 1; forgotOtpInput = ''; forgotOtpError = ''; forgotOtpTouched = false; stopForgotCooldown()"
+              aria-label="Retour">
+        <i class="fa-solid fa-arrow-left"></i>
+      </button>
+      <button type="button" class="ub-modal-back" *ngIf="forgotStep === 3 && !forgotResetSuccess"
+              (click)="forgotStep = 2" aria-label="Retour">
+        <i class="fa-solid fa-arrow-left"></i>
+      </button>
+      <div *ngIf="forgotStep === 1 || forgotResetSuccess" class="ub-modal-back-placeholder"></div>
+
+      <h2 class="ub-modal-title" id="forgot-modal-title">
+        <ng-container *ngIf="forgotStep === 1">Mot de passe oublié</ng-container>
+        <ng-container *ngIf="forgotStep === 2 && !forgotResetSuccess">Vérification</ng-container>
+        <ng-container *ngIf="forgotStep === 3 && !forgotResetSuccess">Nouveau mot de passe</ng-container>
+        <ng-container *ngIf="forgotResetSuccess">Mot de passe modifié !</ng-container>
+      </h2>
+
+      <button type="button" class="ub-modal-close" (click)="closeForgotModal()" aria-label="Fermer">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <!-- Étape 1 : email -->
+    <div class="ub-modal-body" *ngIf="forgotStep === 1">
+      <p class="mb-4" style="font-size:14px;color:#6B7480;">
+        Saisissez l'adresse email associée à votre compte.<br>
+        Nous vous enverrons un code de vérification à 6 chiffres.
+      </p>
+
+      <div class="mb-3">
+        <div class="input-group-ub">
+          <i class="fa-regular fa-envelope input-icon-ub" style="color:#9AA0A8"></i>
+          <input type="email" class="form-control ub-input" name="forgotEmail"
+                 [(ngModel)]="forgotEmail" (blur)="onForgotEmailBlur()"
+                 placeholder="Votre adresse email" autocomplete="email">
+        </div>
+        <p class="small mt-1 mb-0" style="color:#DC2626;" *ngIf="forgotEmailError">{{ forgotEmailError }}</p>
+      </div>
+
+      <div class="mb-3" *ngIf="forgotError">
+        <div class="alert alert-danger py-2 px-3 mb-0" style="font-size:14px;border-radius:12px;">
+          <i class="fa-solid fa-circle-exclamation me-2"></i>{{ forgotError }}
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-accent w-100 py-3 rounded-pill fw-semibold"
+              style="font-size:16px;" [disabled]="forgotLoading" (click)="onSendForgotOtp()">
+        <span *ngIf="!forgotLoading"><i class="fa-solid fa-paper-plane me-2"></i>Envoyer le code</span>
+        <span *ngIf="forgotLoading"><i class="fa-solid fa-spinner fa-spin me-2"></i>Envoi en cours...</span>
+      </button>
+    </div>
+
+    <!-- Étape 2 : OTP -->
+    <div class="ub-modal-body" *ngIf="forgotStep === 2">
+      <p class="mb-4" style="font-size:14px;color:#6B7480;">
+        Un code à 6 chiffres a été envoyé à<br>
+        <strong style="color:#1B2430;">{{ forgotEmail }}</strong>
+      </p>
+
+      <div class="mb-3">
+        <div class="input-group-ub">
+          <i class="fa-solid fa-shield-halved input-icon-ub" style="color:#9AA0A8"></i>
+          <input type="text" inputmode="numeric" maxlength="6"
+                 class="form-control ub-input" name="forgotOtpInput"
+                 style="letter-spacing:6px;font-weight:700;"
+                 [(ngModel)]="forgotOtpInput" (blur)="onForgotOtpBlur()"
+                 placeholder="123456" autocomplete="one-time-code">
+        </div>
+        <p class="small mt-1 mb-0" style="color:#DC2626;" *ngIf="forgotOtpError">{{ forgotOtpError }}</p>
+      </div>
+
+      <p class="small mb-4" style="color:#9AA0A8;">
+        <ng-container *ngIf="forgotOtpResendCooldown > 0">
+          Renvoyer le code dans <strong>{{ forgotOtpResendCooldown }}s</strong>
+        </ng-container>
+        <ng-container *ngIf="forgotOtpResendCooldown === 0">
+          Vous n'avez pas reçu le code ?
+          <a href="javascript:void(0)" style="color:var(--accent);" (click)="resendForgotOtp()">Renvoyer</a>
+        </ng-container>
+      </p>
+
+      <button type="button" class="btn btn-accent w-100 py-3 rounded-pill fw-semibold"
+              style="font-size:16px;" [disabled]="forgotOtpVerifyLoading || forgotOtpInput.length < 6"
+              (click)="onVerifyForgotOtp()">
+        <span *ngIf="!forgotOtpVerifyLoading"><i class="fa-solid fa-circle-check me-2"></i>Vérifier le code</span>
+        <span *ngIf="forgotOtpVerifyLoading"><i class="fa-solid fa-spinner fa-spin me-2"></i>Vérification...</span>
+      </button>
+    </div>
+
+    <!-- Étape 3 : nouveau mot de passe -->
+    <div class="ub-modal-body" *ngIf="forgotStep === 3 && !forgotResetSuccess">
+      <p class="mb-4" style="font-size:14px;color:#6B7480;">
+        Identité confirmée. Choisissez votre nouveau mot de passe.
+      </p>
+
+      <div class="mb-3">
+        <label class="form-label ub-label">Nouveau mot de passe</label>
+        <div class="input-group-ub">
+          <i class="fa-solid fa-lock input-icon-ub" style="color:#9AA0A8"></i>
+          <input [type]="forgotShowNewPassword ? 'text' : 'password'"
+                 class="form-control ub-input" name="forgotNewPassword"
+                 [(ngModel)]="forgotNewPassword" (blur)="onForgotNewPasswordBlur()"
+                 placeholder="••••••••" autocomplete="new-password">
+          <button type="button" (click)="toggleForgotNewPassword()" class="btn btn-sm btn-link eye-toggle" tabindex="-1">
+            <i class="fa-regular" [class.fa-eye]="!forgotShowNewPassword" [class.fa-eye-slash]="forgotShowNewPassword"
+               style="color:#9AA0A8;"></i>
+          </button>
+        </div>
+        <p class="small mt-1 mb-0" style="color:#DC2626;" *ngIf="forgotNewPasswordError">{{ forgotNewPasswordError }}</p>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label ub-label">Confirmer le mot de passe</label>
+        <div class="input-group-ub">
+          <i class="fa-solid fa-lock input-icon-ub" style="color:#9AA0A8"></i>
+          <input [type]="forgotShowNewPassword ? 'text' : 'password'"
+                 class="form-control ub-input" name="forgotConfirmPassword"
+                 [(ngModel)]="forgotConfirmPassword" (blur)="onForgotConfirmPasswordBlur()"
+                 placeholder="••••••••" autocomplete="new-password">
+        </div>
+        <p class="small mt-1 mb-0" style="color:#DC2626;" *ngIf="forgotConfirmPasswordError">{{ forgotConfirmPasswordError }}</p>
+      </div>
+
+      <div class="mb-3" *ngIf="forgotResetError">
+        <div class="alert alert-danger py-2 px-3 mb-0" style="font-size:14px;border-radius:12px;">
+          <i class="fa-solid fa-circle-exclamation me-2"></i>{{ forgotResetError }}
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-accent w-100 py-3 rounded-pill fw-semibold"
+              style="font-size:16px;" [disabled]="forgotResetLoading" (click)="onResetForgotPassword()">
+        <span *ngIf="!forgotResetLoading"><i class="fa-solid fa-circle-check me-2"></i>Réinitialiser le mot de passe</span>
+        <span *ngIf="forgotResetLoading"><i class="fa-solid fa-spinner fa-spin me-2"></i>Enregistrement...</span>
+      </button>
+    </div>
+
+    <!-- Succès -->
+    <div class="ub-modal-body text-center" *ngIf="forgotResetSuccess">
+      <div class="ub-modal-icon-success">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+      <h3 class="fw-bold mb-2" style="font-size:18px;">Mot de passe réinitialisé !</h3>
+      <p style="font-size:14px;color:#6B7480;">
+        Votre nouveau mot de passe est actif.<br>
+        Vous pouvez vous connecter dès maintenant.
+      </p>
+      <p class="small" style="color:#9AA0A8;">La fenêtre se ferme automatiquement…</p>
+    </div>
+
+  </div>
+</div>

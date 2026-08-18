@@ -10,3 +10,79 @@
   pointer-events: none;
   z-index: 0;
 }
+
+/* Modale "mot de passe oublié" */
+.ub-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(27,36,48,.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  padding: 16px;
+}
+
+.ub-modal-box {
+  background: #fff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 420px;
+  padding: 28px;
+  box-shadow: 0 24px 64px -20px rgba(0,0,0,.3);
+}
+
+.ub-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.ub-modal-back,
+.ub-modal-close {
+  background: none;
+  border: none;
+  color: #6B7480;
+  font-size: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.ub-modal-back:hover,
+.ub-modal-close:hover {
+  background: #F7F8FA;
+  color: #1B2430;
+}
+
+.ub-modal-back-placeholder {
+  width: 32px;
+  height: 32px;
+}
+
+.ub-modal-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1B2430;
+  margin: 0;
+  text-align: center;
+  flex: 1;
+}
+
+.ub-modal-icon-success {
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  background: #ECFDF5;
+  color: #16A34A;
+  font-size: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
