@@ -110,13 +110,18 @@
             <app-lottie-player [path]="cat.lottiePath" [fallbackIcon]="cat.icone" [size]="150"></app-lottie-player>
           </div>
 
-          <h3 class="cat-card-lottie-titre">{{ cat.titre }}</h3>
-          <p class="cat-card-lottie-desc">{{ cat.description }}</p>
+          <!-- Regroupe titre/description/bouton : sur mobile la carte passe en rectangle (icône à
+               gauche, contenu à droite — voir @media dans le CSS), ce conteneur garde ces trois
+               éléments empilés verticalement dans les deux mises en page. -->
+          <div class="cat-card-lottie-content">
+            <h3 class="cat-card-lottie-titre">{{ cat.titre }}</h3>
+            <p class="cat-card-lottie-desc">{{ cat.description }}</p>
 
-          <span class="cat-card-lottie-btn">
-            {{ cat.ctaLabel }}
-            <i class="fa-solid fa-arrow-right"></i>
-          </span>
+            <span class="cat-card-lottie-btn">
+              {{ cat.ctaLabel }}
+              <i class="fa-solid fa-arrow-right"></i>
+            </span>
+          </div>
         </a>
       </div>
 
