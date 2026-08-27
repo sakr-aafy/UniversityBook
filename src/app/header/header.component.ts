@@ -47,6 +47,20 @@ export class HeaderComponent implements OnInit, OnDestroy {
    *  le sous-menu au survol de "Fournitures scolaires" dans le mega-menu Boutique. */
   categoriesCaisse: CategorieCaisseDto[] = [];
 
+  /** Catégories exclues de la liste "Fournitures scolaires" du mega-menu uniquement : elles ont
+   *  déjà leur propre entrée dédiée dans le menu (liens Soutenance / Jeux) ou relèvent d'un autre
+   *  regroupement (Livre → Documents). Comparaison insensible à la casse — les libellés caisse
+   *  sont du texte libre ("JEUX", "jeux"…). N'affecte que ce sous-menu, pas les filtres Boutique. */
+  private readonly categoriesCaisseExclues = ['soutenance', 'jeux', 'livre'];
+
+  /** Liste "Fournitures scolaires" du mega-menu, privée des catégories gérées ailleurs
+   *  (categoriesCaisseExclues). */
+  get categoriesCaisseVisibles(): CategorieCaisseDto[] {
+    return this.categoriesCaisse.filter(
+      c => !this.categoriesCaisseExclues.includes((c.nom || '').trim().toLowerCase())
+    );
+  }
+
   /** Équivalent tactile du survol desktop : clés des sections dépliées de l'accordéon Boutique
    *  mobile (ex: 'doc', 'doc:Droit', 'doc:Droit:examen', 'four', 'four:LIVRE') — le survol n'existe
    *  pas au tactile, chaque niveau se déplie/replie au tap plutôt qu'au survol. */

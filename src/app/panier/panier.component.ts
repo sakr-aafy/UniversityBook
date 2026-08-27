@@ -44,6 +44,10 @@ export class PanierComponent implements OnInit, OnDestroy {
   // ── Carte bancaire interactive ──
   carteFlipped = false;
 
+  /** Message affiché si l'utilisateur tente de choisir « Paiement en ligne » (non encore actif). */
+  paiementEnLigneMessage = '';
+  private paiementEnLigneTimer: ReturnType<typeof setTimeout> | undefined;
+
   // ── Wizard de commande (Livraison → Paiement → Confirmation) ──
   etapeCheckout: EtapeCheckout = 'livraison';
   /** Champs du formulaire unique (checkoutForm, inchangé) validés avant de passer à l'étape Paiement. */
@@ -84,6 +88,7 @@ export class PanierComponent implements OnInit, OnDestroy {
       /* ── Adresse ── */
       gouvernorat:   ['', Validators.required],
       delegation:    ['', Validators.required],
+      adresseDetaillee: [''],
       /* ── Options ── */
       typeLivraison: ['domicile', Validators.required],
       moyenPaiement: ['livraison', Validators.required],
@@ -108,7 +113,17 @@ export class PanierComponent implements OnInit, OnDestroy {
       this.checkoutForm.get('typeLivraison')!.valueChanges.subscribe(val => this.majValidateursAdresse(val))
     );
     this.formSubs.push(
-      this.checkoutForm.get('moyenPaiement')!.valueChanges.subscribe(val => this.majValidateursCarte(val))
+      this.checkoutForm.get('moyenPaiement')!.valueChanges.subscribe(val => {
+        // Paiement en ligne pas encore actif : on prévient et on revient au paiement à la livraison.
+        if (val === 'carte') {
+          this.paiementEnLigneMessage = "Le paiement en ligne n'est pas encore activé. Votre commande sera réglée à la livraison.";
+          this.checkoutForm.get('moyenPaiement')!.setValue('livraison');
+          clearTimeout(this.paiementEnLigneTimer);
+          this.paiementEnLigneTimer = setTimeout(() => (this.paiementEnLigneMessage = ''), 6000);
+          return;
+        }
+        this.majValidateursCarte(val);
+      })
     );
     this.formSubs.push(
       this.checkoutForm.get('gouvernorat')!.valueChanges.subscribe(gouvernorat => {
@@ -130,6 +145,7 @@ export class PanierComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.cartSub?.unsubscribe();
     this.formSubs.forEach(s => s.unsubscribe());
+    clearTimeout(this.paiementEnLigneTimer);
     document.body.classList.remove('ub-no-scroll');
   }
 
@@ -233,15 +249,42 @@ export class PanierComponent implements OnInit, OnDestroy {
     document.body.classList.add('ub-no-scroll');
   }
 
+  /** Découpe un nom complet ("Prénom Nom" / "Prénom composé Nom") en { prenom, nom } quand le
+   *  prénom n'est pas renseigné séparément — dernier mot = nom, le reste = prénom. Un seul mot
+   *  reste dans `nom`. */
+  private separerNom(prenom: string, nom: string): { prenom: string; nom: string } {
+    if (prenom.trim()) return { prenom: prenom.trim(), nom: nom.trim() };
+    const mots = nom.trim().split(/\s+/).filter(Boolean);
+    if (mots.length < 2) return { prenom: '', nom: nom.trim() };
+    return { prenom: mots.slice(0, -1).join(' '), nom: mots[mots.length - 1] };
+  }
+
   private preremplirDepuisCompte(): void {
     const utilisateur = this.authService.currentUser;
     if (!utilisateur) return;
 
+    const initial = this.separerNom(utilisateur.prenom || '', utilisateur.nom || '');
     this.checkoutForm.patchValue({
-      prenom: utilisateur.prenom || '',
-      nom: utilisateur.nom || '',
+      prenom: initial.prenom,
+      nom: initial.nom,
       email: utilisateur.email || '',
       telephone: utilisateur.telephone || ''
+    });
+
+    // Profil complet (source autoritaire : `prenom`/`nom` séparés, tél. secondaire) — le
+    // `currentUser` du JWT n'a souvent qu'un `nom` sans `prenom`.
+    this.userService.getProfile().subscribe({
+      next: profil => {
+        const p = this.separerNom(profil.prenom || '', profil.nom || '');
+        this.checkoutForm.patchValue({
+          prenom: p.prenom || this.checkoutForm.get('prenom')?.value || '',
+          nom: p.nom || this.checkoutForm.get('nom')?.value || '',
+          email: profil.email || this.checkoutForm.get('email')?.value || '',
+          telephone: profil.telephone || this.checkoutForm.get('telephone')?.value || '',
+          telephoneSecondaire: profil.telephoneSecondaire || ''
+        });
+      },
+      error: () => { /* profil indisponible : on garde le pré-remplissage minimal ci-dessus */ }
     });
 
     this.userService.getAdresses().subscribe({
@@ -252,9 +295,12 @@ export class PanierComponent implements OnInit, OnDestroy {
         if (adresseParDefaut.gouvernorat) {
           this.delegations = delegationsPourGouvernorat(adresseParDefaut.gouvernorat);
         }
+        const detail = [adresseParDefaut.ligne1, adresseParDefaut.ligne2, adresseParDefaut.ville, adresseParDefaut.codePostal]
+          .map(v => (v || '').trim()).filter(Boolean).join(', ');
         this.checkoutForm.patchValue({
           gouvernorat: adresseParDefaut.gouvernorat || '',
-          delegation: adresseParDefaut.delegation || ''
+          delegation: adresseParDefaut.delegation || '',
+          adresseDetaillee: detail
         });
       }
     });
@@ -552,7 +598,8 @@ export class PanierComponent implements OnInit, OnDestroy {
       valeurs.typeLivraison === 'retrait'
         ? 'Retrait en magasin'
         : this.commandeContientFournitures
-          ? `${valeurs.delegation}, ${valeurs.gouvernorat}`
+          ? [valeurs.adresseDetaillee, valeurs.delegation, valeurs.gouvernorat]
+              .map((v: string) => (v || '').trim()).filter(Boolean).join(', ')
           : '';
 
     this.derniereCommandeEmail = valeurs.email || this.authService.currentUser?.email || '';

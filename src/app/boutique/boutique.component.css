@@ -271,6 +271,15 @@
 /* ══════════════════════════════════════════════════════════════
    MISE EN PAGE — GRID PRINCIPALE (Filtres | Catalogue)
 ═══════════════════════════════════════════════════════════════ */
+/* Conteneur large (remplace Bootstrap .container-xl, plafonné à 1320px qui laissait un grand
+   vide à droite sur écran large — voir capture). On exploite quasiment toute la largeur du
+   viewport, juste bornée pour rester lisible sur écran ultra-large. */
+.boutique-container {
+  width: 100%;
+  max-width: 1840px;
+  margin-inline: auto;
+}
+
 .boutique-shell {
   display: block;
 }
@@ -718,8 +727,11 @@
 @media (min-width: 992px) {
   .produits-grid { grid-template-columns: repeat(3, 1fr); gap: 24px; }
 }
-@media (min-width: 1600px) {
+@media (min-width: 1400px) {
   .produits-grid { grid-template-columns: repeat(4, 1fr); }
+}
+@media (min-width: 1750px) {
+  .produits-grid { grid-template-columns: repeat(5, 1fr); }
 }
 
 .ub-empty-state {
@@ -918,6 +930,62 @@
 .produit-fav-btn.ub-fav-anim {
   animation: ub-fav-heartbeat .5s cubic-bezier(.16,.84,.44,1);
 }
+
+/* ── Menu admin (⋮) : édition rapide depuis la carte, admin connecté uniquement ── */
+.produit-admin {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 3;
+}
+.produit-admin-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: none;
+  background: #1B2430;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  cursor: pointer;
+  box-shadow: 0 6px 16px -6px rgba(27,36,48,.4);
+  transition: transform .18s, background .18s;
+}
+.produit-admin-btn:hover { transform: scale(1.1); background: #000; }
+.produit-admin-btn.busy { opacity: .7; cursor: default; }
+.produit-admin-menu {
+  position: absolute;
+  top: 44px;
+  left: 0;
+  min-width: 208px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 16px 40px -12px rgba(27,36,48,.35);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.produit-admin-menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #1B2430;
+  text-align: left;
+  cursor: pointer;
+  transition: background .15s;
+}
+.produit-admin-menu button:hover { background: #F1F3F5; }
+.produit-admin-menu button i { width: 16px; text-align: center; color: #6B7480; }
 
 /* ── Type de fichier (documents), en bas à gauche de l'image ── */
 .produit-filetype-tag {
@@ -1147,10 +1215,14 @@
 .produit-dispo i { font-size: 11px; }
 .produit-dispo.rupture { color: #DC2626; }
 
+/* ── Bloc bas de carte : prix + sélecteur pièce/pack, aligné en bas ── */
+.produit-bas {
+  padding-top: 14px;
+}
 .produit-prix-wrap {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 .produit-ancien-prix {
@@ -1177,6 +1249,47 @@
   font-weight: 700;
   color: #16A34A;
   margin-top: 1px;
+}
+.produit-prix-unite {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #8A929C;
+}
+
+/* ── Sélecteur pièce / pack (produits caisse avec vente par pack) — segmenté pleine largeur ── */
+.produit-unite {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 3px;
+  margin-top: 10px;
+  background: #F1F3F5;
+  border-radius: 12px;
+}
+.produit-unite-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 8px;
+  border: none;
+  background: transparent;
+  border-radius: 9px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #5A626C;
+  cursor: pointer;
+  transition: background .15s, color .15s, box-shadow .15s;
+}
+.produit-unite-btn i { font-size: 11px; }
+.produit-unite-btn.active {
+  background: #fff;
+  color: var(--accent);
+  box-shadow: 0 2px 8px -3px rgba(27,36,48,.25);
+}
+.produit-unite-btn:disabled {
+  opacity: .4;
+  cursor: not-allowed;
 }
 
 /* ── Actions : Voir (secondaire) + Ajouter au panier (principal, plus affirmé) — même

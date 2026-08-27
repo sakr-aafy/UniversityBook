@@ -19,6 +19,9 @@ export interface VarianteFormat {
 
 export interface Produit {
   id: number;
+  /** _id Mongo réel (Produit ou DocumentCatalogue) — `id` ci-dessus est un hash numérique pour
+   *  les routes/trackBy front. Utilisé pour l'édition admin directe depuis la Boutique. */
+  mongoId: string;
   titre: string;
   domaine: Domaine;
   categorie: string;
@@ -35,6 +38,11 @@ export interface Produit {
   populaire?: boolean;
   ancienPrix?: number;
   disponible?: boolean;
+  /** Vente par pack (synchronisée depuis la fiche produit caisse). `packPrix` et `packNbPieces`
+   *  ne sont définis QUE si les deux sont renseignés (> 0) — la Boutique propose alors le choix
+   *  pièce / pack. */
+  packNbPieces?: number;
+  packPrix?: number;
   /** Note moyenne (sur 5) et nombre d'avis, à titre indicatif — démonstration. */
   note?: number;
   nombreAvis?: number;
@@ -96,6 +104,8 @@ interface ProduitApi {
   note?: number;
   nombreAvis?: number;
   disponible?: boolean;
+  packNbPieces?: number;
+  packPrix?: number;
   categorieIcone?: string;
   categorieCouleur?: string;
 }
@@ -142,6 +152,7 @@ const ICONE_DEFAUT: Record<Domaine, { icone: string; iconeBg: string }> = {
   fournitures: { icone: 'fa-box', iconeBg: '#F5F3FF' }
 };
 
+
 /**
  * Détection des catégories "Fournitures" traitées comme des sections à part (Livre → Documents
  * numériques, Jeux, Soutenance — voir header.component.ts et boutique.component.ts). `categorie`
@@ -161,11 +172,27 @@ export function estCategorieLivre(categorie: string | undefined | null): boolean
  * Variante "Livre" appliquée à un produit entier (catégorie OU sous-catégorie) : un produit
  * catégorisé "Droit" en caisse mais dont la sous-catégorie est "Livre concours" (ouvrage papier
  * plutôt que fourniture) doit lui aussi rejoindre Documents numériques, même si sa catégorie
- * parente ne contient pas "livre". Les autres sous-catégories de "Droit" (examen, code
- * juridique…) restent dans Fournitures scolaires.
+ * parente ne contient pas "livre".
  */
 export function estProduitCategorieLivre(p: { categorie?: string; sousCategorie?: string }): boolean {
   return estCategorieLivre(p.categorie) || estCategorieLivre(p.sousCategorie);
+}
+
+/**
+ * Mots-clés (sous-chaîne, insensible casse/espaces) de catégorie/sous-catégorie caisse dont les
+ * produits sont des ouvrages/annales et s'affichent dans la vue Documents plutôt que Fournitures
+ * scolaires : toute la branche caisse "Droit" (sous-catégories "Examen", "Livre concours",
+ * "Code juridique"). Ajouter ici d'autres branches juridiques/documentaires au besoin.
+ */
+const MOTS_CLES_DOCUMENT = ['droit', 'examen', 'livre concours', 'code juridique'];
+
+/** Un produit caisse (catégorie OU sous-catégorie) relève-t-il de la vue Documents ? Couvre les
+ *  ouvrages "Livre" (voir estProduitCategorieLivre) et la branche "Droit" (MOTS_CLES_DOCUMENT). */
+export function estProduitDocument(p: { categorie?: string; sousCategorie?: string }): boolean {
+  if (estProduitCategorieLivre(p)) return true;
+  const cat = (p.categorie || '').trim().toLowerCase();
+  const sc  = (p.sousCategorie || '').trim().toLowerCase();
+  return MOTS_CLES_DOCUMENT.some(k => cat.includes(k) || sc.includes(k));
 }
 export function estCategorieJeux(categorie: string | undefined | null): boolean {
   return (categorie || '').trim().toLowerCase().includes('jeu');
@@ -235,8 +262,19 @@ export class CatalogueService {
 
   private mapProduit(p: ProduitApi): Produit {
     const defaut = ICONE_DEFAUT.fournitures;
+    // Vente Pièce / Pack : le nombre de pièces par pack vient EXCLUSIVEMENT de la fiche produit
+    // caisse (section "Pack", champ packNbPieces). S'il est absent en base, la vente au pack est
+    // inactive (bouton "Pack" désactivé côté Boutique) — aucune valeur par défaut.
+    // Prix pack = packVente si saisi, sinon prix pièce × nb de pièces (simple lot, sans remise).
+    const prixPiece = p.prix || 0;
+    const packNbCaisse = (p.packNbPieces ?? 0) > 0 ? (p.packNbPieces as number) : undefined;
+    const packPrix = (prixPiece > 0 && packNbCaisse !== undefined)
+      ? ((p.packPrix ?? 0) > 0 ? (p.packPrix as number) : Math.round(prixPiece * packNbCaisse * 1000) / 1000)
+      : undefined;
+
     return {
       id: this.hashId(p._id),
+      mongoId: p._id,
       titre: p.titre || '',
       domaine: 'fournitures',
       categorie: p.categorie || '',
@@ -257,6 +295,8 @@ export class CatalogueService {
       // depuis la caisse doit rester achetable même si son stock caisse n'a pas encore été
       // renseigné/reçu, tant que rien ne l'a explicitement marqué indisponible.
       disponible: p.disponible !== false,
+      packNbPieces: packNbCaisse,
+      packPrix,
       note: p.note,
       nombreAvis: p.nombreAvis,
       marque: p.marque || undefined,
@@ -282,6 +322,7 @@ export class CatalogueService {
     const defaut = ICONE_DEFAUT.documents;
     return {
       id: this.hashId(d._id),
+      mongoId: d._id,
       titre: d.titre || '',
       domaine: 'documents',
       categorie: d.categorie || '',

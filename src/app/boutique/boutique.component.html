@@ -19,7 +19,7 @@
      BARRE CONTRÔLES (recherche instantanée / tri / résultats)
 ═══════════════════════════════════════════════════════════════ -->
 <div class="ub-controlbar">
-  <div class="container-xl px-4 py-3">
+  <div class="boutique-container px-4 py-3">
     <div class="d-flex align-items-center gap-3 flex-wrap">
 
       <!-- Recherche instantanée avec suggestions -->
@@ -83,7 +83,7 @@
      MISE EN PAGE PRINCIPALE : Filtres | Catalogue
 ═══════════════════════════════════════════════════════════════ -->
 <section class="ub-boutique-bg">
-  <div class="container-xl px-4 py-5">
+  <div class="boutique-container px-4 py-5">
 
     <!-- ── Onglets de domaine ── -->
     <div class="ub-domaine-tabs ub-anim-fade-up">
@@ -92,12 +92,6 @@
       </button>
       <button class="ub-domaine-tab" [class.active]="vueActive === 'fournitures'" (click)="changerVue('fournitures')">
         <span class="ub-domaine-emoji">🎒</span> Fournitures scolaires
-      </button>
-      <button class="ub-domaine-tab" [class.active]="vueActive === 'jeux'" (click)="changerVue('jeux')">
-        <span class="ub-domaine-emoji">🎲</span> Jeux
-      </button>
-      <button class="ub-domaine-tab" [class.active]="vueActive === 'soutenance'" (click)="changerVue('soutenance')">
-        <span class="ub-domaine-emoji">🎓</span> Soutenance
       </button>
     </div>
 
@@ -343,7 +337,25 @@
         {{ p.formatDocument }}
       </span>
 
-      <span *ngIf="p.disponible === false" class="produit-indispo-tag">Rupture de stock</span>
+      <span *ngIf="p.disponible === false" class="produit-indispo-tag">Hors stock</span>
+
+      <!-- Menu admin (⋮) : édition rapide du produit, visible seulement pour un admin connecté -->
+      <div class="produit-admin" *ngIf="peutEditerProduit(p)" (click)="$event.stopPropagation()">
+        <button type="button" class="produit-admin-btn" (click)="basculerMenuAdmin(p, $event)"
+                [class.busy]="majDisponibiliteId === p.id" title="Options admin" aria-label="Options admin">
+          <i class="fa-solid fa-spinner fa-spin" *ngIf="majDisponibiliteId === p.id"></i>
+          <i class="fa-solid fa-ellipsis-vertical" *ngIf="majDisponibiliteId !== p.id"></i>
+        </button>
+        <div class="produit-admin-menu" *ngIf="menuAdminProduitId === p.id">
+          <button type="button" (click)="modifierProduitAdmin(p, $event)">
+            <i class="fa-regular fa-pen-to-square"></i> Modifier le produit
+          </button>
+          <button type="button" (click)="basculerDisponibilite(p, $event)">
+            <i class="fa-solid" [class.fa-circle-check]="p.disponible === false" [class.fa-circle-xmark]="p.disponible !== false"></i>
+            {{ p.disponible === false ? 'Marquer « En stock »' : 'Marquer « Hors stock »' }}
+          </button>
+        </div>
+      </div>
 
       <!-- Action rapide (survol) : comparateur -->
       <div class="produit-actions-hover">
@@ -382,15 +394,36 @@
         </span>
         <span class="produit-dispo" [class.rupture]="p.disponible === false">
           <i class="fa-solid" [class.fa-circle-check]="p.disponible !== false" [class.fa-circle-xmark]="p.disponible === false"></i>
-          {{ p.disponible === false ? 'Indisponible' : 'En stock' }}
+          {{ p.disponible === false ? 'Hors stock' : 'En stock' }}
         </span>
       </div>
 
-      <!-- Prix -->
-      <div class="produit-prix-wrap mt-auto pt-3">
-        <span *ngIf="p.ancienPrix" class="produit-ancien-prix">{{ formatPrix(p.ancienPrix) }}</span>
-        <div class="produit-prix" [class.gratuit]="p.gratuit">{{ formatPrix(p.prix) }}</div>
-        <span *ngIf="economie(p) > 0" class="produit-economie">Économisez {{ formatPrix(economie(p)) }}</span>
+      <!-- Bloc bas de carte : prix + choix Pièce/Pack — collé en bas pour que toutes les cartes
+           s'alignent quel que soit le nombre de lignes de contenu au-dessus. -->
+      <div class="produit-bas mt-auto">
+        <div class="produit-prix-wrap">
+          <span *ngIf="p.ancienPrix && uniteDe(p) === 'piece'" class="produit-ancien-prix">{{ formatPrix(p.ancienPrix) }}</span>
+          <div class="produit-prix" [class.gratuit]="p.gratuit">{{ formatPrix(prixUnitaire(p)) }}</div>
+          <span class="produit-prix-unite" *ngIf="aPack(p)">
+            /&nbsp;{{ uniteDe(p) === 'pack' ? (p.packNbPieces ? 'pack de ' + p.packNbPieces : 'pack') : 'pièce' }}
+          </span>
+          <span *ngIf="economie(p) > 0 && uniteDe(p) === 'piece'" class="produit-economie">Économisez {{ formatPrix(economie(p)) }}</span>
+        </div>
+
+        <!-- Choix Pièce / Pack — sur toute fourniture ayant un prix ; le bouton Pack n'est actif
+             que si le nombre de pièces/pack est connu en base (fiche produit caisse). -->
+        <div class="produit-unite" *ngIf="montreUnite(p)" (click)="$event.stopPropagation()">
+          <button type="button" class="produit-unite-btn" [class.active]="uniteDe(p) === 'piece'"
+                  (click)="choisirUnite(p, 'piece', $event)">
+            <i class="fa-solid fa-cube"></i> Pièce
+          </button>
+          <button type="button" class="produit-unite-btn" [class.active]="uniteDe(p) === 'pack'"
+                  [disabled]="!packDisponible(p)"
+                  [title]="packDisponible(p) ? '' : 'Vente au pack indisponible (nombre de pièces/pack non défini)'"
+                  (click)="choisirUnite(p, 'pack', $event)">
+            <i class="fa-solid fa-boxes-stacked"></i> Pack<ng-container *ngIf="p.packNbPieces">&nbsp;({{ p.packNbPieces }})</ng-container>
+          </button>
+        </div>
       </div>
 
       <!-- Actions : bouton principal pleine largeur + bouton "Voir" compact (icône) —
@@ -527,7 +560,7 @@
           <i class="fa-solid fa-circle-check me-1"></i>En stock
         </button>
         <button class="filtre-chip" [class.active]="filtreDisponibilite==='rupture'" (click)="filtrerDisponibilite('rupture')">
-          <i class="fa-solid fa-circle-xmark me-1"></i>Rupture
+          <i class="fa-solid fa-circle-xmark me-1"></i>Hors stock
         </button>
       </div>
     </div>

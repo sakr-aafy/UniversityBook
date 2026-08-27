@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../services/auth.service';
 
@@ -51,7 +51,14 @@ export class LoginComponent {
   forgotResetError             = '';
   forgotResetSuccess           = false;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private authService: AuthService, private router: Router, route: ActivatedRoute) {
+    // Redirection déclenchée par l'intercepteur HTTP quand le jeton stocké a été rejeté (401) —
+    // voir auth.interceptor.ts. On informe l'utilisateur plutôt que de le renvoyer ici sans
+    // explication.
+    if (route.snapshot.queryParamMap.get('sessionExpiree') === '1') {
+      this.erreur = 'Votre session a expiré. Veuillez vous reconnecter.';
+    }
+  }
 
   togglePassword(): void {
     this.showPassword = !this.showPassword;

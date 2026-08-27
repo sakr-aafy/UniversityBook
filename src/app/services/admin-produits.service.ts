@@ -21,6 +21,7 @@ export interface CatalogueProduit {
   description: string;
   categorie: string;
   sousCategorie: string;
+  sousSousCategorie: string;
   type: string;
   prix: number;
   stock: number;
@@ -34,6 +35,8 @@ export interface CatalogueProduit {
   badge: string;
   nouveaute: boolean;
   populaire: boolean;
+  /** État "En stock" / "Hors stock" affiché en Boutique (distinct de la quantité `stock`). */
+  disponible: boolean;
   couleurs: VarianteCouleurForm[];
   formats: VarianteFormatForm[];
   createdAt: string;
@@ -51,6 +54,7 @@ export interface ProduitForm {
   description: string;
   categorie: string;
   sousCategorie: string;
+  sousSousCategorie?: string;
   type: string;
   prix: number;
   stock: number;
@@ -61,6 +65,7 @@ export interface ProduitForm {
   badge: string;
   nouveaute: boolean;
   populaire: boolean;
+  disponible: boolean;
   couleurs: VarianteCouleurForm[];
   formats: VarianteFormatForm[];
 }
@@ -123,6 +128,9 @@ export class AdminProduitsService {
     formData.append('description', data.description);
     formData.append('categorie', data.categorie);
     formData.append('sousCategorie', data.sousCategorie || '');
+    // Uniquement si renseigné : évite d'écraser un sousSousCategorie synchronisé depuis la caisse
+    // quand le formulaire produit standard (2 niveaux) l'omet.
+    if (data.sousSousCategorie) formData.append('sousSousCategorie', data.sousSousCategorie);
     formData.append('type', data.type);
     formData.append('prix', String(data.prix));
     formData.append('stock', String(data.stock));
@@ -135,6 +143,7 @@ export class AdminProduitsService {
     formData.append('badge', data.badge || '');
     formData.append('nouveaute', String(data.nouveaute));
     formData.append('populaire', String(data.populaire));
+    formData.append('disponible', String(data.disponible));
     formData.append('couleurs', JSON.stringify(data.couleurs || []));
     formData.append('formats', JSON.stringify(data.formats || []));
     if (image) formData.append('image', image);

@@ -18,6 +18,7 @@ const PRODUIT_VIDE: ProduitForm = {
   description: '',
   categorie: '',
   sousCategorie: '',
+  sousSousCategorie: '',
   type: '',
   prix: 0,
   stock: 0,
@@ -28,6 +29,7 @@ const PRODUIT_VIDE: ProduitForm = {
   badge: '',
   nouveaute: false,
   populaire: false,
+  disponible: true,
   couleurs: [],
   formats: []
 };
@@ -71,7 +73,29 @@ export class ProduitsComponent implements OnInit, OnDestroy {
   enregistrement: boolean = false;
   progression: number = 0;
 
+  // ── Créer un pack (lot de plusieurs produits du site) ──────────────────────
+  dialogPackOuvert: boolean = false;
+  packNom: string = '';
+  packCategorie: string = '';
+  packSousCategorie: string = '';
+  packSousSousCategorie: string = '';
+  packPrix: number | null = null;
+  packRecherche: string = '';
+  packSelection: { produit: CatalogueProduit; quantite: number }[] = [];
+  packImageFichier: File | null = null;
+  packImageApercu: string | null = null;
+  creationPackEnCours: boolean = false;
+  erreurPack: string = '';
+  /** Catalogue COMPLET (toutes pages) chargé à l'ouverture du formulaire pack — la recherche du
+   *  picker porte sur tout le catalogue, pas seulement la page courante `produits`. */
+  packCatalogue: CatalogueProduit[] = [];
+  packCatalogueChargement: boolean = false;
+
   private categoryDialogSub!: Subscription;
+
+  /** _id d'un produit à ouvrir en édition dès l'arrivée (navigation « Modifier » depuis la
+   *  Boutique, voir boutique.component.ts#modifierProduitAdmin) — résolu après le 1er `charger()`. */
+  private editerAlArrivee: string | null = null;
 
   constructor(
     private adminProduitsService: AdminProduitsService,
@@ -82,6 +106,13 @@ export class ProduitsComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    // Arrivée depuis le bouton « Modifier » d'une carte Boutique (état de navigation) : on
+    // pré-filtre la liste sur le titre et on ouvrira la fiche dès qu'elle est chargée.
+    const nav = history.state as { editerId?: string; editerRecherche?: string } | null;
+    if (nav?.editerId) {
+      this.editerAlArrivee = nav.editerId;
+      if (nav.editerRecherche) this.recherche = nav.editerRecherche;
+    }
     this.charger();
     this.chargerCategories();
     this.categoryDialogSub = this.categoryDialogService.etat$.subscribe(etat => {
@@ -121,6 +152,11 @@ export class ProduitsComponent implements OnInit, OnDestroy {
         this.produits = res.produits;
         this.totalPages = res.totalPages || 1;
         this.chargement = false;
+        if (this.editerAlArrivee) {
+          const cible = this.produits.find(p => p._id === this.editerAlArrivee);
+          this.editerAlArrivee = null;
+          if (cible) this.ouvrirEdition(cible);
+        }
       },
       error: () => {
         this.erreur = 'Impossible de charger les produits.';
@@ -170,6 +206,7 @@ export class ProduitsComponent implements OnInit, OnDestroy {
       description: produit.description,
       categorie: produit.categorie,
       sousCategorie: produit.sousCategorie || '',
+      sousSousCategorie: produit.sousSousCategorie || '',
       type: produit.type,
       prix: produit.prix,
       stock: produit.stock,
@@ -180,6 +217,7 @@ export class ProduitsComponent implements OnInit, OnDestroy {
       badge: produit.badge || '',
       nouveaute: !!produit.nouveaute,
       populaire: !!produit.populaire,
+      disponible: produit.disponible !== false,
       couleurs: (produit.couleurs || []).map(c => ({ ...c })),
       formats: (produit.formats || []).map(f => ({ ...f }))
     };
@@ -309,6 +347,185 @@ export class ProduitsComponent implements OnInit, OnDestroy {
     this.adminProduitsService.remove(produit._id).subscribe({
       next: () => (this.produits = this.produits.filter(p => p._id !== produit._id)),
       error: () => (this.erreur = 'Erreur lors de la suppression du produit.')
+    });
+  }
+
+  // ══════════════════ Créer un pack ══════════════════
+  // Un "pack" est un produit du catalogue à part entière (POST /api/admin/produits) dont le prix
+  // est le prix du lot et la description liste son contenu — pas de nouveau modèle backend.
+
+  ouvrirCreationPack(): void {
+    this.packNom = '';
+    this.packCategorie = '';
+    this.packSousCategorie = '';
+    this.packSousSousCategorie = '';
+    this.packPrix = null;
+    this.packRecherche = '';
+    this.packSelection = [];
+    this.packImageFichier = null;
+    this.packImageApercu = null;
+    this.erreurPack = '';
+    this.dialogPackOuvert = true;
+    this.chargerPackCatalogue();
+  }
+
+  /** Charge tout le catalogue (sans pagination) pour le picker du formulaire pack. */
+  private chargerPackCatalogue(): void {
+    this.packCatalogueChargement = true;
+    this.adminProduitsService.list({ page: 1, limite: 100000 }).subscribe({
+      next: res => {
+        // On ne propose pas un pack existant comme composant d'un autre pack.
+        this.packCatalogue = res.produits.filter(p => p.badge !== 'Pack');
+        this.packCatalogueChargement = false;
+      },
+      error: () => {
+        this.packCatalogue = [];
+        this.packCatalogueChargement = false;
+        this.erreurPack = 'Impossible de charger la liste des produits.';
+      }
+    });
+  }
+
+  fermerCreationPack(): void {
+    this.dialogPackOuvert = false;
+  }
+
+  get packProduitsFiltres(): CatalogueProduit[] {
+    const q = this.packRecherche.trim().toLowerCase();
+    if (!q) return this.packCatalogue;
+    return this.packCatalogue.filter(p =>
+      p.titre.toLowerCase().includes(q) ||
+      (p.categorie || '').toLowerCase().includes(q) ||
+      (p.sku || '').toLowerCase().includes(q) ||
+      (p.marque || '').toLowerCase().includes(q)
+    );
+  }
+
+  private valeursDistinctes(valeurs: (string | undefined)[]): string[] {
+    return [...new Set(valeurs.map(v => (v || '').trim()).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b, 'fr', { sensitivity: 'base' }));
+  }
+
+  /** Catégories / sous-catégories / sous-sous-catégories réellement présentes dans le catalogue —
+   *  mêmes libellés et hiérarchie que le Header / la Boutique (dérivés des produits). Chaque
+   *  niveau est filtré par le choix du niveau supérieur. */
+  get packCategoriesDisponibles(): string[] {
+    return this.valeursDistinctes(this.packCatalogue.map(p => p.categorie));
+  }
+
+  get packSousCategoriesDisponibles(): string[] {
+    if (!this.packCategorie) return [];
+    return this.valeursDistinctes(
+      this.packCatalogue.filter(p => p.categorie === this.packCategorie).map(p => p.sousCategorie)
+    );
+  }
+
+  get packSousSousCategoriesDisponibles(): string[] {
+    if (!this.packSousCategorie) return [];
+    return this.valeursDistinctes(
+      this.packCatalogue
+        .filter(p => p.categorie === this.packCategorie && p.sousCategorie === this.packSousCategorie)
+        .map(p => p.sousSousCategorie)
+    );
+  }
+
+  onPackCategorieChange(): void {
+    this.packSousCategorie = '';
+    this.packSousSousCategorie = '';
+  }
+
+  onPackSousCategorieChange(): void {
+    this.packSousSousCategorie = '';
+  }
+
+  estDansPack(p: CatalogueProduit): boolean {
+    return this.packSelection.some(s => s.produit._id === p._id);
+  }
+
+  basculerProduitPack(p: CatalogueProduit): void {
+    const i = this.packSelection.findIndex(s => s.produit._id === p._id);
+    if (i >= 0) this.packSelection.splice(i, 1);
+    else this.packSelection.push({ produit: p, quantite: 1 });
+  }
+
+  changerQtePack(s: { produit: CatalogueProduit; quantite: number }, delta: number): void {
+    s.quantite = Math.max(1, s.quantite + delta);
+  }
+
+  retirerDuPack(s: { produit: CatalogueProduit; quantite: number }): void {
+    this.packSelection = this.packSelection.filter(x => x !== s);
+  }
+
+  /** Somme des prix des composants (× quantités) — prix "plein" du pack avant remise éventuelle. */
+  get packTotalComposants(): number {
+    return Math.round(this.packSelection.reduce((acc, s) => acc + (s.produit.prix || 0) * s.quantite, 0) * 1000) / 1000;
+  }
+
+  get packEconomie(): number {
+    const px = this.packPrix != null && this.packPrix > 0 ? this.packPrix : this.packTotalComposants;
+    return Math.max(0, Math.round((this.packTotalComposants - px) * 1000) / 1000);
+  }
+
+  get packDescriptionAuto(): string {
+    if (!this.packSelection.length) return '';
+    return 'Pack : ' + this.packSelection.map(s => `${s.quantite} × ${s.produit.titre}`).join(', ');
+  }
+
+  async onPackImageSelectionnee(fichiers: File[]): Promise<void> {
+    const fichier = fichiers[0];
+    if (!fichier) return;
+    this.packImageFichier = fichier;
+    this.packImageApercu = await lireFichierEnDataUrl(fichier);
+  }
+
+  supprimerPackImage(): void {
+    this.packImageFichier = null;
+    this.packImageApercu = null;
+  }
+
+  creerPack(): void {
+    this.erreurPack = '';
+    if (!this.packNom.trim()) {
+      this.erreurPack = 'Le nom du pack est requis.';
+      return;
+    }
+    if (this.packSelection.length < 2) {
+      this.erreurPack = 'Sélectionnez au moins 2 produits pour composer un pack.';
+      return;
+    }
+
+    const prixPack = this.packPrix != null && this.packPrix > 0 ? this.packPrix : this.packTotalComposants;
+    const form: ProduitForm = {
+      ...PRODUIT_VIDE,
+      titre: this.packNom.trim(),
+      description: this.packDescriptionAuto,
+      categorie: this.packCategorie || '',
+      sousCategorie: this.packSousCategorie || '',
+      sousSousCategorie: this.packSousSousCategorie || '',
+      type: 'fournitures',
+      prix: prixPack,
+      // Prix "plein" barré + badge "Pack" quand le lot est vendu moins cher que la somme.
+      ancienPrix: prixPack < this.packTotalComposants ? this.packTotalComposants : null,
+      badge: 'Pack',
+      couleurs: [],
+      formats: []
+    };
+
+    this.creationPackEnCours = true;
+    this.adminProduitsService.create(form, this.packImageFichier, [], []).subscribe({
+      next: event => {
+        if (event.type === HttpEventType.Response) {
+          this.creationPackEnCours = false;
+          this.dialogPackOuvert = false;
+          this.succes = `Pack « ${form.titre} » créé.`;
+          setTimeout(() => (this.succes = ''), 4000);
+          this.charger();
+        }
+      },
+      error: err => {
+        this.creationPackEnCours = false;
+        this.erreurPack = err.error?.message || 'Erreur lors de la création du pack.';
+      }
     });
   }
 

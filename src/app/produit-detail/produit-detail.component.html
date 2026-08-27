@@ -77,6 +77,24 @@
           <div class="pdd-prix-wrap">
             <span *ngIf="ancienPrixAffiche" class="pdd-ancien-prix">{{ formatPrix(ancienPrixAffiche) }}</span>
             <span class="pdd-prix" [class.gratuit]="p.gratuit">{{ formatPrix(prixAffiche) }}</span>
+            <span class="pdd-prix-unite" *ngIf="packDisponible">/ {{ unite === 'pack' ? 'pack de ' + p.packNbPieces : 'pièce' }}</span>
+          </div>
+
+          <!-- ── Vente à la pièce / au pack. Le bouton Pack n'est actif que si le nombre de
+               pièces/pack est connu en base (fiche produit caisse). ── -->
+          <div *ngIf="montreUnite" class="pdd-variante-bloc">
+            <div class="pdd-variante-label">Vente</div>
+            <div class="d-flex gap-2 flex-wrap">
+              <button type="button" class="pdd-format-btn" [class.active]="unite === 'piece'" (click)="choisirUnite('piece')">
+                <i class="fa-solid fa-cube me-1"></i>À la pièce — {{ formatPrix(p.prix) }}
+              </button>
+              <button type="button" class="pdd-format-btn" [class.active]="unite === 'pack'"
+                      [disabled]="!packDisponible"
+                      [title]="packDisponible ? '' : 'Vente au pack indisponible (nombre de pièces/pack non défini)'"
+                      (click)="choisirUnite('pack')">
+                <i class="fa-solid fa-boxes-stacked me-1"></i>{{ packDisponible ? ('Pack de ' + p.packNbPieces + ' — ' + formatPrix(p.packPrix || 0)) : 'Pack indisponible' }}
+              </button>
+            </div>
           </div>
 
           <!-- ── Variantes couleur (fournitures) ── -->

@@ -422,6 +422,40 @@
           </div>
 
         </div>
+        <!-- Section : Type de livraison (uniquement si le panier contient des fournitures scolaires) -->
+        <ng-container *ngIf="commandeContientFournitures">
+        <div class="ck-section-label mt-4">
+          <i class="fa-solid fa-truck me-2"></i>Type de livraison
+        </div>
+        <div class="row g-3">
+          <div class="col-12 col-sm-6">
+            <label class="ck-radio-card" [class.selected]="checkoutForm.get('typeLivraison')?.value === 'domicile'">
+              <input type="radio" formControlName="typeLivraison" value="domicile" class="ck-radio-input">
+              <div class="ck-radio-icon" style="background:#F4E7E8;">
+                <i class="fa-solid fa-house" style="color:var(--accent);"></i>
+              </div>
+              <div>
+                <div class="ck-radio-title">Livraison à domicile</div>
+                <div class="ck-radio-desc">Livré chez vous en 24–48h · +8,000 د.ت</div>
+              </div>
+              <i class="fa-solid fa-circle-check ck-radio-check"></i>
+            </label>
+          </div>
+          <div class="col-12 col-sm-6">
+            <label class="ck-radio-card" [class.selected]="checkoutForm.get('typeLivraison')?.value === 'retrait'">
+              <input type="radio" formControlName="typeLivraison" value="retrait" class="ck-radio-input">
+              <div class="ck-radio-icon" style="background:#EEF2FF;">
+                <i class="fa-solid fa-store" style="color:#4F46E5;"></i>
+              </div>
+              <div>
+                <div class="ck-radio-title">Retrait en magasin</div>
+                <div class="ck-radio-desc">Disponible immédiatement · Gratuit</div>
+              </div>
+              <i class="fa-solid fa-circle-check ck-radio-check"></i>
+            </label>
+          </div>
+        </div>
+        </ng-container>
         <!-- Section : Adresse (uniquement si fournitures + livraison à domicile) -->
         <ng-container *ngIf="commandeContientFournitures && checkoutForm.get('typeLivraison')?.value === 'domicile'">
           <div class="ck-section-label mt-4">
@@ -459,43 +493,18 @@
               </div>
             </div>
 
+            <!-- Adresse détaillée (rue, n°, immeuble, indications…) — facultative -->
+            <div class="col-12">
+              <label class="ck-label">Adresse détaillée <span class="ck-optional">(facultatif)</span></label>
+              <textarea formControlName="adresseDetaillee" rows="2"
+                        placeholder="Rue, numéro, immeuble, étage, code postal, points de repère…"
+                        class="ck-input ck-textarea"></textarea>
+            </div>
+
           </div>
         </ng-container>
 
-        <!-- Section : Type de livraison (uniquement si le panier contient des fournitures scolaires) -->
-        <ng-container *ngIf="commandeContientFournitures">
-        <div class="ck-section-label mt-4">
-          <i class="fa-solid fa-truck me-2"></i>Type de livraison
-        </div>
-        <div class="row g-3">
-          <div class="col-12 col-sm-6">
-            <label class="ck-radio-card" [class.selected]="checkoutForm.get('typeLivraison')?.value === 'domicile'">
-              <input type="radio" formControlName="typeLivraison" value="domicile" class="ck-radio-input">
-              <div class="ck-radio-icon" style="background:#F4E7E8;">
-                <i class="fa-solid fa-house" style="color:var(--accent);"></i>
-              </div>
-              <div>
-                <div class="ck-radio-title">Livraison à domicile</div>
-                <div class="ck-radio-desc">Livré chez vous en 24–48h · +8,000 د.ت</div>
-              </div>
-              <i class="fa-solid fa-circle-check ck-radio-check"></i>
-            </label>
-          </div>
-          <div class="col-12 col-sm-6">
-            <label class="ck-radio-card" [class.selected]="checkoutForm.get('typeLivraison')?.value === 'retrait'">
-              <input type="radio" formControlName="typeLivraison" value="retrait" class="ck-radio-input">
-              <div class="ck-radio-icon" style="background:#EEF2FF;">
-                <i class="fa-solid fa-store" style="color:#4F46E5;"></i>
-              </div>
-              <div>
-                <div class="ck-radio-title">Retrait en magasin</div>
-                <div class="ck-radio-desc">Disponible immédiatement · Gratuit</div>
-              </div>
-              <i class="fa-solid fa-circle-check ck-radio-check"></i>
-            </label>
-          </div>
-        </div>
-        </ng-container>
+        
 
         
 
@@ -523,18 +532,23 @@
             </label>
           </div>
           <div class="col-12 col-md-6">
-            <label class="ck-radio-card" [class.selected]="moyenPaiement === 'carte'">
+            <label class="ck-radio-card ck-radio-card--disabled" [class.selected]="moyenPaiement === 'carte'">
               <input type="radio" formControlName="moyenPaiement" value="carte" class="ck-radio-input">
               <div class="ck-radio-icon" style="background:#EFF6FF;">
                 <span style="font-size:18px;">💳</span>
               </div>
               <div>
-                <div class="ck-radio-title">Paiement en ligne</div>
+                <div class="ck-radio-title">Paiement en ligne <span class="ck-badge-soon">Bientôt</span></div>
                 <div class="ck-radio-desc">Carte bancaire Visa / Mastercard</div>
               </div>
               <i class="fa-solid fa-circle-check ck-radio-check"></i>
             </label>
           </div>
+        </div>
+
+        <div class="alert py-2 px-3 mt-3 mb-0" *ngIf="paiementEnLigneMessage"
+             style="background:#FFFBEB;color:#92400E;border:none;">
+          <i class="fa-solid fa-triangle-exclamation me-1"></i>{{ paiementEnLigneMessage }}
         </div>
 
         <!-- ── Panneau Paiement en ligne : formulaire + carte 3D interactive ── -->

@@ -284,6 +284,12 @@
   color: var(--accent);
   margin-left: 2px;
 }
+.ck-optional {
+  color: #9AA2AB;
+  font-weight: 500;
+  font-size: 12px;
+  margin-left: 4px;
+}
 .ck-label-row {
   display: flex;
   align-items: center;
@@ -373,6 +379,34 @@
 .ck-select {
   padding-right: 36px;
   cursor: pointer;
+}
+
+/* ── Aligne le champ <app-searchable-select> (Gouvernorat / Délégation) sur le style des
+   autres champs du checkout (.ck-input) — même hauteur, bordure, rayon, fond, focus.
+   Scopé au panier via :host pour ne pas toucher les autres pages (profil…). ── */
+:host ::ng-deep app-searchable-select .uss-input {
+  height: 46px;
+  padding: 0 40px 0 14px;
+  border: 1.5px solid #E4E7EC;
+  border-radius: 12px;
+  background: #FAFBFC;
+  font-size: 14px;
+  color: #1B2430;
+  transition: border-color .18s, box-shadow .18s, background .18s;
+}
+:host ::ng-deep app-searchable-select .uss-input:focus {
+  border-color: var(--accent);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(140, 36, 51, .10);
+}
+:host ::ng-deep app-searchable-select .uss-control.is-invalid .uss-input {
+  border-color: #E53E3E;
+  background: #FFF5F5;
+}
+:host ::ng-deep app-searchable-select .uss-arrow { right: 14px; }
+:host ::ng-deep app-searchable-select .uss-panel {
+  border-radius: 12px;
+  border-color: #E4E7EC;
 }
 
 /* ── Input avec icône ou préfixe ── */
@@ -485,6 +519,23 @@
 }
 .ck-radio-card.selected .ck-radio-check {
   color: var(--accent);
+}
+
+/* Option de paiement pas encore active */
+.ck-radio-card--disabled { opacity: .7; }
+.ck-radio-card--disabled:hover { border-color: #E4E7EC; box-shadow: none; }
+.ck-badge-soon {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #FEF3C7;
+  color: #92400E;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  vertical-align: middle;
 }
 
 /* ── Récap mini ── */

@@ -138,16 +138,17 @@
           </a>
           <!-- Fournitures scolaires : sous-menu au survol reprenant la Catégorie/Sous-Catégorie du
                formulaire produit caisse, limitée aux produits réellement ajoutés au site (voir
-               CategoriesCaisseService) — 2 niveaux. -->
+               CategoriesCaisseService) — 2 niveaux. Soutenance / Jeux / Livre sont exclus ici
+               (entrées dédiées ailleurs — voir header.component.ts#categoriesCaisseExclues). -->
           <div class="ub-flyout-item">
             <a routerLink="/boutique" [queryParams]="{domaine:'fournitures'}"
-               class="ub-boutique-menu-item" [class.ub-has-flyout]="categoriesCaisse.length">
+               class="ub-boutique-menu-item" [class.ub-has-flyout]="categoriesCaisseVisibles.length">
               <span><i class="fa-solid fa-pen-ruler"></i>Fournitures scolaires</span>
-              <i class="fa-solid fa-chevron-right ub-flyout-caret" *ngIf="categoriesCaisse.length"></i>
+              <i class="fa-solid fa-chevron-right ub-flyout-caret" *ngIf="categoriesCaisseVisibles.length"></i>
             </a>
 
-            <div class="ub-flyout-panel" *ngIf="categoriesCaisse.length">
-              <div class="ub-flyout-item" *ngFor="let cat of categoriesCaisse">
+            <div class="ub-flyout-panel" *ngIf="categoriesCaisseVisibles.length">
+              <div class="ub-flyout-item" *ngFor="let cat of categoriesCaisseVisibles">
                 <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie: cat.nom}"
                    class="ub-boutique-menu-item" [class.ub-has-flyout]="cat.sousCategories.length">
                   <span>{{ formatLabel(cat.nom) }}</span>
@@ -376,8 +377,9 @@
           <i class="fa-solid fa-graduation-cap me-2"></i>Soutenance
         </a>
 
-        <!-- Fournitures scolaires -->
-        <button *ngIf="categoriesCaisse.length; else lienFournitures" type="button" class="ub-mobile-row ub-mobile-row--indent1 ub-mobile-row--toggle" (click)="toggleMobileExpand('four', $event)" [attr.aria-expanded]="isMobileExpanded('four')">
+        <!-- Fournitures scolaires (Soutenance / Jeux / Livre exclus — voir
+             header.component.ts#categoriesCaisseExclues) -->
+        <button *ngIf="categoriesCaisseVisibles.length; else lienFournitures" type="button" class="ub-mobile-row ub-mobile-row--indent1 ub-mobile-row--toggle" (click)="toggleMobileExpand('four', $event)" [attr.aria-expanded]="isMobileExpanded('four')">
           <span class="ub-mobile-row-link"><i class="fa-solid fa-pen-ruler me-2"></i>Fournitures scolaires</span>
           <span class="ub-mobile-row-toggle" aria-hidden="true">
             <i class="fa-solid fa-chevron-down" [class.ub-rotated]="isMobileExpanded('four')"></i>
@@ -389,7 +391,7 @@
           </a>
         </ng-template>
         <div class="ub-mobile-subaccordion" *ngIf="isMobileExpanded('four')">
-          <ng-container *ngFor="let cat of categoriesCaisse">
+          <ng-container *ngFor="let cat of categoriesCaisseVisibles">
             <div class="ub-mobile-row ub-mobile-row--indent2">
               <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie: cat.nom}" (click)="closeMenu()" class="ub-mobile-row-link">{{ formatLabel(cat.nom) }}</a>
               <button *ngIf="cat.sousCategories.length" type="button" class="ub-mobile-row-toggle" (click)="toggleMobileExpand('four:'+cat.nom, $event)" [attr.aria-expanded]="isMobileExpanded('four:'+cat.nom)">

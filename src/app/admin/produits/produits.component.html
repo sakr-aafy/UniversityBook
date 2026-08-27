@@ -1,9 +1,14 @@
 <div class="p-4 p-lg-5">
   <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
     <h1 class="font-spectral fw-bold mb-0" style="font-size:24px;">Produits</h1>
-    <button class="btn btn-accent rounded-pill px-4" (click)="ouvrirAjout()">
-      <i class="fa-solid fa-plus me-2"></i>Ajouter un produit
-    </button>
+    <div class="d-flex gap-2 flex-wrap">
+      <button class="btn btn-outline-dark-ub rounded-pill px-4" (click)="ouvrirCreationPack()">
+        <i class="fa-solid fa-boxes-stacked me-2"></i>Créer un pack
+      </button>
+      <button class="btn btn-accent rounded-pill px-4" (click)="ouvrirAjout()">
+        <i class="fa-solid fa-plus me-2"></i>Ajouter un produit
+      </button>
+    </div>
   </div>
 
   <div class="alert alert-danger py-2 px-3" *ngIf="erreur">{{ erreur }}</div>
@@ -98,6 +103,13 @@
           <div class="col-12 col-md-4">
             <label class="form-label ub-label">Quantité en stock</label>
             <input type="number" min="0" class="form-control ub-input" [(ngModel)]="produitEnCours.stock" name="stock">
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label ub-label">Disponibilité</label>
+            <select class="form-select ub-input" [(ngModel)]="produitEnCours.disponible" name="disponible">
+              <option [ngValue]="true">En stock</option>
+              <option [ngValue]="false">Hors stock</option>
+            </select>
           </div>
           <div class="col-12 col-md-4 d-flex align-items-end">
             <div class="d-flex align-items-center gap-2">
@@ -203,8 +215,141 @@
     </form>
   </div>
 
+  <!-- ══════════════ Créer un pack (lot de plusieurs produits) ══════════════ -->
+  <div class="ad-form-wrap mb-4" *ngIf="dialogPackOuvert">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h2 class="fw-bold mb-0" style="font-size:17px;"><i class="fa-solid fa-boxes-stacked me-2"></i>Nouveau pack</h2>
+      <button class="btn btn-outline-dark-ub btn-sm" (click)="fermerCreationPack()"><i class="fa-solid fa-xmark me-1"></i>Fermer</button>
+    </div>
+
+    <div class="alert alert-danger py-2 px-3" *ngIf="erreurPack">{{ erreurPack }}</div>
+
+    <form (ngSubmit)="creerPack()">
+      <!-- Infos du pack -->
+      <div class="ad-section">
+        <h3 class="ad-section-titre"><i class="fa-solid fa-circle-info me-2"></i>Informations</h3>
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label ub-label">Nom du pack *</label>
+            <input type="text" class="form-control ub-input" [(ngModel)]="packNom" name="packNom" placeholder="Ex. Pack rentrée" required>
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label ub-label">Catégorie</label>
+            <select class="form-select ub-input" [(ngModel)]="packCategorie" name="packCategorie" (ngModelChange)="onPackCategorieChange()">
+              <option value="">Sans catégorie</option>
+              <option *ngFor="let cat of packCategoriesDisponibles" [value]="cat">{{ cat }}</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label ub-label">Sous-catégorie</label>
+            <select class="form-select ub-input" [(ngModel)]="packSousCategorie" name="packSousCategorie"
+                    (ngModelChange)="onPackSousCategorieChange()" [disabled]="packSousCategoriesDisponibles.length === 0">
+              <option value="">—</option>
+              <option *ngFor="let sc of packSousCategoriesDisponibles" [value]="sc">{{ sc }}</option>
+            </select>
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label ub-label">Sous-sous-catégorie</label>
+            <select class="form-select ub-input" [(ngModel)]="packSousSousCategorie" name="packSousSousCategorie"
+                    [disabled]="packSousSousCategoriesDisponibles.length === 0">
+              <option value="">—</option>
+              <option *ngFor="let ssc of packSousSousCategoriesDisponibles" [value]="ssc">{{ ssc }}</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="ub-label">Image du pack (optionnel)</label>
+            <app-file-drop-zone *ngIf="!packImageApercu"
+              accept=".jpg,.jpeg,.png,.webp" icone="fa-image"
+              label="Glissez-déposez une image" sousLabel="JPEG, PNG ou WEBP"
+              (filesSelected)="onPackImageSelectionnee($event)" (erreur)="onErreurUpload($event)">
+            </app-file-drop-zone>
+            <div class="ad-image-apercu" *ngIf="packImageApercu">
+              <img [src]="packImageApercu" alt="Aperçu">
+              <button type="button" class="ad-image-supprimer" (click)="supprimerPackImage()" title="Supprimer"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sélection des produits -->
+      <div class="ad-section">
+        <h3 class="ad-section-titre"><i class="fa-solid fa-list-check me-2"></i>Produits du pack</h3>
+
+        <div class="input-group mb-3" style="max-width:340px;">
+          <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-magnifying-glass text-secondary"></i></span>
+          <input type="text" class="form-control border-start-0 ps-0" placeholder="Rechercher dans tout le catalogue (nom, catégorie, SKU, marque)..."
+                 [(ngModel)]="packRecherche" name="packRecherche">
+        </div>
+
+        <div class="d-flex justify-content-center py-4" *ngIf="packCatalogueChargement">
+          <i class="fa-solid fa-spinner fa-spin" style="color:var(--accent)"></i>
+        </div>
+
+        <div class="ad-pack-picker" *ngIf="!packCatalogueChargement">
+          <button type="button" class="ad-pack-item" *ngFor="let p of packProduitsFiltres; trackBy: trackById"
+                  [class.selected]="estDansPack(p)" (click)="basculerProduitPack(p)">
+            <span class="ad-pack-check"><i class="fa-solid" [class.fa-square-check]="estDansPack(p)" [class.fa-square]="!estDansPack(p)"></i></span>
+            <span class="ad-pack-thumb">
+              <img *ngIf="p.image" [src]="imageUrl(p)" [alt]="p.titre">
+              <i *ngIf="!p.image" class="fa-solid fa-box"></i>
+            </span>
+            <span class="ad-pack-nom">{{ p.titre }}</span>
+            <span class="ad-pack-cat" *ngIf="p.categorie">{{ p.categorie }}</span>
+            <span class="ad-pack-prix">{{ p.prix | number:'1.3-3' }} DT</span>
+          </button>
+          <p class="text-secondary small m-2" *ngIf="packProduitsFiltres.length === 0">Aucun produit ne correspond.</p>
+        </div>
+        <p class="text-secondary small mt-2 mb-0" *ngIf="!packCatalogueChargement">
+          {{ packCatalogue.length }} produit(s) dans le catalogue · {{ packSelection.length }} sélectionné(s)
+        </p>
+      </div>
+
+      <!-- Récapitulatif -->
+      <div class="ad-section" *ngIf="packSelection.length">
+        <h3 class="ad-section-titre"><i class="fa-solid fa-boxes-packing me-2"></i>Composition ({{ packSelection.length }})</h3>
+        <div class="ad-pack-recap">
+          <div class="ad-pack-recap-row" *ngFor="let s of packSelection; trackBy: trackByIndex">
+            <span class="ad-pack-recap-nom">{{ s.produit.titre }}</span>
+            <div class="ad-pack-qty">
+              <button type="button" (click)="changerQtePack(s, -1)" [disabled]="s.quantite <= 1"><i class="fa-solid fa-minus"></i></button>
+              <span>{{ s.quantite }}</span>
+              <button type="button" (click)="changerQtePack(s, 1)"><i class="fa-solid fa-plus"></i></button>
+            </div>
+            <span class="ad-pack-recap-prix">{{ (s.produit.prix * s.quantite) | number:'1.3-3' }} DT</span>
+            <button type="button" class="ad-pack-recap-del" (click)="retirerDuPack(s)" title="Retirer"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </div>
+
+        <div class="row g-3 mt-1">
+          <div class="col-12 col-md-4">
+            <label class="form-label ub-label">Valeur des composants</label>
+            <input type="text" class="form-control ub-input" [value]="(packTotalComposants | number:'1.3-3') + ' DT'" disabled>
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label ub-label">Prix du pack (DT)</label>
+            <input type="number" step="0.001" min="0" class="form-control ub-input"
+                   [(ngModel)]="packPrix" name="packPrix" [placeholder]="packTotalComposants | number:'1.3-3'">
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label ub-label">Économie</label>
+            <input type="text" class="form-control ub-input" [value]="(packEconomie | number:'1.3-3') + ' DT'" disabled>
+          </div>
+        </div>
+        <p class="text-secondary small mt-2 mb-0"><i class="fa-solid fa-quote-left me-1"></i>{{ packDescriptionAuto }}</p>
+      </div>
+
+      <div class="d-flex gap-2 mt-3">
+        <button type="submit" class="btn btn-accent rounded-pill px-4" [disabled]="creationPackEnCours || packSelection.length < 2">
+          <span *ngIf="!creationPackEnCours"><i class="fa-solid fa-check me-2"></i>Créer le pack</span>
+          <span *ngIf="creationPackEnCours">Création…</span>
+        </button>
+        <button type="button" class="btn btn-outline-dark-ub rounded-pill px-4" (click)="fermerCreationPack()">Annuler</button>
+      </div>
+    </form>
+  </div>
+
   <!-- Recherche -->
-  <div class="d-flex flex-wrap gap-2 mb-4" *ngIf="!formulaireOuvert">
+  <div class="d-flex flex-wrap gap-2 mb-4" *ngIf="!formulaireOuvert && !dialogPackOuvert">
     <div class="input-group" style="max-width:320px;">
       <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-magnifying-glass text-secondary"></i></span>
       <input type="text" class="form-control border-start-0 ps-0" placeholder="Rechercher un produit..."
@@ -217,7 +362,7 @@
     <i class="fa-solid fa-spinner fa-spin fa-2x" style="color:var(--accent)"></i>
   </div>
 
-  <ng-container *ngIf="!chargement && !formulaireOuvert">
+  <ng-container *ngIf="!chargement && !formulaireOuvert && !dialogPackOuvert">
     <p class="text-secondary" *ngIf="produits.length === 0">Aucun produit dans le catalogue.</p>
 
     <div class="row g-3">
@@ -228,10 +373,12 @@
             <i *ngIf="!produit.image" class="fa-solid fa-box"></i>
           </div>
           <div class="p-3">
-            <div class="d-flex align-items-center gap-2 mb-2">
+            <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
               <span class="ub-badge">{{ produit.categorie || 'Sans catégorie' }}</span>
               <span class="ub-badge ub-badge-accent" *ngIf="produit.nouveaute">Nouveau</span>
               <span class="ub-badge ub-badge-accent" *ngIf="produit.populaire">Populaire</span>
+              <span class="ub-badge" *ngIf="produit.disponible === false"
+                    style="background:#FEF2F2;color:#B91C1C;">Hors stock</span>
             </div>
             <h3 class="fw-semibold mb-1" style="font-size:15px;">{{ produit.titre }}</h3>
             <p class="fw-semibold small mb-1" style="color:var(--accent)">

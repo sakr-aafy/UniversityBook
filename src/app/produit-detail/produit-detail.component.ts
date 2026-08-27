@@ -28,6 +28,8 @@ export class ProduitDetailComponent implements OnInit, OnDestroy {
   imageActive = 0;
   couleurSelectionnee: VarianteCouleur | null = null;
   formatSelectionne: VarianteFormat | null = null;
+  /** Unité de vente active — 'pack' seulement si le produit a une config pack (voir aPack). */
+  unite: 'piece' | 'pack' = 'piece';
   quantite = 1;
   ongletActif: Onglet = 'description';
   partageConfirme = false;
@@ -82,6 +84,7 @@ export class ProduitDetailComponent implements OnInit, OnDestroy {
     this.produit = this.catalogueService.getById(id) || null;
     this.imageActive = 0;
     this.quantite = 1;
+    this.unite = 'piece';
     this.ongletActif = 'description';
     this.couleurSelectionnee = this.produit?.couleurs?.[0] || null;
     this.formatSelectionne = this.produit?.formats?.[0] || null;
@@ -173,12 +176,39 @@ export class ProduitDetailComponent implements OnInit, OnDestroy {
     this.formatSelectionne = f;
   }
 
+  /** Affiche-t-on le sélecteur Pièce / Pack ? Pour toute fourniture ayant un prix (le bouton
+   *  Pack peut y être désactivé, voir packDisponible). */
+  get montreUnite(): boolean {
+    return this.produit?.domaine === 'fournitures' && (this.produit?.prix || 0) > 0;
+  }
+
+  /** Vente au pack réellement possible : nombre de pièces/pack ET prix pack connus en base
+   *  (fiche produit caisse). Sinon le bouton Pack est désactivé. */
+  get packDisponible(): boolean {
+    return !!this.produit?.packNbPieces && !!this.produit?.packPrix;
+  }
+
+  /** Alias conservé pour les getters de prix/label ci-dessous. */
+  get aPack(): boolean {
+    return this.packDisponible;
+  }
+
+  choisirUnite(u: 'piece' | 'pack'): void {
+    if (this.unite === u) return;
+    if (u === 'pack' && !this.packDisponible) return;
+    this.unite = u;
+    this.quantite = 1;
+  }
+
   get prixAffiche(): number {
     if (!this.produit) return 0;
+    // Prix du pack entier (les variantes couleur/format ne s'appliquent pas à la vente par pack).
+    if (this.unite === 'pack' && this.aPack) return this.produit.packPrix as number;
     return this.produit.prix + (this.formatSelectionne?.prixDelta || 0);
   }
 
   get ancienPrixAffiche(): number | undefined {
+    if (this.unite === 'pack' && this.aPack) return undefined;
     if (!this.produit?.ancienPrix) return undefined;
     return this.produit.ancienPrix + (this.formatSelectionne?.prixDelta || 0);
   }
@@ -187,7 +217,14 @@ export class ProduitDetailComponent implements OnInit, OnDestroy {
     if (!this.produit) return null;
     const stocks = [this.produit.stock, this.couleurSelectionnee?.stock, this.formatSelectionne?.stock]
       .filter((s): s is number => s !== undefined && s !== null);
-    return stocks.length ? Math.min(...stocks) : null;
+    if (!stocks.length) return null;
+    const base = Math.min(...stocks);
+    // Stock exprimé en packs quand la vente par pack est active ET que le nombre de pièces/pack
+    // est connu (le stock reste compté en pièces).
+    if (this.unite === 'pack' && this.aPack && (this.produit.packNbPieces ?? 0) > 0) {
+      return Math.floor(base / (this.produit.packNbPieces as number));
+    }
+    return base;
   }
 
   get estDisponible(): boolean {
@@ -200,8 +237,13 @@ export class ProduitDetailComponent implements OnInit, OnDestroy {
   }
 
   get varianteLabel(): string | undefined {
-    const parts = [this.couleurSelectionnee?.nom, this.formatSelectionne?.nom].filter(Boolean);
-    return parts.length ? parts.join(' / ') : undefined;
+    const nbPieces = this.produit?.packNbPieces ?? 0;
+    const parts = [
+      this.unite === 'pack' && this.aPack ? (nbPieces > 0 ? `Pack de ${nbPieces}` : 'Pack') : null,
+      this.couleurSelectionnee?.nom,
+      this.formatSelectionne?.nom
+    ].filter(Boolean);
+    return parts.length ? parts.join(' · ') : undefined;
   }
 
   /* ── Quantité ── */

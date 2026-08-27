@@ -76,8 +76,8 @@ export class UtilisateursComponent implements OnInit {
           this.totalPages = res.totalPages || 1;
           this.chargement = false;
         },
-        error: () => {
-          this.erreur = 'Impossible de charger les utilisateurs.';
+        error: (err: HttpErrorResponse) => {
+          this.erreur = err.error?.message || 'Impossible de charger les utilisateurs.';
           this.chargement = false;
         }
       });

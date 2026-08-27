@@ -1,12 +1,14 @@
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { HttpEventType } from '@angular/common/http';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { CartService } from '../services/cart.service';
 import { CompareService } from '../services/compare.service';
 import { BoutiqueFavoritesService } from '../services/boutique-favorites.service';
-import { CatalogueService, Produit, estProduitCategorieLivre, estCategorieLivre, estCategorieJeux, estCategorieSoutenance } from '../services/catalogue.service';
+import { CatalogueService, Produit, estProduitDocument } from '../services/catalogue.service';
 import { DocumentsService } from '../services/documents.service';
 import { AuthService } from '../services/auth.service';
+import { AdminProduitsService, ProduitForm } from '../services/admin-produits.service';
 import { photoUrl } from '../shared/photo-url.util';
 import { formatCategorieLabel } from '../shared/format-label.util';
 
@@ -17,15 +19,11 @@ interface HeroBannerSlide {
   gradient: string;
 }
 
-/**
- * Vue affichée dans les onglets Boutique — plus fine que `Produit.domaine` (documents/fournitures)
- * : les produits du catalogue "Fournitures" de catégorie "Livre"/"Jeux"/"Soutenance" sont
- * regroupés dans leur propre vue (même logique que le mega-menu, voir header.component.ts#
- * CATEGORIES_SPECIALES) plutôt que noyés dans "Fournitures scolaires". `Produit.domaine` reste
- * inchangé (toujours 'fournitures' pour ces produits — ce sont des articles physiques, pas des
- * documents numériques), seul l'affichage/filtrage de cette page en tient compte.
- */
-type Vue = 'documents' | 'fournitures' | 'jeux' | 'soutenance';
+/** Vue affichée dans les onglets Boutique — reflète directement `Produit.domaine`. Toutes les
+ *  catégories caisse (Archive, Jeux, Livre, Soutenance…) restent de simples chips de filtre au
+ *  sein de "Fournitures scolaires", comme dans le mega-menu du Header (voir
+ *  header.component.html) — aucune catégorie n'est routée vers une vue à part. */
+type Vue = 'documents' | 'fournitures';
 
 @Component({
   selector: 'app-boutique',
@@ -44,6 +42,7 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
     public catalogueService: CatalogueService,
     private documentsService: DocumentsService,
     private authService: AuthService,
+    private adminProduitsService: AdminProduitsService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
@@ -66,17 +65,14 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
   }
   set vueActive(v: Vue) { this.vueChoisie = v; }
 
-  /** Détermine la vue d'affichage d'un produit — voir le commentaire sur `Vue` plus haut. Les
-   *  correspondances estCategorieJeux/Soutenance/estProduitCategorieLivre sont par sous-chaîne
-   *  (pas d'égalité stricte) : `categorie`/`sousCategorie` sont un texte libre saisi en caisse,
-   *  jamais garanti d'être exactement "Livre"/"Jeux"/"Soutenance" (voir catalogue.service.ts).
-   *  estProduitCategorieLivre regarde aussi la sous-catégorie (ex. "Droit > Livre concours"
-   *  rejoint Documents numériques même si la catégorie parente "Droit" n'y correspond pas). */
+  /** Détermine la vue d'affichage d'un produit — voir le commentaire sur `Vue` plus haut. */
   private vueDeProduit(p: Produit): Vue {
     if (p.domaine === 'documents') return 'documents';
-    if (estProduitCategorieLivre(p)) return 'documents';
-    if (estCategorieJeux(p.categorie)) return 'jeux';
-    if (estCategorieSoutenance(p.categorie)) return 'soutenance';
+    // Un produit caisse de la branche "Droit" (sous-catégories "Examen", "Livre concours",
+    // "Code juridique") ou tout ouvrage "Livre" est un document : il s'affiche dans la vue
+    // Documents, pas dans Fournitures scolaires — voir estProduitDocument / MOTS_CLES_DOCUMENT
+    // dans catalogue.service.ts.
+    if (estProduitDocument(p)) return 'documents';
     return 'fournitures';
   }
 
@@ -120,7 +116,7 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
 
   // ── Pagination ──
   pageActuelle: number = 1;
-  taillePage: number = 9;
+  taillePage: number = 10;
 
   /** Catégories réellement présentes dans le catalogue pour le domaine actif (remplace
    *  l'ancienne liste codée en dur — synchronisée avec les catégories gérées par l'admin). */
@@ -135,24 +131,20 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
       nom,
       icone: produitsDomaine.find(p => p.categorie === nom)?.icone || 'fa-tag',
       count
-    }));
+    })).sort((a, b) => this.comparerAlpha(a.nom, b.nom));
     return [{ nom: 'Tous', icone: 'fa-grip', count: produitsDomaine.length }, ...chips];
   }
 
   /** Sous-catégories présentes pour la catégorie actuellement sélectionnée (remplace le
-   *  précédent littéral codé en dur `categorieActive === 'Droit'`). Pour les vues Jeux/Soutenance,
-   *  la catégorie caisse sous-jacente est unique (c'est elle qui définit la vue elle-même — voir
-   *  vueDeProduit) : les sous-catégories restent donc visibles même quand categorieActive vaut
-   *  encore "Tous" (aucun chip de catégorie redondant à cliquer d'abord). */
+   *  précédent littéral codé en dur `categorieActive === 'Droit'`). */
   get sousCategoriesActives(): string[] {
-    const vueSansChipCategorie = this.vueActive === 'jeux' || this.vueActive === 'soutenance';
-    if (this.categorieActive === 'Tous' && !vueSansChipCategorie) return [];
+    if (this.categorieActive === 'Tous') return [];
     const set = new Set<string>();
     this.produits
       .filter(p => this.vueDeProduit(p) === this.vueActive
-        && (this.categorieActive === 'Tous' || p.categorie === this.categorieActive) && p.sousCategorie)
+        && p.categorie === this.categorieActive && p.sousCategorie)
       .forEach(p => set.add(p.sousCategorie as string));
-    return [...set];
+    return [...set].sort((a, b) => this.comparerAlpha(a, b));
   }
 
   /** Sous-sous-catégories présentes pour la sous-catégorie actuellement sélectionnée — même
@@ -165,7 +157,7 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
         && (this.categorieActive === 'Tous' || p.categorie === this.categorieActive)
         && p.sousCategorie === this.sousCategorieActive && p.sousSousCategorie)
       .forEach(p => set.add(p.sousSousCategorie as string));
-    return [...set];
+    return [...set].sort((a, b) => this.comparerAlpha(a, b));
   }
 
   /** Types présents dans le catalogue pour la vue active. */
@@ -174,16 +166,26 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
     this.produits
       .filter(p => this.vueDeProduit(p) === this.vueActive && p.type)
       .forEach(p => set.add(p.type));
-    return ['Tous', ...set];
+    return ['Tous', ...[...set].sort((a, b) => this.comparerAlpha(a, b))];
   }
 
+  // 'defaut' = tri alphabétique A → Z (ordre d'affichage par défaut de la Boutique, voir le
+  // switch dans produitsFiltres) — placé en premier pour être l'option sélectionnée à l'arrivée.
   options = [
-    { val: 'defaut',    label: 'Par défaut'       },
-    { val: 'recent',    label: 'Plus récents'      },
-    { val: 'populaire', label: 'Plus populaires'   },
-    { val: 'prix-asc',  label: 'Prix croissant'    },
-    { val: 'prix-desc', label: 'Prix décroissant'  },
+    { val: 'defaut',     label: 'Alphabétique (A → Z)' },
+    { val: 'alpha-desc', label: 'Alphabétique (Z → A)' },
+    { val: 'recent',     label: 'Plus récents'         },
+    { val: 'populaire',  label: 'Plus populaires'      },
+    { val: 'prix-asc',   label: 'Prix croissant'       },
+    { val: 'prix-desc',  label: 'Prix décroissant'     },
   ];
+
+  /** Comparaison alphabétique FR : insensible à la casse et aux accents ("École" ~ "ecole"),
+   *  tri naturel des nombres ("Cahier 2" avant "Cahier 10"). Réutilisée pour le tri des produits
+   *  et pour l'ordre des listes de filtres (catégories, sous-catégories, types). */
+  private comparerAlpha(a: string, b: string): number {
+    return (a || '').localeCompare(b || '', 'fr', { sensitivity: 'base', numeric: true });
+  }
 
   get produits(): Produit[] {
     return this.catalogueService.produits;
@@ -236,10 +238,14 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
     }
 
     switch (this.triActif) {
-      case 'prix-asc':  res = [...res].sort((a, b) => a.prix - b.prix); break;
-      case 'prix-desc': res = [...res].sort((a, b) => b.prix - a.prix); break;
-      case 'populaire': res = [...res].sort((a, b) => +!!b.populaire - +!!a.populaire); break;
-      case 'recent':    res = [...res].sort((a, b) => +!!b.nouveaute - +!!a.nouveaute); break;
+      case 'alpha-desc': res = [...res].sort((a, b) => this.comparerAlpha(b.titre, a.titre)); break;
+      case 'prix-asc':   res = [...res].sort((a, b) => a.prix - b.prix); break;
+      case 'prix-desc':  res = [...res].sort((a, b) => b.prix - a.prix); break;
+      case 'populaire':  res = [...res].sort((a, b) => +!!b.populaire - +!!a.populaire); break;
+      case 'recent':     res = [...res].sort((a, b) => +!!b.nouveaute - +!!a.nouveaute); break;
+      // 'defaut' (et toute valeur inconnue venant d'un ?tri= d'URL) : ordre alphabétique A → Z,
+      // insensible à la casse et aux accents (voir comparerAlpha).
+      default:           res = [...res].sort((a, b) => this.comparerAlpha(a.titre, b.titre));
     }
 
     return res;
@@ -256,6 +262,13 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
     this.typeActif = 'Tous';
     this.filtreGratuit = false;
     this.filtrePayant = false;
+    // Les filtres avancés (prix / disponibilité / promotions) portent sur un catalogue au
+    // barème différent d'un domaine à l'autre : les garder actifs en changeant d'onglet
+    // masquait tous les résultats sans que la cause soit visible.
+    this.prixMin = null;
+    this.prixMax = null;
+    this.filtreDisponibilite = 'tous';
+    this.filtrePromotion = false;
     this.resetPage();
   }
 
@@ -362,12 +375,7 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
   /** Libellé lisible du domaine actif, pour le breadcrumb de filtres — mêmes libellés que les
    *  onglets ub-domaine-tab du template. */
   get vueActiveLabel(): string {
-    switch (this.vueActive) {
-      case 'documents': return 'Documents';
-      case 'jeux': return 'Jeux';
-      case 'soutenance': return 'Soutenance';
-      default: return 'Fournitures scolaires';
-    }
+    return this.vueActive === 'documents' ? 'Documents' : 'Fournitures scolaires';
   }
 
   filtrerType(t: string): void {
@@ -456,17 +464,57 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
     this.filtresOuverts = false;
   }
 
+  // ── Vente à la pièce / au pack (config reprise de la fiche produit caisse) ──────────────────
+  // uniteChoisie mémorise le choix par produit (clé = p.id) ; 'piece' par défaut.
+
+  uniteChoisie: Record<number, 'piece' | 'pack'> = {};
+
+  /** Affiche-t-on le sélecteur Pièce / Pack ? Pour toute fourniture ayant un prix (le bouton
+   *  Pack peut y être désactivé, voir packDisponible). */
+  montreUnite(p: Produit): boolean {
+    return p.domaine === 'fournitures' && p.prix > 0;
+  }
+
+  /** La vente au pack est-elle réellement possible ? Uniquement si le nombre de pièces/pack ET
+   *  un prix pack viennent de la base (fiche produit caisse) — sinon le bouton Pack est désactivé. */
+  packDisponible(p: Produit): boolean {
+    return !!p.packNbPieces && !!p.packPrix;
+  }
+
+  /** Conservé pour les anciens usages internes (suffixe de prix, etc.) = pack réellement vendable. */
+  aPack(p: Produit): boolean {
+    return this.packDisponible(p);
+  }
+
+  uniteDe(p: Produit): 'piece' | 'pack' {
+    return this.packDisponible(p) ? (this.uniteChoisie[p.id] || 'piece') : 'piece';
+  }
+
+  choisirUnite(p: Produit, unite: 'piece' | 'pack', event: Event): void {
+    event.stopPropagation();
+    if (unite === 'pack' && !this.packDisponible(p)) return;
+    this.uniteChoisie[p.id] = unite;
+  }
+
+  /** Prix affiché / facturé selon l'unité active (prix pièce ou prix du pack entier). */
+  prixUnitaire(p: Produit): number {
+    return this.uniteDe(p) === 'pack' ? (p.packPrix as number) : p.prix;
+  }
+
   // ── Panier (drawer) ──
 
   ajouterPanier(p: Produit): void {
+    const enPack = this.uniteDe(p) === 'pack';
     // CartService.ajouter() gère l'ajout/incrémentation ET l'ouverture automatique du drawer.
+    // `variante` distingue la ligne "pack" de la ligne "pièce" d'un même produit dans le panier.
     this.cartService.ajouter({
       id: p.id,
       titre: p.titre,
       categorie: p.categorie,
-      prix: p.prix,
+      prix: enPack ? (p.packPrix as number) : p.prix,
       icone: p.icone,
       image: p.images?.length ? photoUrl(p.images[0]) : undefined,
+      variante: enPack ? (p.packNbPieces ? `Pack de ${p.packNbPieces}` : 'Pack') : undefined,
       estDocument: p.domaine === 'documents',
       produitId: p.id,
       type: p.type,
@@ -587,6 +635,86 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
     this.router.navigate(['/produit', p.id]);
   }
 
+  // ── Édition rapide (admin connecté uniquement) ──────────────────────────────
+  // Menu ⋮ sur chaque carte quand un admin est connecté : bascule En stock / Hors stock
+  // sans quitter la Boutique, ou ouvre la fiche complète dans Admin > Produits.
+
+  /** id (hash) du produit dont le menu ⋮ est ouvert — un seul à la fois. */
+  menuAdminProduitId: number | null = null;
+  /** id en cours de bascule de disponibilité (spinner / anti double-clic). */
+  majDisponibiliteId: number | null = null;
+
+  get estAdmin(): boolean {
+    return this.authService.isAdmin;
+  }
+
+  /** ⋮ réservé aux produits éditables via Admin > Produits (catalogue `Produit`, donc la vue
+   *  Fournitures — les documents ont un autre écran d'admin). */
+  peutEditerProduit(p: Produit): boolean {
+    return this.estAdmin && p.domaine === 'fournitures' && !!p.mongoId;
+  }
+
+  basculerMenuAdmin(p: Produit, event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+    this.menuAdminProduitId = this.menuAdminProduitId === p.id ? null : p.id;
+  }
+
+  @HostListener('document:click')
+  fermerMenuAdmin(): void {
+    this.menuAdminProduitId = null;
+  }
+
+  /** Ouvre la fiche complète du produit dans Admin > Produits (l'écran pré-filtre la liste sur
+   *  le titre et ouvre l'édition à l'arrivée, voir produits.component.ts#ngOnInit). */
+  modifierProduitAdmin(p: Produit, event: Event): void {
+    event.stopPropagation();
+    this.menuAdminProduitId = null;
+    this.router.navigate(['/admin/produits'], { state: { editerId: p.mongoId, editerRecherche: p.titre } });
+  }
+
+  /** Bascule En stock / Hors stock directement depuis la carte. Renvoie tout l'état courant du
+   *  produit (reconstruit en ProduitForm) avec `disponible` inversé — sans toucher image/galerie
+   *  (aucun fichier ni `imagesExistantes` transmis, voir admin-produits.service.ts#versFormData). */
+  basculerDisponibilite(p: Produit, event: Event): void {
+    event.stopPropagation();
+    if (this.majDisponibiliteId !== null) return;
+    const cible = !(p.disponible !== false);
+    const form: ProduitForm = {
+      titre: p.titre,
+      description: p.description || '',
+      categorie: p.categorie || '',
+      sousCategorie: p.sousCategorie || '',
+      type: p.type || '',
+      prix: p.prix,
+      stock: p.stock ?? 0,
+      sku: p.sku || '',
+      marque: p.marque || '',
+      codeBarres: p.codeBarres || '',
+      ancienPrix: p.ancienPrix ?? null,
+      badge: p.badge || '',
+      nouveaute: !!p.nouveaute,
+      populaire: !!p.populaire,
+      disponible: cible,
+      couleurs: (p.couleurs || []).map(c => ({ ...c })),
+      formats: (p.formats || []).map(f => ({ ...f }))
+    };
+    this.majDisponibiliteId = p.id;
+    this.menuAdminProduitId = null;
+    this.adminProduitsService.update(p.mongoId, form).subscribe({
+      next: event => {
+        if (event.type === HttpEventType.Response) {
+          p.disponible = cible;
+          this.majDisponibiliteId = null;
+        }
+      },
+      error: () => {
+        this.majDisponibiliteId = null;
+        alert("La mise à jour de la disponibilité a échoué.");
+      }
+    });
+  }
+
   // ── Hero banner ──
 
   private demarrerHeroAutoplay(): void {
@@ -623,15 +751,10 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
       // résiduel.
       this.recherche = q || '';
       this.triActif = tri || 'defaut';
-      // `domaine` (venant des liens du Header) reste 'documents'/'fournitures' — la vue Jeux/
-      // Soutenance/Livre-dans-Documents s'en déduit via `categorie`/`sousCategorie`, même logique
-      // que vueDeProduit() ci-dessus (estProduitCategorieLivre) mais appliquée aux query params
-      // plutôt qu'à un Produit.
+      // `domaine` (venant des liens du Header) vaut directement 'documents'/'fournitures' — la
+      // vue reflète ce champ tel quel, `categorie`/`sousCategorie` ne servent qu'à filtrer.
       if (domaine === 'documents' || domaine === 'fournitures') {
-        if (domaine === 'documents' || estCategorieLivre(categorie) || estCategorieLivre(sousCategorie)) this.vueActive = 'documents';
-        else if (estCategorieJeux(categorie)) this.vueActive = 'jeux';
-        else if (estCategorieSoutenance(categorie)) this.vueActive = 'soutenance';
-        else this.vueActive = 'fournitures';
+        this.vueActive = domaine;
       }
       this.categorieActive = categorie || 'Tous';
       this.sousCategorieActive = sousCategorie || '';
