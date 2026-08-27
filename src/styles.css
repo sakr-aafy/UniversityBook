@@ -360,4 +360,6 @@ input::placeholder { color: #9AA0A8; }
     left: 0;
     width: 100%;
   }
+  /* Éléments internes à .ub-print-area à ne pas imprimer (boutons, alertes d'action…). */
+  body.ub-printing .ub-print-area .ub-no-print { display: none !important; }
 }

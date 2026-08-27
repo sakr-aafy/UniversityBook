@@ -59,6 +59,18 @@ export interface Facture {
 
 export type ModePaiementFacture = 'points' | 'd17' | 'carte';
 
+export interface EntrepriseInfos {
+  nomEntreprise: string;
+  logo: string;
+  adresse: string;
+  telephone: string;
+  matriculeFiscal: string;
+  nomSignataire: string;
+  signature: string;
+  cachet: string;
+  timbreFiscal: number;
+}
+
 export interface CreditEntry {
   date: string;
   type: 'credit' | 'paiement' | 'conversion';
@@ -113,6 +125,11 @@ export class MesAchatsService {
 
   maCarteFidelite(): Observable<{ carte: CarteFidelite | null }> {
     return this.http.get<{ carte: CarteFidelite | null }>(`${this.apiUrl}/fidelite`);
+  }
+
+  /** Coordonnées + signature / cachet de l'entreprise (Paramètres caisse) pour l'impression des factures. */
+  entreprise(): Observable<EntrepriseInfos> {
+    return this.http.get<EntrepriseInfos>(`${this.apiUrl}/entreprise`);
   }
 
   /** Génère une facture à partir d'une sélection de tickets (chacun facturable une seule fois). */

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MesAchatsService, Ticket, Facture, CarteFidelite, ModePaiementFacture } from '../../services/mes-achats.service';
+import { MesAchatsService, Ticket, Facture, CarteFidelite, ModePaiementFacture, EntrepriseInfos } from '../../services/mes-achats.service';
 
 type Onglet = 'tickets' | 'factures' | 'fidelite';
 
@@ -29,6 +29,7 @@ export class TicketsFacturesComponent implements OnInit {
   tickets: Ticket[] = [];
   factures: Facture[] = [];
   carte: CarteFidelite | null = null;
+  entreprise: EntrepriseInfos | null = null;
   chargement: boolean = true;
   erreur: string = '';
 
@@ -44,6 +45,11 @@ export class TicketsFacturesComponent implements OnInit {
 
   ngOnInit(): void {
     this.charger();
+    // Signature / cachet / coordonnées entreprise pour l'impression des factures — best-effort.
+    this.mesAchatsService.entreprise().subscribe({
+      next: e => (this.entreprise = e),
+      error: () => { /* pas de signature/cachet si indisponible */ }
+    });
   }
 
   changerOnglet(onglet: Onglet): void {

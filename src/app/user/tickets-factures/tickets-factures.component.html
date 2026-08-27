@@ -314,7 +314,7 @@
           <i class="fa-solid {{ statutFactureInfo(factureSelectionnee.statut).icone }} me-1"></i>{{ statutFactureInfo(factureSelectionnee.statut).label }}
         </span>
       </div>
-      <button class="btn btn-sm btn-outline-dark-ub" (click)="fermerFacture()" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+      <button class="btn btn-sm btn-outline-dark-ub ub-no-print" (click)="fermerFacture()" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
     </div>
 
     <div class="row g-3 mb-4">
@@ -396,18 +396,28 @@
     </div>
 
     <!-- ── Facture réglée ── -->
-    <div class="alert alert-success py-2 px-3" *ngIf="factureSelectionnee.statut === 'payee'">
+    <div class="alert alert-success py-2 px-3 ub-no-print" *ngIf="factureSelectionnee.statut === 'payee'">
       <i class="fa-solid fa-circle-check me-1"></i>Réglée le {{ factureSelectionnee.datePaiement }}
       <span *ngIf="factureSelectionnee.modePaiement"> · {{ factureSelectionnee.modePaiement }}</span>
     </div>
 
+    <!-- ── Cachet & signature (Paramètres > Informations Entreprise) — imprimés avec la facture ── -->
+    <div class="ub-fac-sign" *ngIf="entreprise && (entreprise.cachet || entreprise.signature || entreprise.nomSignataire)">
+      <span class="ub-fac-sign-title">Cachet et signature</span>
+      <div class="ub-fac-sign-media">
+        <img *ngIf="entreprise.cachet" [src]="entreprise.cachet" alt="Cachet" class="ub-fac-cachet">
+        <img *ngIf="entreprise.signature" [src]="entreprise.signature" alt="Signature" class="ub-fac-signature">
+      </div>
+      <span class="ub-fac-signataire" *ngIf="entreprise.nomSignataire">{{ entreprise.nomSignataire }}</span>
+    </div>
+
     <!-- Impression : possible seulement une fois la facture réglée (timbre fiscal acquitté). -->
-    <button class="btn btn-outline-dark-ub" (click)="imprimer()"
+    <button class="btn btn-outline-dark-ub ub-no-print" (click)="imprimer()"
             [disabled]="factureSelectionnee.statut !== 'payee'"
             [title]="factureSelectionnee.statut !== 'payee' ? 'Réglez la facture pour pouvoir l\'imprimer' : ''">
       <i class="fa-solid fa-print me-2"></i>Imprimer
     </button>
-    <span class="small text-secondary d-block mt-2" *ngIf="factureSelectionnee.statut !== 'payee'">
+    <span class="small text-secondary d-block mt-2 ub-no-print" *ngIf="factureSelectionnee.statut !== 'payee'">
       <i class="fa-solid fa-lock me-1"></i>L'impression sera disponible après le règlement de la facture.
     </span>
   </div>

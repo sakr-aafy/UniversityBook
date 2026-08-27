@@ -256,3 +256,28 @@
 @media print {
   .ub-fac-pay { display: none !important; }
 }
+
+/* ── Cachet & signature sur la facture (imprimés) ── */
+.ub-fac-sign {
+  margin-top: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.ub-fac-sign-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  color: #8A929C;
+}
+.ub-fac-sign-media {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  min-height: 60px;
+}
+.ub-fac-cachet { max-height: 110px; max-width: 150px; object-fit: contain; opacity: .9; }
+.ub-fac-signature { max-height: 70px; max-width: 170px; object-fit: contain; }
+.ub-fac-signataire { font-weight: 700; font-size: 12.5px; color: #1B2430; }
