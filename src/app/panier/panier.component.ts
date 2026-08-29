@@ -34,6 +34,11 @@ export class PanierComponent implements OnInit, OnDestroy {
   chargementCommande = false;
   erreurCommande      = '';
   montantCommande    = 0;
+  /** Points fidélité que rapporterait le panier — estimé à l'étape Paiement (avant validation). */
+  pointsEstimes      = 0;
+  /** Points réellement crédités sur la carte fidélité du client (renvoyés par le serveur après
+   *  l'enregistrement) — affichés sur l'écran de confirmation. */
+  pointsGagnes       = 0;
   /** Capturé avant le vidage du panier : affiche un raccourci « Mes documents » si pertinent. */
   derniereCommandeContientDocuments = false;
   /** Capturé avant le vidage du panier : affiché sur l'écran de confirmation pour un achat sans compte. */
@@ -222,6 +227,8 @@ export class PanierComponent implements OnInit, OnDestroy {
     this.erreurCommande     = '';
     this.carteFlipped       = false;
     this.delegations        = [];
+    this.pointsGagnes       = 0;
+    this.chargerEstimationPoints();
     this.checkoutForm.reset({ typeLivraison: 'domicile', moyenPaiement: 'livraison' });
 
     // Wizard + carte "Gagnez du temps" : repartent toujours de l'étape Livraison à
@@ -309,6 +316,25 @@ export class PanierComponent implements OnInit, OnDestroy {
   closeCheckout(): void {
     this.isCheckoutOpen = false;
     document.body.classList.remove('ub-no-scroll');
+  }
+
+  /** Items de commande envoyés au serveur (mêmes champs pour l'estimation de points et la création). */
+  private itemsPayload() {
+    return this.items.map(i => ({
+      titre: i.titre, prix: i.prix, quantite: i.quantite, image: i.icone,
+      estDocument: i.estDocument, produitId: i.produitId, categorie: i.categorie,
+      type: i.type, auteur: i.auteur, variante: i.variante
+    }));
+  }
+
+  /** Interroge le serveur (source de vérité : pointFidelite des fiches ProduitCaisse) pour savoir
+   *  combien de points le panier rapportera. Best-effort : un échec laisse simplement 0. */
+  private chargerEstimationPoints(): void {
+    if (this.items.length === 0) { this.pointsEstimes = 0; return; }
+    this.ordersService.estimationPoints(this.itemsPayload()).subscribe({
+      next: res => (this.pointsEstimes = res.points || 0),
+      error: () => (this.pointsEstimes = 0)
+    });
   }
 
   /* ── Carte "Gagnez du temps" : compte / connexion sociale ──────────────────── */
@@ -429,6 +455,7 @@ export class PanierComponent implements OnInit, OnDestroy {
       return;
     }
     this.etapeCheckout = 'paiement';
+    this.chargerEstimationPoints();
     document.querySelector('.ck-body')?.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -607,11 +634,7 @@ export class PanierComponent implements OnInit, OnDestroy {
     this.chargementCommande = true;
     this.ordersService
       .create({
-        items: this.items.map(i => ({
-          titre: i.titre, prix: i.prix, quantite: i.quantite, image: i.icone,
-          estDocument: i.estDocument, produitId: i.produitId, categorie: i.categorie,
-          type: i.type, auteur: i.auteur, variante: i.variante
-        })),
+        items: this.itemsPayload(),
         total: this.total,
         paiement: this.moyenPaiementLabel,
         adresseLivraison,
@@ -623,9 +646,10 @@ export class PanierComponent implements OnInit, OnDestroy {
         }
       })
       .subscribe({
-        next: () => {
+        next: res => {
           this.chargementCommande = false;
           this.montantCommande = this.total;
+          this.pointsGagnes = res.pointsFidelite || 0;
           this.orderConfirmed = true;
           this.cartService.vider();
         },

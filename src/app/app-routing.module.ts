@@ -18,6 +18,7 @@ import { PanierComponent as UserPanierComponent } from './user/panier/panier.com
 import { PaiementsComponent } from './user/paiements/paiements.component';
 import { ProfilComponent } from './user/profil/profil.component';
 import { TicketsFacturesComponent } from './user/tickets-factures/tickets-factures.component';
+import { CarteFideliteComponent } from './user/carte-fidelite/carte-fidelite.component';
 
 import { AdminLayoutComponent } from './admin/admin-layout/admin-layout.component';
 import { DashbordAdminComponent } from './admin/dashbord-admin/dashbord-admin.component';
@@ -45,6 +46,7 @@ const routes: Routes = [
       { path: 'commandes', component: CommandesComponent },
       { path: 'documents', component: DocumentsComponent },
       { path: 'tickets-factures', component: TicketsFacturesComponent },
+      { path: 'carte-fidelite', component: CarteFideliteComponent },
       { path: 'favoris', component: FavorisComponent },
       { path: 'panier', component: UserPanierComponent },
       { path: 'paiements', component: PaiementsComponent },

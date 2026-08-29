@@ -5,7 +5,7 @@ import { Subscription } from 'rxjs';
 import { CartService } from '../services/cart.service';
 import { CompareService } from '../services/compare.service';
 import { BoutiqueFavoritesService } from '../services/boutique-favorites.service';
-import { CatalogueService, Produit, estProduitDocument } from '../services/catalogue.service';
+import { CatalogueService, Produit, estProduitDocument, estCategorieJeux, estCategorieSoutenance } from '../services/catalogue.service';
 import { DocumentsService } from '../services/documents.service';
 import { AuthService } from '../services/auth.service';
 import { AdminProduitsService, ProduitForm } from '../services/admin-produits.service';
@@ -84,6 +84,10 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
   filtreGratuit: boolean = false;
   filtrePayant: boolean = false;
   filtresOuverts: boolean = false;
+  /** Activé par les liens « Documents Payants » / « Documents Gratuits » du Header (query params
+   *  `payant=1` / `gratuit=1` sur `domaine=documents`) : restreint la liste aux seuls documents
+   *  publiés depuis la page caisse « Fournisseurs » (Produit.origineCaisse). */
+  documentsSourceCaisse: boolean = false;
 
   // ── Filtres avancés (prix / disponibilité / promotions) ──
   prixMin: number | null = null;
@@ -142,7 +146,7 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
     const set = new Set<string>();
     this.produits
       .filter(p => this.vueDeProduit(p) === this.vueActive
-        && p.categorie === this.categorieActive && p.sousCategorie)
+        && this.correspondCategorie(p, this.categorieActive) && p.sousCategorie)
       .forEach(p => set.add(p.sousCategorie as string));
     return [...set].sort((a, b) => this.comparerAlpha(a, b));
   }
@@ -154,7 +158,7 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
     const set = new Set<string>();
     this.produits
       .filter(p => this.vueDeProduit(p) === this.vueActive
-        && (this.categorieActive === 'Tous' || p.categorie === this.categorieActive)
+        && (this.categorieActive === 'Tous' || this.correspondCategorie(p, this.categorieActive))
         && p.sousCategorie === this.sousCategorieActive && p.sousSousCategorie)
       .forEach(p => set.add(p.sousSousCategorie as string));
     return [...set].sort((a, b) => this.comparerAlpha(a, b));
@@ -187,6 +191,20 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
     return (a || '').localeCompare(b || '', 'fr', { sensitivity: 'base', numeric: true });
   }
 
+  /** Un produit relève-t-il de la catégorie sélectionnée ? Comparaison tolérante (casse / accents
+   *  / espaces) et, pour les catégories transverses "Soutenance" / "Jeux" — texte libre côté
+   *  caisse, jamais garanti d'être exactement "Soutenance"/"Jeux" ("Soutenances", "Jeux
+   *  éducatifs"…) — correspondance par mot-clé, mêmes règles que le Header et la page d'accueil
+   *  (voir estCategorieSoutenance / estCategorieJeux dans catalogue.service.ts). Sans cela, le
+   *  lien "Soutenance" du Header (categorie=Soutenance) ne renvoyait aucun produit dès que la
+   *  catégorie caisse s'en écartait d'un caractère. */
+  private correspondCategorie(p: Produit, categorie: string): boolean {
+    const cible = (categorie || '').trim().toLowerCase();
+    if (cible === 'soutenance') return estCategorieSoutenance(p.categorie);
+    if (cible === 'jeux' || cible === 'jeu') return estCategorieJeux(p.categorie);
+    return (p.categorie || '').localeCompare(categorie || '', 'fr', { sensitivity: 'base' }) === 0;
+  }
+
   get produits(): Produit[] {
     return this.catalogueService.produits;
   }
@@ -195,7 +213,7 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
     let res = this.produits.filter(p => this.vueDeProduit(p) === this.vueActive);
 
     if (this.categorieActive !== 'Tous') {
-      res = res.filter(p => p.categorie === this.categorieActive);
+      res = res.filter(p => this.correspondCategorie(p, this.categorieActive));
     }
     if (this.sousCategorieActive) {
       res = res.filter(p => p.sousCategorie === this.sousCategorieActive);
@@ -211,6 +229,11 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
     }
     if (this.filtrePayant) {
       res = res.filter(p => !p.gratuit);
+    }
+    // Vues « Documents Payants » / « Documents Gratuits » du Header : n'afficher que les
+    // documents provenant de la page caisse « Fournisseurs » (Documents numériques).
+    if (this.documentsSourceCaisse) {
+      res = res.filter(p => p.origineCaisse);
     }
     if (this.prixMin !== null) {
       res = res.filter(p => p.prix >= (this.prixMin as number));
@@ -262,6 +285,7 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
     this.typeActif = 'Tous';
     this.filtreGratuit = false;
     this.filtrePayant = false;
+    this.documentsSourceCaisse = false;
     // Les filtres avancés (prix / disponibilité / promotions) portent sur un catalogue au
     // barème différent d'un domaine à l'autre : les garder actifs en changeant d'onglet
     // masquait tous les résultats sans que la cause soit visible.
@@ -449,6 +473,7 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
     this.triActif = 'defaut';
     this.filtreGratuit = false;
     this.filtrePayant = false;
+    this.documentsSourceCaisse = false;
     this.prixMin = null;
     this.prixMax = null;
     this.filtreDisponibilite = 'tous';
@@ -761,6 +786,10 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
       this.sousSousCategorieActive = sousSousCategorie || '';
       this.filtreGratuit = gratuit === '1';
       this.filtrePayant = payant === '1';
+      // Les liens « Documents Payants » / « Documents Gratuits » du Header sont les seuls à
+      // porter payant=1 / gratuit=1 sur domaine=documents : dans ce cas on limite l'affichage
+      // aux documents publiés depuis la page caisse « Fournisseurs ».
+      this.documentsSourceCaisse = domaine === 'documents' && (payant === '1' || gratuit === '1');
     });
 
     this.panierSub = this.cartService.ouvert$.subscribe(ouvert => {

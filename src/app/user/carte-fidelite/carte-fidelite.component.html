@@ -1,0 +1,125 @@
+<div class="p-4 p-lg-5">
+  <h1 class="font-spectral fw-bold mb-2" style="font-size:24px;">Carte fidélité &amp; crédit</h1>
+  <p class="mb-4" style="color:#6B7480;font-size:14.5px;">Vos points, votre crédit et leur historique.</p>
+
+  <div class="d-flex justify-content-center py-5" *ngIf="chargement">
+    <i class="fa-solid fa-spinner fa-spin fa-2x" style="color:var(--accent)"></i>
+  </div>
+
+  <div class="alert alert-danger" *ngIf="erreur && !chargement">{{ erreur }}</div>
+
+  <ng-container *ngIf="!chargement && !erreur">
+
+    <div class="ub-tk-empty" *ngIf="!carte">
+      <i class="fa-solid fa-id-card"></i>
+      <p class="mb-0">Aucune carte fidélité associée à votre compte.</p>
+      <p class="small text-secondary mb-0">Demandez votre carte en magasin — vos points et votre crédit apparaîtront ici.</p>
+    </div>
+
+    <ng-container *ngIf="carte">
+      <!-- Carte -->
+      <div class="ub-fid-card">
+        <div class="ub-fid-card-head">
+          <span><i class="fa-solid fa-award me-2"></i>Carte fidélité</span>
+          <span class="ub-fid-statut" [class.inactif]="carte.statut !== 'actif'">{{ carte.statut === 'actif' ? 'Active' : carte.statut }}</span>
+        </div>
+        <div class="ub-fid-titulaire">{{ carte.titulaire }}</div>
+        <div class="ub-fid-num">N° {{ carte.numeroCarte }}</div>
+        <div class="ub-fid-foot">
+          <span><i class="fa-solid fa-barcode me-1"></i>{{ carte.codeBarres }}</span>
+          <span *ngIf="carte.depuis">Depuis le {{ carte.depuis | date:'dd/MM/yyyy' }}</span>
+        </div>
+      </div>
+
+      <!-- Chiffres clés -->
+      <div class="ub-fid-stats">
+        <div class="ub-fid-stat">
+          <div class="ub-fid-stat-ico" style="background:#FEF3C7;color:#B45309;"><i class="fa-solid fa-star"></i></div>
+          <div>
+            <div class="ub-fid-stat-val">{{ carte.points }} pts</div>
+            <div class="ub-fid-stat-lbl">≈ {{ carte.pointsValeurDT | number:'1.3-3' }} د.ت</div>
+          </div>
+        </div>
+        <div class="ub-fid-stat">
+          <div class="ub-fid-stat-ico" style="background:#DCFCE7;color:#16A34A;"><i class="fa-solid fa-wallet"></i></div>
+          <div>
+            <div class="ub-fid-stat-val">{{ carte.credit | number:'1.3-3' }} د.ت</div>
+            <div class="ub-fid-stat-lbl">Crédit disponible</div>
+          </div>
+        </div>
+        <div class="ub-fid-stat">
+          <div class="ub-fid-stat-ico" style="background:#EEF2FF;color:#4338CA;"><i class="fa-solid fa-coins"></i></div>
+          <div>
+            <div class="ub-fid-stat-val">{{ soldePointsPlusCredit | number:'1.3-3' }} د.ت</div>
+            <div class="ub-fid-stat-lbl">Avantage total (points + crédit)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coordonnées de la fiche client (page Clients caisse) -->
+      <div class="ub-fid-infos">
+        <div class="ub-fid-info" *ngIf="carte.tel"><span>Téléphone</span><strong>{{ carte.tel }}</strong></div>
+        <div class="ub-fid-info" *ngIf="carte.email"><span>Email</span><strong>{{ carte.email }}</strong></div>
+        <div class="ub-fid-info" *ngIf="carte.adresse"><span>Adresse</span><strong>{{ carte.adresse }}</strong></div>
+        <div class="ub-fid-info" *ngIf="carte.cin"><span>CIN</span><strong>{{ carte.cin }}</strong></div>
+        <div class="ub-fid-info" *ngIf="carte.matriculeFiscal"><span>Matricule fiscal</span><strong>{{ carte.matriculeFiscal }}</strong></div>
+        <div class="ub-fid-info" *ngIf="carte.dernierPassage"><span>Dernier passage en magasin</span><strong>{{ carte.dernierPassage | date:'dd/MM/yyyy' }}</strong></div>
+      </div>
+
+      <!-- Historique crédit -->
+      <p class="small text-secondary fw-semibold mt-4 mb-2">Mouvements de crédit</p>
+      <div class="ub-tk-empty ub-fid-mini-empty" *ngIf="carte.creditHistory.length === 0">
+        <p class="small mb-0 text-secondary">Aucun mouvement de crédit.</p>
+      </div>
+      <div class="table-responsive" *ngIf="carte.creditHistory.length > 0">
+        <table class="table align-middle">
+          <thead>
+            <tr class="text-secondary small">
+              <th>Date</th>
+              <th>Opération</th>
+              <th class="text-end">Montant</th>
+              <th class="text-end">Solde après</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let e of carte.creditHistory">
+              <td>{{ e.date }}</td>
+              <td>
+                {{ libelleCredit(e.type) }}
+                <span class="d-block small text-secondary" *ngIf="e.note">{{ e.note }}</span>
+              </td>
+              <td class="text-end fw-semibold" [style.color]="e.type === 'paiement' ? '#DC2626' : '#16A34A'">
+                {{ e.type === 'paiement' ? '−' : '+' }} {{ (e.montant < 0 ? -e.montant : e.montant) | number:'1.3-3' }} د.ت
+              </td>
+              <td class="text-end">{{ e.soldeApres | number:'1.3-3' }} د.ت</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Conversions de points -->
+      <ng-container *ngIf="carte.conversions.length > 0">
+        <p class="small text-secondary fw-semibold mt-4 mb-2">Conversions de points en crédit</p>
+        <div class="table-responsive">
+          <table class="table align-middle">
+            <thead>
+              <tr class="text-secondary small">
+                <th>Date</th>
+                <th class="text-end">Points convertis</th>
+                <th class="text-end">Crédit obtenu</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let c of carte.conversions">
+                <td>{{ c.date }} {{ c.heure }}</td>
+                <td class="text-end">{{ c.points }} pts</td>
+                <td class="text-end fw-semibold">+ {{ c.montantCredit | number:'1.3-3' }} د.ت</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
+    </ng-container>
+
+  </ng-container>
+</div>

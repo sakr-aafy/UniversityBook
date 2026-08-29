@@ -209,6 +209,10 @@
       <p class="fw-semibold" style="color:var(--accent);font-size:15px;">
         Montant total : {{ formatPrix(montantCommande) }}
       </p>
+      <p *ngIf="pointsGagnes > 0" class="ck-points-gagnes">
+        <i class="fa-solid fa-star me-2"></i>
+        + {{ pointsGagnes }} point{{ pointsGagnes > 1 ? 's' : '' }} fidélité crédité{{ pointsGagnes > 1 ? 's' : '' }} sur votre carte
+      </p>
       <p *ngIf="estConnecte" class="small" style="color:#6B7480;">
         Retrouvez le suivi de cette commande dans
         <a routerLink="/user/commandes" (click)="closeCheckout()" class="fw-semibold text-decoration-none" style="color:var(--accent);">
@@ -691,6 +695,10 @@
           <div class="ck-summary-ligne ck-summary-total">
             <span>Total TTC</span>
             <span>{{ formatPrix(total) }}</span>
+          </div>
+          <div class="ck-summary-ligne ck-summary-points" *ngIf="pointsEstimes > 0">
+            <span><i class="fa-solid fa-star me-2"></i>Points fidélité gagnés</span>
+            <span class="fw-semibold">+ {{ pointsEstimes }} pt{{ pointsEstimes > 1 ? 's' : '' }}</span>
           </div>
           <div class="ck-summary-ligne">
             <span>Mode de paiement</span>

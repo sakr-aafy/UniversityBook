@@ -877,6 +877,22 @@
   font-family: 'Spectral', serif;
   font-size: 19px;
 }
+.ck-summary-points span { color: #B45309; }
+.ck-summary-points span:first-child { font-weight: 600; }
+
+/* Points fidélité crédités — écran de confirmation */
+.ck-points-gagnes {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin: 4px auto 0;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: #FEF3C7;
+  color: #B45309;
+  font-size: 14px;
+  font-weight: 700;
+}
 
 /* ══════════════════════════════════════════════════════════════
    CARTE BANCAIRE 3D INTERACTIVE

@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CartService } from '../services/cart.service';
 import { CompareService } from '../services/compare.service';
-import { CatalogueService, Domaine, Produit, estCategorieJeux, estCategorieSoutenance } from '../services/catalogue.service';
+import { CatalogueService, Domaine, Produit, estProduitDocument, estCategorieJeux, estCategorieSoutenance } from '../services/catalogue.service';
 
 interface HeroGalleryImage {
   /** Emplacement attendu pour une future photo grand format. */
@@ -32,11 +32,9 @@ interface CategorieSection {
   carouselTitre: string;
   /** queryParams du lien "carte" / "Voir tout" — remplace le simple {domaine: key} par défaut pour
    *  les sous-sections (Documents Payants/Gratuits, Soutenance, Jeux), voir header.component.html
-   *  pour les mêmes paramètres attendus par boutique.component.ts. */
+   *  pour les mêmes paramètres attendus par boutique.component.ts. C'est aussi la seule source du
+   *  filtrage du carrousel (voir produitsDe) : ce qu'il montre = ce que "Voir tout" ouvre. */
   queryParams: Record<string, string>;
-  /** Filtre additionnel appliqué en plus de `domaine === key` — permet à plusieurs sections de
-   *  puiser dans le même domaine (ex: Documents Payants/Gratuits partagent domaine='documents'). */
-  filtre?: (p: Produit) => boolean;
 }
 
 interface Avantage {
@@ -131,8 +129,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       ctaLabel: 'Voir les documents payants',
       lien: '/boutique',
       carouselTitre: 'Documents payants les plus demandés',
-      queryParams: { domaine: 'documents', payant: '1' },
-      filtre: p => !p.gratuit
+      queryParams: { domaine: 'documents', payant: '1' }
     },
     {
       key: 'documents',
@@ -145,8 +142,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       ctaLabel: 'Voir les documents gratuits',
       lien: '/boutique',
       carouselTitre: 'Documents gratuits à télécharger',
-      queryParams: { domaine: 'documents', gratuit: '1' },
-      filtre: p => !!p.gratuit
+      queryParams: { domaine: 'documents', gratuit: '1' }
     },
     {
       key: 'fournitures',
@@ -159,8 +155,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       ctaLabel: 'Voir la soutenance',
       lien: '/boutique',
       carouselTitre: 'Essentiels pour votre soutenance',
-      queryParams: { domaine: 'fournitures', categorie: 'Soutenance' },
-      filtre: p => estCategorieSoutenance(p.categorie)
+      queryParams: { domaine: 'fournitures', categorie: 'Soutenance' }
     },
     {
       key: 'fournitures',
@@ -173,19 +168,76 @@ export class HomeComponent implements OnInit, OnDestroy {
       ctaLabel: 'Voir les jeux',
       lien: '/boutique',
       carouselTitre: 'Jeux les plus populaires',
-      queryParams: { domaine: 'fournitures', categorie: 'Jeux' },
-      filtre: p => estCategorieJeux(p.categorie)
+      queryParams: { domaine: 'fournitures', categorie: 'Jeux' }
     }
   ];
 
-  /** Produits réels affichés dans le carrousel d'une section (remplace les listes codées en dur
-   * précédentes, ids 101-206 factices non reliés au catalogue) — les 6 premiers du domaine
-   * correspondant (et du filtre additionnel de la section s'il y en a un, voir CategorieSection),
-   * nouveautés/best-sellers d'abord, alimentés par CatalogueService (donc par tout produit caisse
-   * publié via "Ajouter sur Site Internet", voir syncProduitSite.js côté backend). */
+  /** Même classement d'une vue Boutique qu'un produit du catalogue — repris tel quel de
+   *  boutique.component.ts#vueDeProduit pour que le carrousel d'accueil montre exactement ce que
+   *  le lien "Voir tout" (mêmes queryParams) ouvrira. */
+  private vueDeProduit(p: Produit): Domaine {
+    return (p.domaine === 'documents' || estProduitDocument(p)) ? 'documents' : 'fournitures';
+  }
+
+  /** Un produit relève-t-il de la catégorie d'une section ? Comparaison tolérante (casse /
+   *  accents / espaces) et, pour "Soutenance" / "Jeux" — texte libre côté caisse, jamais garanti
+   *  d'être exactement "Soutenance"/"Jeux" ("Soutenances", "Jeux éducatifs"…) — correspondance
+   *  par mot-clé, mêmes règles que boutique.component.ts#correspondCategorie. Sans cela le
+   *  carrousel Soutenance restait vide dès que la catégorie caisse s'écartait d'un caractère. */
+  private correspondCategorie(p: Produit, categorie: string): boolean {
+    const cible = (categorie || '').trim().toLowerCase();
+    if (cible === 'soutenance') return estCategorieSoutenance(p.categorie);
+    if (cible === 'jeux' || cible === 'jeu') return estCategorieJeux(p.categorie);
+    return (p.categorie || '').localeCompare(categorie || '', 'fr', { sensitivity: 'base' }) === 0;
+  }
+
+  /** Produits réels affichés dans le carrousel d'une section : appliqués les MÊMES filtres que
+   *  boutique.component.ts#produitsFiltres à partir des `queryParams` de la section (domaine,
+   *  categorie / sousCategorie / sousSousCategorie, payant / gratuit, + restriction aux
+   *  documents publiés depuis la caisse pour Documents Payants/Gratuits). Nouveautés / best-sellers
+   *  d'abord, 6 max. Alimenté par CatalogueService (tout produit caisse publié via "Ajouter sur
+   *  Site Internet", voir syncProduitSite.js côté backend). */
   produitsDe(cat: CategorieSection): Produit[] {
+    const qp = cat.queryParams;
+    const vue: Domaine = (qp['domaine'] === 'documents' || qp['domaine'] === 'fournitures') ? qp['domaine'] : cat.key;
+    const categorie = qp['categorie'] || '';
+    const sousCategorie = qp['sousCategorie'] || '';
+    const sousSousCategorie = qp['sousSousCategorie'] || '';
+    const gratuitSeul = qp['gratuit'] === '1';
+    const payantSeul = qp['payant'] === '1';
+    // Voir boutique.component.ts : les vues "Documents Payants/Gratuits" du Header ne montrent que
+    // les documents publiés depuis la page caisse "Fournisseurs" (Produit.origineCaisse).
+    const documentsSourceCaisse = vue === 'documents' && (payantSeul || gratuitSeul);
+
+    // Sections "généralistes" (uniquement un domaine, sans catégorie ni payant/gratuit —
+    // "Fournitures scolaires" et "Documents universitaires").
+    const sectionGeneraliste = !categorie && !sousCategorie && !sousSousCategorie && !payantSeul && !gratuitSeul;
+    const dansLaVue = (p: Produit) => {
+      // Sections fines : alignement exact sur "Voir tout" (vueDeProduit).
+      if (!sectionGeneraliste) return this.vueDeProduit(p) === vue;
+      // "Documents universitaires" : domaine documents + les ouvrages "Livre"/"Droit" saisis en
+      // fournitures mais classés comme documents (estProduitDocument, via vueDeProduit).
+      if (vue === 'documents') return this.vueDeProduit(p) === 'documents';
+      // "Fournitures scolaires" : appartenance STRICTE au domaine, jamais un ouvrage "Livre".
+      return p.domaine === 'fournitures';
+    };
+
+    // La section généraliste "Fournitures scolaires" ne reprend pas ce qui a déjà sa propre
+    // section dédiée plus bas (Soutenance, Jeux) ni les ouvrages classés comme documents
+    // (branche "Livre"/"Droit") — ces produits n'apparaissent que dans leur carrousel spécifique.
+    const estSousSectionDediee = (p: Produit) =>
+      sectionGeneraliste && vue === 'fournitures'
+      && (estProduitDocument(p) || estCategorieJeux(p.categorie) || estCategorieSoutenance(p.categorie));
+
     return this.catalogueService.produits
-      .filter(p => p.domaine === cat.key && (!cat.filtre || cat.filtre(p)))
+      .filter(dansLaVue)
+      .filter(p => !estSousSectionDediee(p))
+      .filter(p => !categorie || this.correspondCategorie(p, categorie))
+      .filter(p => !sousCategorie || p.sousCategorie === sousCategorie)
+      .filter(p => !sousSousCategorie || p.sousSousCategorie === sousSousCategorie)
+      .filter(p => !gratuitSeul || p.gratuit)
+      .filter(p => !payantSeul || !p.gratuit)
+      .filter(p => !documentsSourceCaisse || p.origineCaisse)
       .sort((a, b) => (+!!b.populaire - +!!a.populaire) || (+!!b.nouveaute - +!!a.nouveaute))
       .slice(0, 6);
   }

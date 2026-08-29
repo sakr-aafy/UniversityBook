@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { MesAchatsService, Ticket, Facture, CarteFidelite, ModePaiementFacture, EntrepriseInfos } from '../../services/mes-achats.service';
+import { MesAchatsService, Ticket, Facture, ModePaiementFacture, EntrepriseInfos } from '../../services/mes-achats.service';
 
-type Onglet = 'tickets' | 'factures' | 'fidelite';
+type Onglet = 'tickets' | 'factures';
 
 interface StatutTicketInfo { label: string; couleur: string; fond: string; icone: string; }
 interface StatutFactureInfo { label: string; couleur: string; fond: string; icone: string; }
@@ -28,7 +28,6 @@ export class TicketsFacturesComponent implements OnInit {
 
   tickets: Ticket[] = [];
   factures: Facture[] = [];
-  carte: CarteFidelite | null = null;
   entreprise: EntrepriseInfos | null = null;
   chargement: boolean = true;
   erreur: string = '';
@@ -75,34 +74,13 @@ export class TicketsFacturesComponent implements OnInit {
     this.mesAchatsService.mesFactures().subscribe({
       next: res => {
         this.factures = res.factures;
-        this.chargerCarte();
+        this.chargement = false;
       },
       error: () => {
         this.erreur = 'Impossible de charger vos achats en magasin pour le moment.';
         this.chargement = false;
       }
     });
-  }
-
-  /** Carte fidélité / crédit : optionnelle (l'utilisateur peut ne pas avoir de fiche client
-   *  caisse) — un échec ne bloque jamais l'affichage des tickets/factures. */
-  private chargerCarte(): void {
-    this.mesAchatsService.maCarteFidelite().subscribe({
-      next: res => { this.carte = res.carte; this.chargement = false; },
-      error: () => { this.carte = null; this.chargement = false; }
-    });
-  }
-
-  get soldePointsPlusCredit(): number {
-    if (!this.carte) return 0;
-    return this.carte.pointsValeurDT + this.carte.credit;
-  }
-
-  libelleCredit(type: string): string {
-    const m: Record<string, string> = {
-      credit: 'Crédit ajouté', paiement: 'Paiement / déduction', conversion: 'Conversion de points'
-    };
-    return m[type] || type;
   }
 
   statutTicketInfo(statut: string): StatutTicketInfo {
@@ -233,8 +211,6 @@ export class TicketsFacturesComponent implements OnInit {
         this.paiementMessage = res.pointsUtilises
           ? `Facture réglée — ${res.pointsUtilises} points utilisés (solde : ${res.pointsRestants} pts).`
           : 'Facture réglée.';
-        // Le solde de points a pu changer : on rafraîchit la carte.
-        this.mesAchatsService.maCarteFidelite().subscribe({ next: r => (this.carte = r.carte) });
       },
       error: err => {
         this.paiementEnCours = false;

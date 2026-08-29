@@ -319,8 +319,9 @@
           {{ p.badge }}
         </span>
         <span *ngIf="p.domaine === 'documents' && p.gratuit && p.badge !== 'Gratuit'" class="produit-badge badge-gratuit">Gratuit</span>
-        <span *ngIf="p.stock !== undefined && p.stock > 0 && p.stock <= 5" class="produit-badge badge-stock-faible">
-          Stock faible
+        <!-- Réservé à l'admin connecté : information de gestion interne, jamais montrée aux clients. -->
+        <span *ngIf="estAdmin && p.stock !== undefined && p.stock > 0 && p.stock <= 5" class="produit-badge badge-stock-faible">
+          Stock faible ({{ p.stock }})
         </span>
       </div>
 

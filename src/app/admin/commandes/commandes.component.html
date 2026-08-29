@@ -2,10 +2,10 @@
   <h1 class="font-spectral fw-bold mb-4" style="font-size:24px;">Commandes</h1>
 
   <div class="d-flex flex-wrap gap-2 mb-4">
-    <div class="input-group" style="max-width:280px;">
+    <div class="input-group" style="max-width:320px;">
       <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-magnifying-glass text-secondary"></i></span>
-      <input type="text" class="form-control border-start-0 ps-0" placeholder="N° de commande..."
-             [(ngModel)]="recherche" (keyup.enter)="rechercher()">
+      <input type="text" class="form-control border-start-0 ps-0" placeholder="N° de commande ou téléphone..."
+             [(ngModel)]="recherche" (ngModelChange)="onRechercheChange($event)" (keyup.enter)="rechercher()">
     </div>
     <button class="btn btn-outline-dark-ub btn-sm" (click)="rechercher()">Rechercher</button>
   </div>

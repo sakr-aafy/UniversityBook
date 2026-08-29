@@ -20,6 +20,9 @@
               "zone.js"
             ],
             "tsConfig": "tsconfig.app.json",
+            "allowedCommonJsDependencies": [
+              "lottie-web"
+            ],
             "assets": [
               "src/favicon.ico",
               "src/assets"

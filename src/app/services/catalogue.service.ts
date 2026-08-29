@@ -46,6 +46,10 @@ export interface Produit {
   /** Note moyenne (sur 5) et nombre d'avis, à titre indicatif — démonstration. */
   note?: number;
   nombreAvis?: number;
+  /** Vrai uniquement pour un document publié depuis la page caisse « Fournisseurs » (Documents
+   *  numériques) — voir backend/controllers/syncDocumentSite.js. Sert à restreindre les vues
+   *  « Documents Payants » / « Documents Gratuits » du Header à ces seuls documents. */
+  origineCaisse?: boolean;
 
   /* ── Communs ── */
   marque?: string;
@@ -113,6 +117,9 @@ interface ProduitApi {
 /** Forme brute renvoyée par GET /api/catalogue/documents. */
 interface DocumentApi extends Omit<ProduitApi, 'stock'> {
   gratuit?: boolean;
+  /** Id du DocumentNumerique caisse source — présent uniquement si publié depuis la page
+   *  caisse « Fournisseurs » (null pour un document créé via l'écran Admin catalogue). */
+  documentCaisseId?: string | null;
   auteur?: string;
   editeur?: string;
   annee?: number;
@@ -340,6 +347,7 @@ export class CatalogueService {
       disponible: d.disponible !== false,
       note: d.note,
       nombreAvis: d.nombreAvis,
+      origineCaisse: !!d.documentCaisseId,
       images: d.image ? [d.image] : undefined,
       description: d.description || undefined,
       auteur: d.auteur || undefined,

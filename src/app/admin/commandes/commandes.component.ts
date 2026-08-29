@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { forkJoin } from 'rxjs';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { forkJoin, Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { AdminOrdersService, AdminOrder } from '../../services/admin-orders.service';
 import { ConfirmDialogService } from '../../services/confirm-dialog.service';
 
@@ -45,7 +46,7 @@ const TRANSITIONS: Record<string, { statut: string; label: string; icone: string
   templateUrl: './commandes.component.html',
   styleUrls: ['./commandes.component.css']
 })
-export class CommandesComponent implements OnInit {
+export class CommandesComponent implements OnInit, OnDestroy {
   readonly ordreColonnes = ORDRE_COLONNES;
   colonnes: Record<string, ColonneKanban> = {};
   chargementInitial: boolean = true;
@@ -53,6 +54,9 @@ export class CommandesComponent implements OnInit {
   succes: string = '';
 
   recherche: string = '';
+  /** Recherche automatique : chaque frappe pousse ici, on relance après 350 ms de pause. */
+  private rechercheChange$ = new Subject<string>();
+  private rechercheSub?: Subscription;
 
   commandeSelectionnee: AdminOrder | null = null;
   chargementDetail: boolean = false;
@@ -65,7 +69,19 @@ export class CommandesComponent implements OnInit {
 
   ngOnInit(): void {
     ORDRE_COLONNES.forEach(s => (this.colonnes[s] = { commandes: [], total: 0, limite: 8, chargement: true }));
+    this.rechercheSub = this.rechercheChange$
+      .pipe(debounceTime(350), distinctUntilChanged())
+      .subscribe(() => this.rechercher());
     this.charger();
+  }
+
+  ngOnDestroy(): void {
+    this.rechercheSub?.unsubscribe();
+  }
+
+  /** Appelé à chaque frappe dans le champ de recherche. */
+  onRechercheChange(valeur: string): void {
+    this.rechercheChange$.next(valeur);
   }
 
   statutInfo(statut: string): StatutInfo {
