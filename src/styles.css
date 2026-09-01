@@ -387,3 +387,46 @@ input::placeholder { color: #9AA0A8; }
   color: #1B2430;
   margin-bottom: 16px;
 }
+
+/* Garantie d'affichage : le contenu du formulaire (sections + grille Bootstrap + champs) doit
+   rester visible quelles que soient les autres feuilles de style. Corrige le cas "carte de
+   formulaire vide" (les champs étaient dans le DOM mais rendus invisibles). */
+.ad-form-wrap form { display: block !important; }
+.ad-form-wrap form > .ad-section,
+.ad-form-wrap form > .d-flex,
+.ad-form-wrap form > .ad-progress {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+.ad-form-wrap .row {
+  display: flex !important;
+  flex-wrap: wrap;
+  margin: 0 -8px;
+}
+.ad-form-wrap .row > [class*="col-"] {
+  display: block !important;
+  padding: 0 8px;
+  margin-top: 12px;
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 100%;
+}
+@media (min-width: 768px) {
+  .ad-form-wrap .row > .col-md-3 { width: 25%; max-width: 25%; }
+  .ad-form-wrap .row > .col-md-4 { width: 33.3333%; max-width: 33.3333%; }
+  .ad-form-wrap .row > .col-md-6 { width: 50%; max-width: 50%; }
+}
+.ad-form-wrap .form-control,
+.ad-form-wrap .form-select,
+.ad-form-wrap .ub-input,
+.ad-form-wrap textarea {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  width: 100%;
+}
+.ad-form-wrap .form-check-input { display: inline-block !important; visibility: visible !important; }
