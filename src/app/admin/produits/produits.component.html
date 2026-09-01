@@ -14,20 +14,14 @@
   <div class="alert alert-danger py-2 px-3" *ngIf="erreur">{{ erreur }}</div>
   <div class="alert alert-success py-2 px-3" *ngIf="succes">{{ succes }}</div>
 
-  <!-- ══════════════ Formulaire ══════════════
-       Styles critiques en inline (en plus des classes) : garantit l'affichage de la modale même
-       si la feuille de styles du composant n'est pas appliquée (build/déploiement partiel). -->
-  <div class="ad-overlay" *ngIf="formulaireOuvert" (click)="annuler()"
-       style="position:fixed;inset:0;z-index:1050;background:rgba(15,17,23,.55);display:flex;align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto;">
-   <div class="ad-form-wrap" (click)="$event.stopPropagation()"
-        style="background:#fff;border-radius:20px;width:100%;max-width:780px;max-height:calc(100vh - 48px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 64px -20px rgba(0,0,0,.35);">
-    <div class="ad-form-head"
-         style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 26px;border-bottom:1px solid #F0F1F4;flex-shrink:0;">
+  <!-- ══════════════ Formulaire ══════════════ -->
+  <div class="ad-form-wrap mb-4" *ngIf="formulaireOuvert">
+    <div class="d-flex align-items-center justify-content-between mb-3">
       <h2 class="fw-bold mb-0" style="font-size:17px;">{{ modeEdition ? 'Modifier le produit' : 'Nouveau produit' }}</h2>
       <button class="btn btn-outline-dark-ub btn-sm" (click)="annuler()"><i class="fa-solid fa-xmark me-1"></i>Fermer</button>
     </div>
 
-    <form (ngSubmit)="enregistrer()" class="ad-form-body" style="padding:4px 26px 20px;overflow-y:auto;">
+    <form (ngSubmit)="enregistrer()">
 
       <!-- Informations -->
       <div class="ad-section">
@@ -211,7 +205,7 @@
         <div class="ad-progress-bar" [style.width.%]="progression"></div>
       </div>
 
-      <div class="ad-form-actions">
+      <div class="d-flex gap-2 mt-3">
         <button type="submit" class="btn btn-accent rounded-pill px-4" [disabled]="enregistrement">
           <span *ngIf="!enregistrement">Enregistrer</span>
           <span *ngIf="enregistrement">{{ progression }}%</span>
@@ -219,22 +213,18 @@
         <button type="button" class="btn btn-outline-dark-ub rounded-pill px-4" (click)="annuler()">Annuler</button>
       </div>
     </form>
-   </div>
   </div>
 
   <!-- ══════════════ Créer / modifier un pack (lot de plusieurs produits) ══════════════ -->
-  <div class="ad-overlay" *ngIf="dialogPackOuvert" (click)="fermerCreationPack()"
-       style="position:fixed;inset:0;z-index:1050;background:rgba(15,17,23,.55);display:flex;align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto;">
-   <div class="ad-form-wrap" (click)="$event.stopPropagation()"
-        style="background:#fff;border-radius:20px;width:100%;max-width:780px;max-height:calc(100vh - 48px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 64px -20px rgba(0,0,0,.35);">
-    <div class="ad-form-head"
-         style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 26px;border-bottom:1px solid #F0F1F4;flex-shrink:0;">
+  <div class="ad-form-wrap mb-4" *ngIf="dialogPackOuvert">
+    <div class="d-flex align-items-center justify-content-between mb-3">
       <h2 class="fw-bold mb-0" style="font-size:17px;"><i class="fa-solid fa-boxes-stacked me-2"></i>{{ packEditId ? 'Modifier le pack' : 'Nouveau pack' }}</h2>
       <button class="btn btn-outline-dark-ub btn-sm" (click)="fermerCreationPack()"><i class="fa-solid fa-xmark me-1"></i>Fermer</button>
     </div>
 
-    <form (ngSubmit)="creerPack()" class="ad-form-body" style="padding:4px 26px 20px;overflow-y:auto;">
-      <div class="alert alert-danger py-2 px-3" *ngIf="erreurPack">{{ erreurPack }}</div>
+    <div class="alert alert-danger py-2 px-3" *ngIf="erreurPack">{{ erreurPack }}</div>
+
+    <form (ngSubmit)="creerPack()">
 
       <!-- Infos du pack -->
       <div class="ad-section">
@@ -354,7 +344,7 @@
         <p class="text-secondary small mt-2 mb-0"><i class="fa-solid fa-quote-left me-1"></i>{{ packDescriptionAuto }}</p>
       </div>
 
-      <div class="ad-form-actions">
+      <div class="d-flex gap-2 mt-3">
         <button type="submit" class="btn btn-accent rounded-pill px-4" [disabled]="creationPackEnCours || packSelection.length < 2">
           <span *ngIf="!creationPackEnCours"><i class="fa-solid fa-check me-2"></i>{{ packEditId ? 'Enregistrer le pack' : 'Créer le pack' }}</span>
           <span *ngIf="creationPackEnCours">{{ packEditId ? 'Enregistrement…' : 'Création…' }}</span>
@@ -362,7 +352,6 @@
         <button type="button" class="btn btn-outline-dark-ub rounded-pill px-4" (click)="fermerCreationPack()">Annuler</button>
       </div>
     </form>
-   </div>
   </div>
 
   <!-- Recherche -->
