@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MesAchatsService, Ticket, Facture, ModePaiementFacture, EntrepriseInfos } from '../../services/mes-achats.service';
+import { imprimerFacture as imprimerFactureFenetre } from '../../shared/facture-impression.util';
 
 type Onglet = 'tickets' | 'factures';
 
@@ -231,6 +232,34 @@ export class TicketsFacturesComponent implements OnInit {
     };
     window.addEventListener('afterprint', retirer);
     window.print();
+  }
+
+  /** Impression de la facture au même format que la facture papier de la caisse (fenêtre A4
+   *  dédiée : en-tête entreprise, montant en toutes lettres, cachet/signature — voir
+   *  shared/facture-impression.util.ts). */
+  imprimerFacture(): void {
+    const f = this.factureSelectionnee;
+    if (!f) return;
+    imprimerFactureFenetre(`Facture ${f.numFacture}`, {
+      numFacture: f.numFacture,
+      date: f.date,
+      client: f.client,
+      ticketsLabel: f.numTicket,
+      produits: f.produits.map(l => ({
+        designation: l.designation, qty: l.qty, prixHT: l.prixHT, tva: l.tva, totalTTC: l.totalTTC
+      })),
+      totalTTC: f.total,
+      timbreFiscal: this.timbreAffiche(f),
+    }, this.entreprise ? {
+      nomEntreprise: this.entreprise.nomEntreprise,
+      adresse: this.entreprise.adresse,
+      telephone: this.entreprise.telephone,
+      matriculeFiscal: this.entreprise.matriculeFiscal,
+      nomSignataire: this.entreprise.nomSignataire,
+      signature: this.entreprise.signature,
+      cachet: this.entreprise.cachet,
+      logo: this.entreprise.logo,
+    } : null);
   }
 
   trackByTicket(_index: number, item: Ticket): string { return item.id; }

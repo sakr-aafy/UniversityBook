@@ -295,7 +295,7 @@
     </div>
 
     <!-- Impression : possible seulement une fois la facture réglée (timbre fiscal acquitté). -->
-    <button class="btn btn-outline-dark-ub ub-no-print" (click)="imprimer()"
+    <button class="btn btn-outline-dark-ub ub-no-print" (click)="imprimerFacture()"
             [disabled]="factureSelectionnee.statut !== 'payee'"
             [title]="factureSelectionnee.statut !== 'payee' ? 'Réglez la facture pour pouvoir l\'imprimer' : ''">
       <i class="fa-solid fa-print me-2"></i>Imprimer

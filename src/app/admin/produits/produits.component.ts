@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { HttpEventType } from '@angular/common/http';
 import { Subscription } from 'rxjs';
-import { AdminProduitsService, CatalogueProduit, ProduitForm, VarianteCouleurForm, VarianteFormatForm } from '../../services/admin-produits.service';
+import { AdminProduitsService, CatalogueProduit, ProduitForm, VarianteCouleurForm, VarianteFormatForm, PackItemForm } from '../../services/admin-produits.service';
 import { AdminCategoriesService, Categorie } from '../../services/admin-categories.service';
 import { AdminSousCategoriesService, SousCategorie } from '../../services/admin-sous-categories.service';
 import { CategoryDialogService } from '../../services/category-dialog.service';
@@ -73,13 +73,17 @@ export class ProduitsComponent implements OnInit, OnDestroy {
   enregistrement: boolean = false;
   progression: number = 0;
 
-  // ── Créer un pack (lot de plusieurs produits du site) ──────────────────────
+  // ── Créer / modifier un pack (lot de plusieurs produits du site) ───────────
   dialogPackOuvert: boolean = false;
+  /** null = création ; sinon _id du pack (Produit badge 'Pack') en cours de modification. */
+  packEditId: string | null = null;
   packNom: string = '';
   packCategorie: string = '';
   packSousCategorie: string = '';
   packSousSousCategorie: string = '';
   packPrix: number | null = null;
+  /** Points de fidélité rapportés par le pack. */
+  packPointFidelite: number | null = null;
   packRecherche: string = '';
   packSelection: { produit: CatalogueProduit; quantite: number }[] = [];
   packImageFichier: File | null = null;
@@ -355,11 +359,13 @@ export class ProduitsComponent implements OnInit, OnDestroy {
   // est le prix du lot et la description liste son contenu — pas de nouveau modèle backend.
 
   ouvrirCreationPack(): void {
+    this.packEditId = null;
     this.packNom = '';
     this.packCategorie = '';
     this.packSousCategorie = '';
     this.packSousSousCategorie = '';
     this.packPrix = null;
+    this.packPointFidelite = null;
     this.packRecherche = '';
     this.packSelection = [];
     this.packImageFichier = null;
@@ -369,14 +375,48 @@ export class ProduitsComponent implements OnInit, OnDestroy {
     this.chargerPackCatalogue();
   }
 
-  /** Charge tout le catalogue (sans pagination) pour le picker du formulaire pack. */
-  private chargerPackCatalogue(): void {
+  /** Ouvre le formulaire pack en modification : préremplit les infos et recoche exactement la
+   *  composition enregistrée (Produit.packItems). Seuls les produits du pack sont pré-sélectionnés
+   *  — l'admin peut les retirer / changer les quantités / en ajouter d'autres. */
+  ouvrirModificationPack(p: CatalogueProduit): void {
+    this.packEditId = p._id;
+    this.packNom = p.titre || '';
+    this.packCategorie = p.categorie || '';
+    this.packSousCategorie = p.sousCategorie || '';
+    this.packSousSousCategorie = p.sousSousCategorie || '';
+    this.packPrix = p.prix ?? null;
+    this.packPointFidelite = p.pointFidelite ?? null;
+    this.packRecherche = '';
+    this.packSelection = [];
+    this.packImageFichier = null;
+    this.packImageApercu = p.image ? photoUrl(p.image) : null;
+    this.erreurPack = '';
+    this.dialogPackOuvert = true;
+    this.chargerPackCatalogue(p.packItems || []);
+  }
+
+  /** Charge tout le catalogue (sans pagination) pour le picker du formulaire pack. `composition`
+   *  (édition d'un pack) : reconstruit `packSelection` une fois le catalogue disponible. */
+  private chargerPackCatalogue(composition: PackItemForm[] = []): void {
     this.packCatalogueChargement = true;
     this.adminProduitsService.list({ page: 1, limite: 100000 }).subscribe({
       next: res => {
         // On ne propose pas un pack existant comme composant d'un autre pack.
-        this.packCatalogue = res.produits.filter(p => p.badge !== 'Pack');
+        this.packCatalogue = res.produits.filter(p => p.badge !== 'Pack' && p._id !== this.packEditId);
         this.packCatalogueChargement = false;
+        if (composition.length) {
+          this.packSelection = composition.map(it => {
+            const trouve = this.packCatalogue.find(p => p._id === it.produit);
+            const produit = trouve ?? ({
+              _id: it.produit, titre: it.titre, prix: it.prix,
+              description: '', categorie: '', sousCategorie: '', sousSousCategorie: '', type: '',
+              stock: 0, image: '', images: [], actif: true, sku: '', marque: '', codeBarres: '',
+              badge: '', nouveaute: false, populaire: false, disponible: true,
+              couleurs: [], formats: [], createdAt: ''
+            } as CatalogueProduit);
+            return { produit, quantite: Math.max(1, it.quantite || 1) };
+          });
+        }
       },
       error: () => {
         this.packCatalogue = [];
@@ -388,6 +428,7 @@ export class ProduitsComponent implements OnInit, OnDestroy {
 
   fermerCreationPack(): void {
     this.dialogPackOuvert = false;
+    this.packEditId = null;
   }
 
   get packProduitsFiltres(): CatalogueProduit[] {
@@ -495,6 +536,12 @@ export class ProduitsComponent implements OnInit, OnDestroy {
     }
 
     const prixPack = this.packPrix != null && this.packPrix > 0 ? this.packPrix : this.packTotalComposants;
+    const packItems: PackItemForm[] = this.packSelection.map(s => ({
+      produit: s.produit._id,
+      titre: s.produit.titre,
+      quantite: s.quantite,
+      prix: s.produit.prix || 0
+    }));
     const form: ProduitForm = {
       ...PRODUIT_VIDE,
       titre: this.packNom.trim(),
@@ -508,23 +555,30 @@ export class ProduitsComponent implements OnInit, OnDestroy {
       ancienPrix: prixPack < this.packTotalComposants ? this.packTotalComposants : null,
       badge: 'Pack',
       couleurs: [],
-      formats: []
+      formats: [],
+      pointFidelite: this.packPointFidelite != null ? Math.max(0, Number(this.packPointFidelite) || 0) : 0,
+      packItems
     };
 
     this.creationPackEnCours = true;
-    this.adminProduitsService.create(form, this.packImageFichier, [], []).subscribe({
+    const requete = this.packEditId
+      ? this.adminProduitsService.update(this.packEditId, form, this.packImageFichier, [], undefined)
+      : this.adminProduitsService.create(form, this.packImageFichier, [], []);
+    const enEdition = !!this.packEditId;
+    requete.subscribe({
       next: event => {
         if (event.type === HttpEventType.Response) {
           this.creationPackEnCours = false;
           this.dialogPackOuvert = false;
-          this.succes = `Pack « ${form.titre} » créé.`;
+          this.packEditId = null;
+          this.succes = enEdition ? `Pack « ${form.titre} » modifié.` : `Pack « ${form.titre} » créé.`;
           setTimeout(() => (this.succes = ''), 4000);
           this.charger();
         }
       },
       error: err => {
         this.creationPackEnCours = false;
-        this.erreurPack = err.error?.message || 'Erreur lors de la création du pack.';
+        this.erreurPack = err.error?.message || (enEdition ? 'Erreur lors de la modification du pack.' : 'Erreur lors de la création du pack.');
       }
     });
   }

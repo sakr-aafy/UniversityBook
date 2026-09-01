@@ -15,6 +15,14 @@ export interface VarianteFormatForm {
   stock: number;
 }
 
+export interface PackItemForm {
+  /** _id du produit composant (permet de re-cocher la composition à l'édition du pack). */
+  produit: string;
+  titre: string;
+  quantite: number;
+  prix: number;
+}
+
 export interface CatalogueProduit {
   _id: string;
   titre: string;
@@ -39,6 +47,10 @@ export interface CatalogueProduit {
   disponible: boolean;
   couleurs: VarianteCouleurForm[];
   formats: VarianteFormatForm[];
+  /** Points de fidélité rapportés par le produit / pack. */
+  pointFidelite?: number;
+  /** Composition d'un pack (badge 'Pack') — vide pour un produit simple. */
+  packItems?: PackItemForm[];
   createdAt: string;
 }
 
@@ -68,6 +80,10 @@ export interface ProduitForm {
   disponible: boolean;
   couleurs: VarianteCouleurForm[];
   formats: VarianteFormatForm[];
+  /** Points de fidélité rapportés par le produit / pack. */
+  pointFidelite?: number;
+  /** Composition d'un pack (badge 'Pack'). */
+  packItems?: PackItemForm[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -146,6 +162,12 @@ export class AdminProduitsService {
     formData.append('disponible', String(data.disponible));
     formData.append('couleurs', JSON.stringify(data.couleurs || []));
     formData.append('formats', JSON.stringify(data.formats || []));
+    if (data.pointFidelite !== undefined && data.pointFidelite !== null) {
+      formData.append('pointFidelite', String(data.pointFidelite));
+    }
+    if (data.packItems !== undefined) {
+      formData.append('packItems', JSON.stringify(data.packItems || []));
+    }
     if (image) formData.append('image', image);
     if (imagesExistantes) formData.append('imagesExistantes', JSON.stringify(imagesExistantes));
     (images || []).forEach(f => formData.append('images', f));

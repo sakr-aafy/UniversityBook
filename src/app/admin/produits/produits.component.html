@@ -15,13 +15,14 @@
   <div class="alert alert-success py-2 px-3" *ngIf="succes">{{ succes }}</div>
 
   <!-- ══════════════ Formulaire ══════════════ -->
-  <div class="ad-form-wrap mb-4" *ngIf="formulaireOuvert">
-    <div class="d-flex align-items-center justify-content-between mb-3">
+  <div class="ad-overlay" *ngIf="formulaireOuvert" (click)="annuler()">
+   <div class="ad-form-wrap" (click)="$event.stopPropagation()">
+    <div class="ad-form-head">
       <h2 class="fw-bold mb-0" style="font-size:17px;">{{ modeEdition ? 'Modifier le produit' : 'Nouveau produit' }}</h2>
       <button class="btn btn-outline-dark-ub btn-sm" (click)="annuler()"><i class="fa-solid fa-xmark me-1"></i>Fermer</button>
     </div>
 
-    <form (ngSubmit)="enregistrer()">
+    <form (ngSubmit)="enregistrer()" class="ad-form-body">
 
       <!-- Informations -->
       <div class="ad-section">
@@ -205,7 +206,7 @@
         <div class="ad-progress-bar" [style.width.%]="progression"></div>
       </div>
 
-      <div class="d-flex gap-2 mt-3">
+      <div class="ad-form-actions">
         <button type="submit" class="btn btn-accent rounded-pill px-4" [disabled]="enregistrement">
           <span *ngIf="!enregistrement">Enregistrer</span>
           <span *ngIf="enregistrement">{{ progression }}%</span>
@@ -213,18 +214,20 @@
         <button type="button" class="btn btn-outline-dark-ub rounded-pill px-4" (click)="annuler()">Annuler</button>
       </div>
     </form>
+   </div>
   </div>
 
-  <!-- ══════════════ Créer un pack (lot de plusieurs produits) ══════════════ -->
-  <div class="ad-form-wrap mb-4" *ngIf="dialogPackOuvert">
-    <div class="d-flex align-items-center justify-content-between mb-3">
-      <h2 class="fw-bold mb-0" style="font-size:17px;"><i class="fa-solid fa-boxes-stacked me-2"></i>Nouveau pack</h2>
+  <!-- ══════════════ Créer / modifier un pack (lot de plusieurs produits) ══════════════ -->
+  <div class="ad-overlay" *ngIf="dialogPackOuvert" (click)="fermerCreationPack()">
+   <div class="ad-form-wrap" (click)="$event.stopPropagation()">
+    <div class="ad-form-head">
+      <h2 class="fw-bold mb-0" style="font-size:17px;"><i class="fa-solid fa-boxes-stacked me-2"></i>{{ packEditId ? 'Modifier le pack' : 'Nouveau pack' }}</h2>
       <button class="btn btn-outline-dark-ub btn-sm" (click)="fermerCreationPack()"><i class="fa-solid fa-xmark me-1"></i>Fermer</button>
     </div>
 
-    <div class="alert alert-danger py-2 px-3" *ngIf="erreurPack">{{ erreurPack }}</div>
+    <form (ngSubmit)="creerPack()" class="ad-form-body">
+      <div class="alert alert-danger py-2 px-3" *ngIf="erreurPack">{{ erreurPack }}</div>
 
-    <form (ngSubmit)="creerPack()">
       <!-- Infos du pack -->
       <div class="ad-section">
         <h3 class="ad-section-titre"><i class="fa-solid fa-circle-info me-2"></i>Informations</h3>
@@ -334,18 +337,24 @@
             <label class="form-label ub-label">Économie</label>
             <input type="text" class="form-control ub-input" [value]="(packEconomie | number:'1.3-3') + ' DT'" disabled>
           </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label ub-label">Points de fidélité du pack</label>
+            <input type="number" step="1" min="0" class="form-control ub-input"
+                   [(ngModel)]="packPointFidelite" name="packPointFidelite" placeholder="0">
+          </div>
         </div>
         <p class="text-secondary small mt-2 mb-0"><i class="fa-solid fa-quote-left me-1"></i>{{ packDescriptionAuto }}</p>
       </div>
 
-      <div class="d-flex gap-2 mt-3">
+      <div class="ad-form-actions">
         <button type="submit" class="btn btn-accent rounded-pill px-4" [disabled]="creationPackEnCours || packSelection.length < 2">
-          <span *ngIf="!creationPackEnCours"><i class="fa-solid fa-check me-2"></i>Créer le pack</span>
-          <span *ngIf="creationPackEnCours">Création…</span>
+          <span *ngIf="!creationPackEnCours"><i class="fa-solid fa-check me-2"></i>{{ packEditId ? 'Enregistrer le pack' : 'Créer le pack' }}</span>
+          <span *ngIf="creationPackEnCours">{{ packEditId ? 'Enregistrement…' : 'Création…' }}</span>
         </button>
         <button type="button" class="btn btn-outline-dark-ub rounded-pill px-4" (click)="fermerCreationPack()">Annuler</button>
       </div>
     </form>
+   </div>
   </div>
 
   <!-- Recherche -->
@@ -389,8 +398,9 @@
             </p>
             <p class="text-secondary small mb-3">Stock : {{ produit.stock }}</p>
             <div class="d-flex gap-2">
-              <button class="btn btn-outline-dark-ub btn-sm flex-grow-1" (click)="ouvrirEdition(produit)">
-                <i class="fa-regular fa-pen-to-square me-1"></i>Modifier
+              <button class="btn btn-outline-dark-ub btn-sm flex-grow-1"
+                      (click)="produit.badge === 'Pack' ? ouvrirModificationPack(produit) : ouvrirEdition(produit)">
+                <i class="fa-regular fa-pen-to-square me-1"></i>{{ produit.badge === 'Pack' ? 'Modifier le pack' : 'Modifier' }}
               </button>
               <button class="btn btn-outline-dark-ub btn-sm" (click)="supprimer(produit)" title="Supprimer">
                 <i class="fa-solid fa-trash"></i>
