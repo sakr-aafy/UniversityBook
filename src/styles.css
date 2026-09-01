@@ -363,3 +363,64 @@ input::placeholder { color: #9AA0A8; }
   /* Éléments internes à .ub-print-area à ne pas imprimer (boutons, alertes d'action…). */
   body.ub-printing .ub-print-area .ub-no-print { display: none !important; }
 }
+
+/* ── Formulaires admin en modale (Produits : Ajouter / Modifier / Pack) ─────────
+   Déclarés globalement (pas seulement dans produits.component.css) pour rester
+   appliqués même si la feuille de styles du composant échoue à charger — l'écran
+   "formulaire vide" venait de là. */
+.ad-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  background: rgba(15, 17, 23, .55);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px;
+  overflow-y: auto;
+}
+.ad-form-wrap {
+  background: #fff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 780px;
+  max-height: calc(100vh - 48px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 24px 64px -20px rgba(0, 0, 0, .35);
+}
+.ad-form-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 26px;
+  border-bottom: 1px solid #F0F1F4;
+  flex-shrink: 0;
+}
+.ad-form-body {
+  padding: 4px 26px 20px;
+  overflow-y: auto;
+}
+.ad-form-actions {
+  display: flex;
+  gap: 8px;
+  padding: 16px 0 4px;
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+}
+.ad-form-wrap .ad-section {
+  padding: 20px 0;
+  border-bottom: 1px solid #F0F1F4;
+}
+.ad-form-wrap .ad-section:last-of-type {
+  border-bottom: none;
+}
+.ad-form-wrap .ad-section-titre {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1B2430;
+  margin-bottom: 16px;
+}

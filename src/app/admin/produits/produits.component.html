@@ -14,15 +14,20 @@
   <div class="alert alert-danger py-2 px-3" *ngIf="erreur">{{ erreur }}</div>
   <div class="alert alert-success py-2 px-3" *ngIf="succes">{{ succes }}</div>
 
-  <!-- ══════════════ Formulaire ══════════════ -->
-  <div class="ad-overlay" *ngIf="formulaireOuvert" (click)="annuler()">
-   <div class="ad-form-wrap" (click)="$event.stopPropagation()">
-    <div class="ad-form-head">
+  <!-- ══════════════ Formulaire ══════════════
+       Styles critiques en inline (en plus des classes) : garantit l'affichage de la modale même
+       si la feuille de styles du composant n'est pas appliquée (build/déploiement partiel). -->
+  <div class="ad-overlay" *ngIf="formulaireOuvert" (click)="annuler()"
+       style="position:fixed;inset:0;z-index:1050;background:rgba(15,17,23,.55);display:flex;align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto;">
+   <div class="ad-form-wrap" (click)="$event.stopPropagation()"
+        style="background:#fff;border-radius:20px;width:100%;max-width:780px;max-height:calc(100vh - 48px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 64px -20px rgba(0,0,0,.35);">
+    <div class="ad-form-head"
+         style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 26px;border-bottom:1px solid #F0F1F4;flex-shrink:0;">
       <h2 class="fw-bold mb-0" style="font-size:17px;">{{ modeEdition ? 'Modifier le produit' : 'Nouveau produit' }}</h2>
       <button class="btn btn-outline-dark-ub btn-sm" (click)="annuler()"><i class="fa-solid fa-xmark me-1"></i>Fermer</button>
     </div>
 
-    <form (ngSubmit)="enregistrer()" class="ad-form-body">
+    <form (ngSubmit)="enregistrer()" class="ad-form-body" style="padding:4px 26px 20px;overflow-y:auto;">
 
       <!-- Informations -->
       <div class="ad-section">
@@ -218,14 +223,17 @@
   </div>
 
   <!-- ══════════════ Créer / modifier un pack (lot de plusieurs produits) ══════════════ -->
-  <div class="ad-overlay" *ngIf="dialogPackOuvert" (click)="fermerCreationPack()">
-   <div class="ad-form-wrap" (click)="$event.stopPropagation()">
-    <div class="ad-form-head">
+  <div class="ad-overlay" *ngIf="dialogPackOuvert" (click)="fermerCreationPack()"
+       style="position:fixed;inset:0;z-index:1050;background:rgba(15,17,23,.55);display:flex;align-items:flex-start;justify-content:center;padding:24px;overflow-y:auto;">
+   <div class="ad-form-wrap" (click)="$event.stopPropagation()"
+        style="background:#fff;border-radius:20px;width:100%;max-width:780px;max-height:calc(100vh - 48px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 64px -20px rgba(0,0,0,.35);">
+    <div class="ad-form-head"
+         style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 26px;border-bottom:1px solid #F0F1F4;flex-shrink:0;">
       <h2 class="fw-bold mb-0" style="font-size:17px;"><i class="fa-solid fa-boxes-stacked me-2"></i>{{ packEditId ? 'Modifier le pack' : 'Nouveau pack' }}</h2>
       <button class="btn btn-outline-dark-ub btn-sm" (click)="fermerCreationPack()"><i class="fa-solid fa-xmark me-1"></i>Fermer</button>
     </div>
 
-    <form (ngSubmit)="creerPack()" class="ad-form-body">
+    <form (ngSubmit)="creerPack()" class="ad-form-body" style="padding:4px 26px 20px;overflow-y:auto;">
       <div class="alert alert-danger py-2 px-3" *ngIf="erreurPack">{{ erreurPack }}</div>
 
       <!-- Infos du pack -->
