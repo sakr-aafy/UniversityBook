@@ -47,6 +47,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
    *  le sous-menu au survol de "Fournitures scolaires" dans le mega-menu Boutique. */
   categoriesCaisse: CategorieCaisseDto[] = [];
 
+  /** Rayon actif du mega-menu Boutique (colonne de droite) : piloté au survol du rail.
+   *  Valeurs : 'documents' | 'soutenance' | 'fournitures' | 'jeux' | 'payants' | 'gratuits'. */
+  megaDomaine: 'documents' | 'soutenance' | 'fournitures' | 'jeux' | 'payants' | 'gratuits' = 'documents';
+
   /** Catégories exclues de la liste "Fournitures scolaires" du mega-menu uniquement : elles ont
    *  déjà leur propre entrée dédiée dans le menu (liens Soutenance / Jeux) ou relèvent d'un autre
    *  regroupement (Livre → Documents). Comparaison insensible à la casse — les libellés caisse

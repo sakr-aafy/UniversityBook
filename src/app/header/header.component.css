@@ -52,34 +52,6 @@
   padding-bottom: 2px;
 }
 
-/* ── Panneau racine ── */
-.ub-boutique-menu {
-  position: absolute;
-  top: calc(100% + 12px);
-  left: 0;
-  min-width: 264px;
-  max-height: min(72vh, 640px);
-  overflow-y: auto;
-  overflow-x: hidden;
-  background: var(--ubm-bg);
-  border-radius: var(--ubm-radius);
-  box-shadow: var(--ubm-shadow);
-  border: 1px solid var(--ubm-border);
-  padding: 7px;
-  z-index: 1030;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(-6px) scale(.985);
-  transform-origin: top left;
-  transition: opacity .16s ease, transform .2s cubic-bezier(.16,.84,.44,1), visibility .16s;
-  overscroll-behavior: contain;
-}
-.ub-boutique-item:hover .ub-boutique-menu,
-.ub-boutique-item:focus-within .ub-boutique-menu {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0) scale(1);
-}
 /* Pont invisible sous le déclencheur pour ne pas perdre le survol en traversant l'écart. */
 .ub-boutique-item::after {
   content: '';
@@ -90,335 +62,186 @@
   height: 12px;
 }
 
-/* ── Élément de menu (à chaque niveau) ── */
-.ub-boutique-menu-item {
-  position: relative;
+/* ══════════════════════════════════════════════════════════════════════════
+   MEGA-MENU BOUTIQUE (desktop) — panneau large : rail des rayons à gauche,
+   catégories du rayon survolé en colonnes à droite, pied CTA pleine largeur.
+   Rien ne se déplace ; le rail est court (fixe), le corps défile si besoin.
+   Le menu déroulant n'existe qu'au-dessus de 1080px (accordéon mobile sinon).
+   ══════════════════════════════════════════════════════════════════════════ */
+.ubm2 {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  width: min(880px, calc(100vw - 32px));
+  display: grid;
+  grid-template-columns: 232px 1fr;
+  grid-auto-rows: min-content;
+  background: #F6F7F9;              /* fond uniforme sur tout le panneau */
+  border: 1px solid var(--ubm-border);
+  border-radius: 16px;
+  box-shadow: var(--ubm-shadow);
+  overflow: hidden;
+  z-index: 1030;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: opacity .15s ease, transform .2s cubic-bezier(.16,.84,.44,1), visibility .15s;
+}
+.ub-boutique-item:hover .ubm2,
+.ub-boutique-item:focus-within .ubm2 {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* — Rail des rayons (colonne gauche) — */
+.ubm2-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px;
+  border-right: 1px solid var(--ubm-border);
+}
+.ubm2-rail-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 12px 9px 14px;
+  gap: 11px;
+  padding: 10px 12px;
   border-radius: 10px;
   font-size: 13.5px;
   font-weight: 600;
-  line-height: 1.25;
   color: var(--ubm-item-color);
   text-decoration: none;
-  white-space: nowrap;
-  transition: background .14s ease, color .14s ease;
+  transition: background .14s ease, color .14s ease, box-shadow .14s ease;
 }
-/* Barre accent qui apparaît à gauche au survol (remplace le saut de padding, plus stable). */
-.ub-boutique-menu-item::before {
-  content: '';
-  position: absolute;
-  left: 5px;
-  top: 50%;
-  height: 0;
-  width: 3px;
-  border-radius: 3px;
-  background: var(--ubm-accent);
-  transform: translateY(-50%);
-  transition: height .16s ease;
-}
-.ub-boutique-menu-item i {
-  width: 16px;
+.ubm2-rail-item > i:first-child {
+  width: 18px;
   flex-shrink: 0;
-  font-size: 13px;
+  font-size: 14px;
   text-align: center;
   color: var(--ubm-accent);
 }
-.ub-boutique-menu-item:hover,
-.ub-boutique-menu-item:focus-visible {
-  background: var(--ubm-hover-bg);
-  color: var(--ubm-accent);
-  outline: none;
-}
-.ub-boutique-menu-item:hover::before,
-.ub-flyout-item:focus-within > .ub-boutique-menu-item::before {
-  height: 18px;
-}
-.ub-boutique-menu-item.ub-has-flyout {
-  justify-content: space-between;
-}
-.ub-boutique-menu-item.ub-has-flyout span {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.ub-flyout-caret {
-  font-size: 9px;
-  flex-shrink: 0;
-  color: #C0C6CD;
-  transition: color .14s ease, transform .16s ease;
-}
-.ub-boutique-menu-item:hover .ub-flyout-caret,
-.ub-flyout-item:hover > .ub-boutique-menu-item .ub-flyout-caret {
-  color: var(--ubm-accent);
-  transform: translateX(2px);
-}
-/* Ligne du niveau racine qui a un flyout : légèrement mis en avant quand son flyout est ouvert. */
-.ub-flyout-item:hover > .ub-boutique-menu-item.ub-has-flyout,
-.ub-flyout-item:focus-within > .ub-boutique-menu-item.ub-has-flyout {
-  background: var(--ubm-hover-bg);
-  color: var(--ubm-accent);
-}
-
-/* ── Cascade : Documents > Catégorie > Sous-Catégorie > Sous-Sous-Catégorie ──
-   Mêmes règles à toute profondeur — la hiérarchie est structurelle. ── */
-.ub-flyout-item {
-  position: relative;
-}
-.ub-flyout-panel {
-  position: absolute;
-  top: -7px;
-  left: 100%;
-  margin-left: 7px;
-  min-width: 216px;
-  max-width: 288px;
-  max-height: min(66vh, 560px);
-  overflow-y: auto;
-  overflow-x: hidden;
-  background: var(--ubm-bg);
-  border-radius: var(--ubm-radius);
-  box-shadow: var(--ubm-shadow);
-  border: 1px solid var(--ubm-border);
-  padding: 7px;
-  z-index: 1031;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateX(-6px);
-  transition: opacity .16s ease, transform .2s cubic-bezier(.16,.84,.44,1), visibility .16s;
-  overscroll-behavior: contain;
-}
-/* Le panneau feuille (sans sous-flyout) peut défiler sans risque de rogner un enfant. */
-.ub-flyout-panel--scroll {
-  max-height: min(58vh, 440px);
-}
-/* Bascule à gauche quand il n'y a plus de place à droite (grand menu / petit écran). */
-@media (max-width: 1200px) {
-  .ub-flyout-panel {
-    left: auto;
-    right: 100%;
-    margin-left: 0;
-    margin-right: 7px;
-    transform: translateX(6px);
-  }
-}
-/* Pont horizontal invisible entre un élément et son flyout (tous niveaux). */
-.ub-flyout-item::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 100%;
-  width: 8px;
-}
-@media (max-width: 1200px) {
-  .ub-flyout-item::after { left: auto; right: 100%; }
-}
-.ub-flyout-item:hover > .ub-flyout-panel,
-.ub-flyout-item:focus-within > .ub-flyout-panel {
-  opacity: 1;
-  visibility: visible;
-  transform: translateX(0);
-}
-
-/* Scrollbar fine et discrète pour tous les panneaux de catégories. */
-.ub-boutique-menu::-webkit-scrollbar,
-.ub-flyout-panel::-webkit-scrollbar { width: 8px; }
-.ub-boutique-menu::-webkit-scrollbar-thumb,
-.ub-flyout-panel::-webkit-scrollbar-thumb {
-  background: #E2E5E9;
-  border-radius: 8px;
-  border: 2px solid #fff;
-}
-.ub-boutique-menu:hover::-webkit-scrollbar-thumb,
-.ub-flyout-panel:hover::-webkit-scrollbar-thumb { background: #CDD2D8; }
-.ub-boutique-menu, .ub-flyout-panel {
-  scrollbar-width: thin;
-  scrollbar-color: #D6DADF transparent;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ub-boutique-menu, .ub-flyout-panel,
-  .ub-boutique-menu-item, .ub-boutique-menu-item::before, .ub-flyout-caret {
-    transition: opacity .12s ease, visibility .12s ease;
-  }
-}
-
-/* ══════════════════════════════════════════════════════════════════════════
-   BOUTIQUE — Mega-menu large (desktop) : panneau multi-colonnes façon
-   e-commerce. Une colonne par domaine (Documents / Fournitures scolaires),
-   catégories de 1er niveau visibles d'emblée, cascade de flyouts conservée
-   pour la profondeur ; colonne de raccourcis + pied CTA pleine largeur.
-   ══════════════════════════════════════════════════════════════════════════ */
-.ub-boutique-menu.ub-mega {
-  width: 760px;
-  max-width: calc(100vw - 32px);
-  min-width: 0;
-  max-height: none;
-  overflow: visible;      /* laisse les flyouts sortir librement */
-  padding: 0;
-}
-.ub-mega-inner {
-  display: grid;
-  grid-template-columns: 1.15fr 1.15fr 1fr;
-  gap: 8px;
-  padding: 10px;
-}
-.ub-mega-col {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  padding: 4px;
-}
-
-/* En-tête de colonne : pastille icône + titre du domaine, cliquable. */
-.ub-mega-col-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  margin-bottom: 6px;
-  border-radius: 10px;
-  text-decoration: none;
-  color: #1B2430;
-  font-weight: 800;
-  font-size: 13px;
-  transition: background .14s ease, color .14s ease;
-}
-.ub-mega-col-head:hover { background: var(--ubm-hover-bg); color: var(--ubm-accent); }
-.ub-mega-col-title {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.ub-mega-col-go {
+.ubm2-rail-label { flex: 1; min-width: 0; }
+.ubm2-rail-arrow {
   font-size: 10px;
-  color: #C0C6CD;
-  opacity: 0;
-  transform: translateX(-4px);
-  transition: opacity .14s ease, transform .16s ease, color .14s ease;
-}
-.ub-mega-col-head:hover .ub-mega-col-go {
-  opacity: 1;
-  transform: translateX(0);
   color: var(--ubm-accent);
+  opacity: 0;
+  transform: translateX(-3px);
+  transition: opacity .14s ease, transform .16s ease;
 }
-.ub-mega-ico {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  flex-shrink: 0;
-  border-radius: 9px;
-  background: var(--ubm-accent);
-  color: #fff;
-  font-size: 13px;
-}
-.ub-mega-ico--soft { background: var(--ubm-hover-bg); color: var(--ubm-accent); }
-
-/* Fond coloré de la liste des catégories (sous l'en-tête blanc du domaine) : la liste
-   repose sur un panneau teinté qui la distingue nettement du reste du mega-menu. */
-.ub-mega-col-body {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  overflow: visible;
-  flex: 1;
-  padding: 5px;
-  background: #F6F7F9;
-  border: 1px solid var(--ubm-border);
-  border-radius: 11px;
-}
-.ub-mega-col-body .ub-boutique-menu-item {
-  font-size: 13px;
-  padding-top: 8px;
-  padding-bottom: 8px;
-}
-.ub-mega-col-body .ub-boutique-menu-item:hover,
-.ub-mega-col-body .ub-flyout-item:focus-within > .ub-boutique-menu-item {
+.ubm2-rail-item:hover,
+.ubm2-rail-item.is-active {
   background: #fff;
+  color: var(--ubm-accent);
+  box-shadow: inset 0 0 0 1px var(--ubm-border);
 }
-.ub-mega-link-muted { color: var(--ubm-item-muted); font-weight: 600; }
+.ubm2-rail-item.is-active { font-weight: 700; }
+.ubm2-rail-item.is-active .ubm2-rail-arrow { opacity: 1; transform: translateX(0); }
 
-/* En-tête de colonne non cliquable (colonne "Accès rapides"). */
-.ub-mega-col-head--static { cursor: default; }
-.ub-mega-col-head--static:hover { background: none; color: #1B2430; }
-
-/* Colonne de raccourcis : cartes empilées (titre + sous-titre) sur le même fond teinté. */
-.ub-mega-col-body--cards { gap: 3px; }
-.ub-mega-card {
+/* — Corps : catégories du rayon actif (colonne droite) — */
+.ubm2-body {
+  padding: 20px 22px 18px;
+  max-height: min(62vh, 440px);
+  overflow-y: auto;
+}
+.ubm2-domain-head {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: 9px;
-  text-decoration: none;
-  transition: background .14s ease;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--ubm-border);
 }
-.ub-mega-card:hover { background: #fff; }
-.ub-mega-card-txt {
+.ubm2-domain-head h3 {
+  margin: 0;
+  font-family: 'Spectral', Georgia, 'Times New Roman', serif;
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: -.01em;
+  color: #1B2430;
+}
+.ubm2-see-all {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ubm-accent);
+  text-decoration: none;
+}
+.ubm2-see-all i { font-size: 10px; transition: transform .16s ease; }
+.ubm2-see-all:hover i { transform: translateX(3px); }
+
+.ubm2-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 18px 22px;
+}
+.ubm2-col {
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
-.ub-mega-card-title {
-  font-weight: 700;
-  font-size: 12.5px;
-  color: #2C333C;
-  transition: color .14s ease;
-}
-.ub-mega-card:hover .ub-mega-card-title { color: var(--ubm-accent); }
-.ub-mega-card-sub {
+.ubm2-col-head {
   font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .09em;
+  text-transform: uppercase;
   color: var(--ubm-item-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  text-decoration: none;
+  margin-bottom: 7px;
+}
+.ubm2-col-head:hover { color: var(--ubm-accent); }
+.ubm2-col-link {
+  padding: 5px 0;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ubm-item-color);
+  text-decoration: none;
+  transition: color .13s ease, padding .13s ease;
+}
+.ubm2-col-link:hover { color: var(--ubm-accent); padding-left: 4px; }
+
+.ubm2-blurb {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--ubm-item-muted);
+  max-width: 46ch;
 }
 
-/* Pied CTA pleine largeur. */
-.ub-mega-foot {
+/* — Pied CTA (pleine largeur) — */
+.ubm2-foot {
+  grid-column: 1 / -1;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 11px;
+  padding: 12px;
+  background: #FAFAFB;
   border-top: 1px solid var(--ubm-border);
-  background: #FBFBFC;
-  border-radius: 0 0 var(--ubm-radius) var(--ubm-radius);
-  font-weight: 700;
   font-size: 12.5px;
+  font-weight: 700;
   color: var(--ubm-accent);
   text-decoration: none;
   transition: background .14s ease, gap .16s ease;
 }
-.ub-mega-foot:hover { background: var(--ubm-hover-bg); gap: 12px; }
-.ub-mega-foot i { font-size: 11px; }
+.ubm2-foot i { font-size: 11px; }
+.ubm2-foot:hover { background: var(--ubm-hover-bg); gap: 12px; }
 
-/* Écrans desktop étroits (≈1081–1200px) : resserre le panneau et le recale vers la
-   gauche pour qu'il ne déborde pas du côté droit du viewport. */
-@media (max-width: 1200px) {
-  .ub-boutique-menu.ub-mega {
-    width: 620px;
-    left: -80px;
-  }
-  /* Les flyouts s'ouvrent toujours vers la droite : le panneau démarre près du bord
-     gauche de l'écran, un basculement à gauche sortirait du cadre. */
-  .ub-mega .ub-flyout-panel {
-    left: 100%;
-    right: auto;
-    margin-left: 7px;
-    margin-right: 0;
-    transform: translateX(-6px);
-  }
-  .ub-mega .ub-flyout-item::after { left: 100%; right: auto; }
+/* — Responsive : écrans desktop étroits — */
+@media (max-width: 1300px) {
+  .ubm2 { left: -200px; width: min(720px, calc(100vw - 28px)); }
+}
+@media (max-width: 1160px) {
+  .ubm2 { left: -280px; grid-template-columns: 200px 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ubm2 { transition: opacity .12s ease, visibility .12s ease; }
+  .ubm2 *, .ubm2 *::before { transition: none !important; }
 }
 
 /* ══════════════════════════════════════════════════════════════════════════

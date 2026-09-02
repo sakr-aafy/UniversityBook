@@ -81,10 +81,10 @@
         Accueil
       </a>
 
-      <!-- Boutique : lien de navigation + mega-menu au survol (souris). Panneau large multi-colonnes
-           (style e-commerce "pro") : une colonne par domaine (Documents / Fournitures scolaires)
-           listant directement ses catégories de 1er niveau, cascade de flyouts conservée pour la
-           taxonomie profonde, + une colonne de raccourcis et un pied "voir toute la boutique". -->
+      <!-- Boutique : mega-menu au survol (souris). Panneau large : rail des rayons à gauche,
+           catégories du rayon survolé en colonnes à droite (megaDomaine pilote l'affichage),
+           pied CTA. Documents = CategoriesSiteService ; Fournitures = CategoriesCaisseService
+           (hors Soutenance/Jeux/Livre) ; les autres rayons = lien direct + court descriptif. -->
       <div class="ub-boutique-item position-relative">
         <a routerLink="/boutique" routerLinkActive="ub-active"
            class="nav-link fw-semibold text-secondary py-2 d-flex align-items-center gap-1">
@@ -92,121 +92,148 @@
           <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
         </a>
 
-        <div class="ub-boutique-menu ub-mega">
-          <div class="ub-mega-inner">
+        <div class="ubm2" (mouseleave)="megaDomaine = 'documents'">
 
-            <!-- Colonne Documents : taxonomie "sur site" (Catégorie/Sous-Catégorie/Sous-Sous-Catégorie,
-                 voir CategoriesSiteService) — niveau 1 visible directement, niveaux 2-3 en flyout. -->
-            <section class="ub-mega-col">
-              <a routerLink="/boutique" [queryParams]="{domaine:'documents'}" class="ub-mega-col-head">
-                <span class="ub-mega-ico"><i class="fa-solid fa-book"></i></span>
-                <span class="ub-mega-col-title">Documents</span>
-                <i class="fa-solid fa-arrow-right ub-mega-col-go"></i>
-              </a>
-              <div class="ub-mega-col-body">
-                <div class="ub-flyout-item" *ngFor="let cat of categoriesSite">
-                  <a routerLink="/boutique" [queryParams]="{domaine:'documents', categorie: cat.nom}"
-                     class="ub-boutique-menu-item" [class.ub-has-flyout]="cat.sousCategories.length">
-                    <span>{{ formatLabel(cat.nom) }}</span>
-                    <i class="fa-solid fa-chevron-right ub-flyout-caret" *ngIf="cat.sousCategories.length"></i>
-                  </a>
-
-                  <div class="ub-flyout-panel" *ngIf="cat.sousCategories.length">
-                    <div class="ub-flyout-item" *ngFor="let sc of cat.sousCategories">
-                      <a routerLink="/boutique" [queryParams]="{domaine:'documents', categorie: cat.nom, sousCategorie: sc.nom}"
-                         class="ub-boutique-menu-item" [class.ub-has-flyout]="sc.sousSousCategories.length">
-                        <span>{{ formatLabel(sc.nom) }}</span>
-                        <i class="fa-solid fa-chevron-right ub-flyout-caret" *ngIf="sc.sousSousCategories.length"></i>
-                      </a>
-
-                      <div class="ub-flyout-panel ub-flyout-panel--scroll" *ngIf="sc.sousSousCategories.length">
-                        <a *ngFor="let ssc of sc.sousSousCategories"
-                           routerLink="/boutique"
-                           [queryParams]="{domaine:'documents', categorie: cat.nom, sousCategorie: sc.nom, sousSousCategorie: ssc}"
-                           class="ub-boutique-menu-item">
-                          {{ formatLabel(ssc) }}
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <a *ngIf="!categoriesSite.length" routerLink="/boutique" [queryParams]="{domaine:'documents'}"
-                   class="ub-boutique-menu-item ub-mega-link-muted">Parcourir les documents</a>
-              </div>
-            </section>
-
-            <!-- Colonne Fournitures scolaires : Catégorie/Sous-Catégorie du formulaire produit caisse,
-                 limitée aux produits ajoutés au site (voir CategoriesCaisseService) — 2 niveaux.
-                 Soutenance / Jeux / Livre exclus ici (voir header.component.ts#categoriesCaisseExclues). -->
-            <section class="ub-mega-col">
-              <a routerLink="/boutique" [queryParams]="{domaine:'fournitures'}" class="ub-mega-col-head">
-                <span class="ub-mega-ico"><i class="fa-solid fa-pen-ruler"></i></span>
-                <span class="ub-mega-col-title">Fournitures scolaires</span>
-                <i class="fa-solid fa-arrow-right ub-mega-col-go"></i>
-              </a>
-              <div class="ub-mega-col-body">
-                <div class="ub-flyout-item" *ngFor="let cat of categoriesCaisseVisibles">
-                  <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie: cat.nom}"
-                     class="ub-boutique-menu-item" [class.ub-has-flyout]="cat.sousCategories.length">
-                    <span>{{ formatLabel(cat.nom) }}</span>
-                    <i class="fa-solid fa-chevron-right ub-flyout-caret" *ngIf="cat.sousCategories.length"></i>
-                  </a>
-
-                  <div class="ub-flyout-panel ub-flyout-panel--scroll" *ngIf="cat.sousCategories.length">
-                    <a *ngFor="let sc of cat.sousCategories"
-                       routerLink="/boutique"
-                       [queryParams]="{domaine:'fournitures', categorie: cat.nom, sousCategorie: sc}"
-                       class="ub-boutique-menu-item">
-                      {{ formatLabel(sc) }}
-                    </a>
-                  </div>
-                </div>
-                <a *ngIf="!categoriesCaisseVisibles.length" routerLink="/boutique" [queryParams]="{domaine:'fournitures'}"
-                   class="ub-boutique-menu-item ub-mega-link-muted">Parcourir les fournitures</a>
-              </div>
-            </section>
-
-            <!-- Colonne raccourcis : entrées à destination unique (pas de sous-arbre). -->
-            <section class="ub-mega-col ub-mega-col--shortcuts">
-              <div class="ub-mega-col-head ub-mega-col-head--static">
-                <span class="ub-mega-ico ub-mega-ico--soft"><i class="fa-solid fa-bolt"></i></span>
-                <span class="ub-mega-col-title">Accès rapides</span>
-              </div>
-              <div class="ub-mega-col-body ub-mega-col-body--cards">
-                <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie:'Soutenance'}" class="ub-mega-card">
-                  <span class="ub-mega-ico ub-mega-ico--soft"><i class="fa-solid fa-graduation-cap"></i></span>
-                  <span class="ub-mega-card-txt">
-                    <span class="ub-mega-card-title">Soutenance</span>
-                    <span class="ub-mega-card-sub">Mémoires, reliure &amp; présentation</span>
-                  </span>
-                </a>
-                <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie:'Jeux'}" class="ub-mega-card">
-                  <span class="ub-mega-ico ub-mega-ico--soft"><i class="fa-solid fa-dice"></i></span>
-                  <span class="ub-mega-card-txt">
-                    <span class="ub-mega-card-title">Jeux</span>
-                    <span class="ub-mega-card-sub">Jeux éducatifs &amp; de société</span>
-                  </span>
-                </a>
-                <a routerLink="/boutique" [queryParams]="{domaine:'documents', payant:'1'}" class="ub-mega-card">
-                  <span class="ub-mega-ico ub-mega-ico--soft"><i class="fa-solid fa-file-invoice"></i></span>
-                  <span class="ub-mega-card-txt">
-                    <span class="ub-mega-card-title">Documents payants</span>
-                    <span class="ub-mega-card-sub">Contenus premium</span>
-                  </span>
-                </a>
-                <a routerLink="/boutique" [queryParams]="{domaine:'documents', gratuit:'1'}" class="ub-mega-card">
-                  <span class="ub-mega-ico ub-mega-ico--soft"><i class="fa-solid fa-gift"></i></span>
-                  <span class="ub-mega-card-txt">
-                    <span class="ub-mega-card-title">Documents gratuits</span>
-                    <span class="ub-mega-card-sub">Accès libre</span>
-                  </span>
-                </a>
-              </div>
-            </section>
-
+          <!-- RAIL : rayons -->
+          <div class="ubm2-rail">
+            <a class="ubm2-rail-item" [class.is-active]="megaDomaine === 'documents'"
+               (mouseenter)="megaDomaine = 'documents'" (focus)="megaDomaine = 'documents'"
+               routerLink="/boutique" [queryParams]="{domaine:'documents'}">
+              <i class="fa-solid fa-book"></i>
+              <span class="ubm2-rail-label">Documents</span>
+              <i class="fa-solid fa-chevron-right ubm2-rail-arrow"></i>
+            </a>
+            <a class="ubm2-rail-item" [class.is-active]="megaDomaine === 'soutenance'"
+               (mouseenter)="megaDomaine = 'soutenance'" (focus)="megaDomaine = 'soutenance'"
+               routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie:'Soutenance'}">
+              <i class="fa-solid fa-graduation-cap"></i>
+              <span class="ubm2-rail-label">Soutenance</span>
+              <i class="fa-solid fa-chevron-right ubm2-rail-arrow"></i>
+            </a>
+            <a class="ubm2-rail-item" [class.is-active]="megaDomaine === 'fournitures'"
+               (mouseenter)="megaDomaine = 'fournitures'" (focus)="megaDomaine = 'fournitures'"
+               routerLink="/boutique" [queryParams]="{domaine:'fournitures'}">
+              <i class="fa-solid fa-pen-ruler"></i>
+              <span class="ubm2-rail-label">Fournitures scolaires</span>
+              <i class="fa-solid fa-chevron-right ubm2-rail-arrow"></i>
+            </a>
+            <a class="ubm2-rail-item" [class.is-active]="megaDomaine === 'jeux'"
+               (mouseenter)="megaDomaine = 'jeux'" (focus)="megaDomaine = 'jeux'"
+               routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie:'Jeux'}">
+              <i class="fa-solid fa-dice"></i>
+              <span class="ubm2-rail-label">Jeux</span>
+              <i class="fa-solid fa-chevron-right ubm2-rail-arrow"></i>
+            </a>
+            <a class="ubm2-rail-item" [class.is-active]="megaDomaine === 'payants'"
+               (mouseenter)="megaDomaine = 'payants'" (focus)="megaDomaine = 'payants'"
+               routerLink="/boutique" [queryParams]="{domaine:'documents', payant:'1'}">
+              <i class="fa-solid fa-file-invoice"></i>
+              <span class="ubm2-rail-label">Documents payants</span>
+              <i class="fa-solid fa-chevron-right ubm2-rail-arrow"></i>
+            </a>
+            <a class="ubm2-rail-item" [class.is-active]="megaDomaine === 'gratuits'"
+               (mouseenter)="megaDomaine = 'gratuits'" (focus)="megaDomaine = 'gratuits'"
+               routerLink="/boutique" [queryParams]="{domaine:'documents', gratuit:'1'}">
+              <i class="fa-solid fa-gift"></i>
+              <span class="ubm2-rail-label">Documents gratuits</span>
+              <i class="fa-solid fa-chevron-right ubm2-rail-arrow"></i>
+            </a>
           </div>
 
-          <a routerLink="/boutique" class="ub-mega-foot">
+          <!-- BODY : catégories du rayon actif -->
+          <div class="ubm2-body">
+
+            <!-- Documents -->
+            <div class="ubm2-domain" *ngIf="megaDomaine === 'documents'">
+              <div class="ubm2-domain-head">
+                <h3>Documents universitaires</h3>
+                <a routerLink="/boutique" [queryParams]="{domaine:'documents'}" class="ubm2-see-all">
+                  Tout voir <i class="fa-solid fa-arrow-right"></i>
+                </a>
+              </div>
+              <div class="ubm2-cols" *ngIf="categoriesSite.length; else docVide">
+                <div class="ubm2-col" *ngFor="let cat of categoriesSite">
+                  <a routerLink="/boutique" [queryParams]="{domaine:'documents', categorie: cat.nom}"
+                     class="ubm2-col-head">{{ formatLabel(cat.nom) }}</a>
+                  <a *ngFor="let sc of cat.sousCategories"
+                     routerLink="/boutique" [queryParams]="{domaine:'documents', categorie: cat.nom, sousCategorie: sc.nom}"
+                     class="ubm2-col-link">{{ formatLabel(sc.nom) }}</a>
+                </div>
+              </div>
+              <ng-template #docVide>
+                <p class="ubm2-blurb">Cours, TD, examens corrigés et ouvrages, classés par faculté.</p>
+              </ng-template>
+            </div>
+
+            <!-- Fournitures scolaires -->
+            <div class="ubm2-domain" *ngIf="megaDomaine === 'fournitures'">
+              <div class="ubm2-domain-head">
+                <h3>Fournitures scolaires</h3>
+                <a routerLink="/boutique" [queryParams]="{domaine:'fournitures'}" class="ubm2-see-all">
+                  Tout voir <i class="fa-solid fa-arrow-right"></i>
+                </a>
+              </div>
+              <div class="ubm2-cols" *ngIf="categoriesCaisseVisibles.length; else fourVide">
+                <div class="ubm2-col" *ngFor="let cat of categoriesCaisseVisibles">
+                  <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie: cat.nom}"
+                     class="ubm2-col-head">{{ formatLabel(cat.nom) }}</a>
+                  <a *ngFor="let sc of cat.sousCategories"
+                     routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie: cat.nom, sousCategorie: sc}"
+                     class="ubm2-col-link">{{ formatLabel(sc) }}</a>
+                </div>
+              </div>
+              <ng-template #fourVide>
+                <p class="ubm2-blurb">Écriture, papier, classement, dessin technique et petit matériel de classe.</p>
+              </ng-template>
+            </div>
+
+            <!-- Soutenance -->
+            <div class="ubm2-domain" *ngIf="megaDomaine === 'soutenance'">
+              <div class="ubm2-domain-head">
+                <h3>Soutenance</h3>
+                <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie:'Soutenance'}" class="ubm2-see-all">
+                  Tout voir <i class="fa-solid fa-arrow-right"></i>
+                </a>
+              </div>
+              <p class="ubm2-blurb">Impression et reliure de mémoires, pages de garde et accessoires de présentation.</p>
+            </div>
+
+            <!-- Jeux -->
+            <div class="ubm2-domain" *ngIf="megaDomaine === 'jeux'">
+              <div class="ubm2-domain-head">
+                <h3>Jeux</h3>
+                <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie:'Jeux'}" class="ubm2-see-all">
+                  Tout voir <i class="fa-solid fa-arrow-right"></i>
+                </a>
+              </div>
+              <p class="ubm2-blurb">Jeux éducatifs, jeux de société, puzzles et jeux de cartes.</p>
+            </div>
+
+            <!-- Documents payants -->
+            <div class="ubm2-domain" *ngIf="megaDomaine === 'payants'">
+              <div class="ubm2-domain-head">
+                <h3>Documents payants</h3>
+                <a routerLink="/boutique" [queryParams]="{domaine:'documents', payant:'1'}" class="ubm2-see-all">
+                  Tout voir <i class="fa-solid fa-arrow-right"></i>
+                </a>
+              </div>
+              <p class="ubm2-blurb">Contenus premium vérifiés — accès immédiat après achat.</p>
+            </div>
+
+            <!-- Documents gratuits -->
+            <div class="ubm2-domain" *ngIf="megaDomaine === 'gratuits'">
+              <div class="ubm2-domain-head">
+                <h3>Documents gratuits</h3>
+                <a routerLink="/boutique" [queryParams]="{domaine:'documents', gratuit:'1'}" class="ubm2-see-all">
+                  Tout voir <i class="fa-solid fa-arrow-right"></i>
+                </a>
+              </div>
+              <p class="ubm2-blurb">Ressources en accès libre partagées par la communauté étudiante.</p>
+            </div>
+          </div>
+
+          <!-- FOOT -->
+          <a routerLink="/boutique" class="ubm2-foot">
             Voir toute la boutique
             <i class="fa-solid fa-arrow-right"></i>
           </a>
