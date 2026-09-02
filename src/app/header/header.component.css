@@ -249,6 +249,166 @@
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
+   BOUTIQUE — Mega-menu large (desktop) : panneau multi-colonnes façon
+   e-commerce. Une colonne par domaine (Documents / Fournitures scolaires),
+   catégories de 1er niveau visibles d'emblée, cascade de flyouts conservée
+   pour la profondeur ; colonne de raccourcis + pied CTA pleine largeur.
+   ══════════════════════════════════════════════════════════════════════════ */
+.ub-boutique-menu.ub-mega {
+  width: 760px;
+  max-width: calc(100vw - 32px);
+  min-width: 0;
+  max-height: none;
+  overflow: visible;      /* laisse les flyouts sortir librement */
+  padding: 0;
+}
+.ub-mega-inner {
+  display: grid;
+  grid-template-columns: 1.15fr 1.15fr 1fr;
+  padding: 10px;
+}
+.ub-mega-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 2px 8px;
+}
+.ub-mega-col + .ub-mega-col {
+  border-left: 1px solid var(--ubm-border);
+}
+
+/* En-tête de colonne : pastille icône + titre du domaine, cliquable. */
+.ub-mega-col-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: #1B2430;
+  font-weight: 800;
+  font-size: 13px;
+  transition: background .14s ease, color .14s ease;
+}
+.ub-mega-col-head:hover { background: var(--ubm-hover-bg); color: var(--ubm-accent); }
+.ub-mega-col-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ub-mega-col-go {
+  font-size: 10px;
+  color: #C0C6CD;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity .14s ease, transform .16s ease, color .14s ease;
+}
+.ub-mega-col-head:hover .ub-mega-col-go {
+  opacity: 1;
+  transform: translateX(0);
+  color: var(--ubm-accent);
+}
+.ub-mega-ico {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  background: var(--ubm-accent);
+  color: #fff;
+  font-size: 13px;
+}
+.ub-mega-ico--soft { background: var(--ubm-hover-bg); color: var(--ubm-accent); }
+
+.ub-mega-col-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow: visible;
+}
+.ub-mega-col-body .ub-boutique-menu-item {
+  font-size: 13px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+.ub-mega-link-muted { color: var(--ubm-item-muted); font-weight: 600; }
+
+/* Colonne de raccourcis : cartes empilées (titre + sous-titre). */
+.ub-mega-col--shortcuts { gap: 3px; }
+.ub-mega-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  text-decoration: none;
+  transition: background .14s ease;
+}
+.ub-mega-card:hover { background: var(--ubm-hover-bg); }
+.ub-mega-card-txt {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.ub-mega-card-title {
+  font-weight: 700;
+  font-size: 12.5px;
+  color: #2C333C;
+  transition: color .14s ease;
+}
+.ub-mega-card:hover .ub-mega-card-title { color: var(--ubm-accent); }
+.ub-mega-card-sub {
+  font-size: 11px;
+  color: var(--ubm-item-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Pied CTA pleine largeur. */
+.ub-mega-foot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px;
+  border-top: 1px solid var(--ubm-border);
+  background: #FBFBFC;
+  border-radius: 0 0 var(--ubm-radius) var(--ubm-radius);
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--ubm-accent);
+  text-decoration: none;
+  transition: background .14s ease, gap .16s ease;
+}
+.ub-mega-foot:hover { background: var(--ubm-hover-bg); gap: 12px; }
+.ub-mega-foot i { font-size: 11px; }
+
+/* Écrans desktop étroits (≈1081–1200px) : resserre le panneau et le recale vers la
+   gauche pour qu'il ne déborde pas du côté droit du viewport. */
+@media (max-width: 1200px) {
+  .ub-boutique-menu.ub-mega {
+    width: 620px;
+    left: -80px;
+  }
+  /* Les flyouts s'ouvrent toujours vers la droite : le panneau démarre près du bord
+     gauche de l'écran, un basculement à gauche sortirait du cadre. */
+  .ub-mega .ub-flyout-panel {
+    left: 100%;
+    right: auto;
+    margin-left: 7px;
+    margin-right: 0;
+    transform: translateX(-6px);
+  }
+  .ub-mega .ub-flyout-item::after { left: 100%; right: auto; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
    BOUTIQUE — Liste des catégories : accordéon tactile (équivalent mobile du
    mega-menu — chaque niveau se déplie/replie au tap). Hiérarchie lisible par
    filets de guidage + échelle typographique par profondeur.

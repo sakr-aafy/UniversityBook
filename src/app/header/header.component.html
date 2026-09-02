@@ -81,8 +81,10 @@
         Accueil
       </a>
 
-      <!-- Boutique : lien de navigation + mega-menu au survol (souris) listant les 4 catégories
-           de la page /boutique (Documents/Soutenance/Fournitures scolaires/Jeux). -->
+      <!-- Boutique : lien de navigation + mega-menu au survol (souris). Panneau large multi-colonnes
+           (style e-commerce "pro") : une colonne par domaine (Documents / Fournitures scolaires)
+           listant directement ses catégories de 1er niveau, cascade de flyouts conservée pour la
+           taxonomie profonde, + une colonne de raccourcis et un pied "voir toute la boutique". -->
       <div class="ub-boutique-item position-relative">
         <a routerLink="/boutique" routerLinkActive="ub-active"
            class="nav-link fw-semibold text-secondary py-2 d-flex align-items-center gap-1">
@@ -90,84 +92,117 @@
           <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
         </a>
 
-        <div class="ub-boutique-menu">
+        <div class="ub-boutique-menu ub-mega">
+          <div class="ub-mega-inner">
 
-          <!-- Documents : sous-menu au survol reprenant la taxonomie "sur site" gérée côté
-               caisse (Catégorie/Sous-Catégorie/Sous-Sous-Catégorie sur site, voir
-               CategoriesSiteService) — 3 niveaux en cascade, chaque niveau n'affiche son flyout
-               que s'il a des enfants. -->
-          <div class="ub-flyout-item">
-            <a routerLink="/boutique" [queryParams]="{domaine:'documents'}"
-               class="ub-boutique-menu-item" [class.ub-has-flyout]="categoriesSite.length">
-              <span><i class="fa-solid fa-book"></i>Documents</span>
-              <i class="fa-solid fa-chevron-right ub-flyout-caret" *ngIf="categoriesSite.length"></i>
-            </a>
+            <!-- Colonne Documents : taxonomie "sur site" (Catégorie/Sous-Catégorie/Sous-Sous-Catégorie,
+                 voir CategoriesSiteService) — niveau 1 visible directement, niveaux 2-3 en flyout. -->
+            <section class="ub-mega-col">
+              <a routerLink="/boutique" [queryParams]="{domaine:'documents'}" class="ub-mega-col-head">
+                <span class="ub-mega-ico"><i class="fa-solid fa-book"></i></span>
+                <span class="ub-mega-col-title">Documents</span>
+                <i class="fa-solid fa-arrow-right ub-mega-col-go"></i>
+              </a>
+              <div class="ub-mega-col-body">
+                <div class="ub-flyout-item" *ngFor="let cat of categoriesSite">
+                  <a routerLink="/boutique" [queryParams]="{domaine:'documents', categorie: cat.nom}"
+                     class="ub-boutique-menu-item" [class.ub-has-flyout]="cat.sousCategories.length">
+                    <span>{{ formatLabel(cat.nom) }}</span>
+                    <i class="fa-solid fa-chevron-right ub-flyout-caret" *ngIf="cat.sousCategories.length"></i>
+                  </a>
 
-            <div class="ub-flyout-panel" *ngIf="categoriesSite.length">
-              <div class="ub-flyout-item" *ngFor="let cat of categoriesSite">
-                <a routerLink="/boutique" [queryParams]="{domaine:'documents', categorie: cat.nom}"
-                   class="ub-boutique-menu-item" [class.ub-has-flyout]="cat.sousCategories.length">
-                  <span>{{ formatLabel(cat.nom) }}</span>
-                  <i class="fa-solid fa-chevron-right ub-flyout-caret" *ngIf="cat.sousCategories.length"></i>
-                </a>
-
-                <div class="ub-flyout-panel" *ngIf="cat.sousCategories.length">
-                  <div class="ub-flyout-item" *ngFor="let sc of cat.sousCategories">
-                    <a routerLink="/boutique" [queryParams]="{domaine:'documents', categorie: cat.nom, sousCategorie: sc.nom}"
-                       class="ub-boutique-menu-item" [class.ub-has-flyout]="sc.sousSousCategories.length">
-                      <span>{{ formatLabel(sc.nom) }}</span>
-                      <i class="fa-solid fa-chevron-right ub-flyout-caret" *ngIf="sc.sousSousCategories.length"></i>
-                    </a>
-
-                    <div class="ub-flyout-panel ub-flyout-panel--scroll" *ngIf="sc.sousSousCategories.length">
-                      <a *ngFor="let ssc of sc.sousSousCategories"
-                         routerLink="/boutique"
-                         [queryParams]="{domaine:'documents', categorie: cat.nom, sousCategorie: sc.nom, sousSousCategorie: ssc}"
-                         class="ub-boutique-menu-item">
-                        {{ formatLabel(ssc) }}
+                  <div class="ub-flyout-panel" *ngIf="cat.sousCategories.length">
+                    <div class="ub-flyout-item" *ngFor="let sc of cat.sousCategories">
+                      <a routerLink="/boutique" [queryParams]="{domaine:'documents', categorie: cat.nom, sousCategorie: sc.nom}"
+                         class="ub-boutique-menu-item" [class.ub-has-flyout]="sc.sousSousCategories.length">
+                        <span>{{ formatLabel(sc.nom) }}</span>
+                        <i class="fa-solid fa-chevron-right ub-flyout-caret" *ngIf="sc.sousSousCategories.length"></i>
                       </a>
+
+                      <div class="ub-flyout-panel ub-flyout-panel--scroll" *ngIf="sc.sousSousCategories.length">
+                        <a *ngFor="let ssc of sc.sousSousCategories"
+                           routerLink="/boutique"
+                           [queryParams]="{domaine:'documents', categorie: cat.nom, sousCategorie: sc.nom, sousSousCategorie: ssc}"
+                           class="ub-boutique-menu-item">
+                          {{ formatLabel(ssc) }}
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>
+                <a *ngIf="!categoriesSite.length" routerLink="/boutique" [queryParams]="{domaine:'documents'}"
+                   class="ub-boutique-menu-item ub-mega-link-muted">Parcourir les documents</a>
               </div>
-            </div>
-          </div>
+            </section>
 
-          <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie:'Soutenance'}" class="ub-boutique-menu-item">
-            <i class="fa-solid fa-graduation-cap"></i>Soutenance
-          </a>
-          <!-- Fournitures scolaires : sous-menu au survol reprenant la Catégorie/Sous-Catégorie du
-               formulaire produit caisse, limitée aux produits réellement ajoutés au site (voir
-               CategoriesCaisseService) — 2 niveaux. Soutenance / Jeux / Livre sont exclus ici
-               (entrées dédiées ailleurs — voir header.component.ts#categoriesCaisseExclues). -->
-          <div class="ub-flyout-item">
-            <a routerLink="/boutique" [queryParams]="{domaine:'fournitures'}"
-               class="ub-boutique-menu-item" [class.ub-has-flyout]="categoriesCaisseVisibles.length">
-              <span><i class="fa-solid fa-pen-ruler"></i>Fournitures scolaires</span>
-              <i class="fa-solid fa-chevron-right ub-flyout-caret" *ngIf="categoriesCaisseVisibles.length"></i>
-            </a>
-
-            <div class="ub-flyout-panel" *ngIf="categoriesCaisseVisibles.length">
-              <div class="ub-flyout-item" *ngFor="let cat of categoriesCaisseVisibles">
-                <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie: cat.nom}"
-                   class="ub-boutique-menu-item" [class.ub-has-flyout]="cat.sousCategories.length">
-                  <span>{{ formatLabel(cat.nom) }}</span>
-                  <i class="fa-solid fa-chevron-right ub-flyout-caret" *ngIf="cat.sousCategories.length"></i>
-                </a>
-
-                <div class="ub-flyout-panel ub-flyout-panel--scroll" *ngIf="cat.sousCategories.length">
-                  <a *ngFor="let sc of cat.sousCategories"
-                     routerLink="/boutique"
-                     [queryParams]="{domaine:'fournitures', categorie: cat.nom, sousCategorie: sc}"
-                     class="ub-boutique-menu-item">
-                    {{ formatLabel(sc) }}
+            <!-- Colonne Fournitures scolaires : Catégorie/Sous-Catégorie du formulaire produit caisse,
+                 limitée aux produits ajoutés au site (voir CategoriesCaisseService) — 2 niveaux.
+                 Soutenance / Jeux / Livre exclus ici (voir header.component.ts#categoriesCaisseExclues). -->
+            <section class="ub-mega-col">
+              <a routerLink="/boutique" [queryParams]="{domaine:'fournitures'}" class="ub-mega-col-head">
+                <span class="ub-mega-ico"><i class="fa-solid fa-pen-ruler"></i></span>
+                <span class="ub-mega-col-title">Fournitures scolaires</span>
+                <i class="fa-solid fa-arrow-right ub-mega-col-go"></i>
+              </a>
+              <div class="ub-mega-col-body">
+                <div class="ub-flyout-item" *ngFor="let cat of categoriesCaisseVisibles">
+                  <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie: cat.nom}"
+                     class="ub-boutique-menu-item" [class.ub-has-flyout]="cat.sousCategories.length">
+                    <span>{{ formatLabel(cat.nom) }}</span>
+                    <i class="fa-solid fa-chevron-right ub-flyout-caret" *ngIf="cat.sousCategories.length"></i>
                   </a>
+
+                  <div class="ub-flyout-panel ub-flyout-panel--scroll" *ngIf="cat.sousCategories.length">
+                    <a *ngFor="let sc of cat.sousCategories"
+                       routerLink="/boutique"
+                       [queryParams]="{domaine:'fournitures', categorie: cat.nom, sousCategorie: sc}"
+                       class="ub-boutique-menu-item">
+                      {{ formatLabel(sc) }}
+                    </a>
+                  </div>
                 </div>
+                <a *ngIf="!categoriesCaisseVisibles.length" routerLink="/boutique" [queryParams]="{domaine:'fournitures'}"
+                   class="ub-boutique-menu-item ub-mega-link-muted">Parcourir les fournitures</a>
               </div>
-            </div>
+            </section>
+
+            <!-- Colonne raccourcis : entrées à destination unique (pas de sous-arbre). -->
+            <section class="ub-mega-col ub-mega-col--shortcuts">
+              <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie:'Soutenance'}" class="ub-mega-card">
+                <span class="ub-mega-ico ub-mega-ico--soft"><i class="fa-solid fa-graduation-cap"></i></span>
+                <span class="ub-mega-card-txt">
+                  <span class="ub-mega-card-title">Soutenance</span>
+                  <span class="ub-mega-card-sub">Mémoires, reliure &amp; présentation</span>
+                </span>
+              </a>
+              <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie:'Jeux'}" class="ub-mega-card">
+                <span class="ub-mega-ico ub-mega-ico--soft"><i class="fa-solid fa-dice"></i></span>
+                <span class="ub-mega-card-txt">
+                  <span class="ub-mega-card-title">Jeux</span>
+                  <span class="ub-mega-card-sub">Jeux éducatifs &amp; de société</span>
+                </span>
+              </a>
+              <a routerLink="/boutique" [queryParams]="{domaine:'documents', payant:'1'}" class="ub-mega-card">
+                <span class="ub-mega-ico ub-mega-ico--soft"><i class="fa-solid fa-file-invoice"></i></span>
+                <span class="ub-mega-card-txt">
+                  <span class="ub-mega-card-title">Documents payants</span>
+                  <span class="ub-mega-card-sub">Contenus premium</span>
+                </span>
+              </a>
+              <a routerLink="/boutique" [queryParams]="{domaine:'documents', gratuit:'1'}" class="ub-mega-card">
+                <span class="ub-mega-ico ub-mega-ico--soft"><i class="fa-solid fa-gift"></i></span>
+                <span class="ub-mega-card-txt">
+                  <span class="ub-mega-card-title">Documents gratuits</span>
+                  <span class="ub-mega-card-sub">Accès libre</span>
+                </span>
+              </a>
+            </section>
+
           </div>
-          <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie:'Jeux'}" class="ub-boutique-menu-item">
-            <i class="fa-solid fa-dice"></i>Jeux
+
+          <a routerLink="/boutique" class="ub-mega-foot">
+            Voir toute la boutique
+            <i class="fa-solid fa-arrow-right"></i>
           </a>
         </div>
       </div>
