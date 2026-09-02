@@ -265,16 +265,14 @@
 .ub-mega-inner {
   display: grid;
   grid-template-columns: 1.15fr 1.15fr 1fr;
+  gap: 8px;
   padding: 10px;
 }
 .ub-mega-col {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  padding: 2px 8px;
-}
-.ub-mega-col + .ub-mega-col {
-  border-left: 1px solid var(--ubm-border);
+  padding: 4px;
 }
 
 /* En-tête de colonne : pastille icône + titre du domaine, cliquable. */
@@ -325,31 +323,46 @@
 }
 .ub-mega-ico--soft { background: var(--ubm-hover-bg); color: var(--ubm-accent); }
 
+/* Fond coloré de la liste des catégories (sous l'en-tête blanc du domaine) : la liste
+   repose sur un panneau teinté qui la distingue nettement du reste du mega-menu. */
 .ub-mega-col-body {
   display: flex;
   flex-direction: column;
   gap: 1px;
   overflow: visible;
+  flex: 1;
+  padding: 5px;
+  background: #F6F7F9;
+  border: 1px solid var(--ubm-border);
+  border-radius: 11px;
 }
 .ub-mega-col-body .ub-boutique-menu-item {
   font-size: 13px;
   padding-top: 8px;
   padding-bottom: 8px;
 }
+.ub-mega-col-body .ub-boutique-menu-item:hover,
+.ub-mega-col-body .ub-flyout-item:focus-within > .ub-boutique-menu-item {
+  background: #fff;
+}
 .ub-mega-link-muted { color: var(--ubm-item-muted); font-weight: 600; }
 
-/* Colonne de raccourcis : cartes empilées (titre + sous-titre). */
-.ub-mega-col--shortcuts { gap: 3px; }
+/* En-tête de colonne non cliquable (colonne "Accès rapides"). */
+.ub-mega-col-head--static { cursor: default; }
+.ub-mega-col-head--static:hover { background: none; color: #1B2430; }
+
+/* Colonne de raccourcis : cartes empilées (titre + sous-titre) sur le même fond teinté. */
+.ub-mega-col-body--cards { gap: 3px; }
 .ub-mega-card {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 8px 10px;
-  border-radius: 10px;
+  border-radius: 9px;
   text-decoration: none;
   transition: background .14s ease;
 }
-.ub-mega-card:hover { background: var(--ubm-hover-bg); }
+.ub-mega-card:hover { background: #fff; }
 .ub-mega-card-txt {
   display: flex;
   flex-direction: column;

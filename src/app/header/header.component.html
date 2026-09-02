@@ -168,34 +168,40 @@
 
             <!-- Colonne raccourcis : entrées à destination unique (pas de sous-arbre). -->
             <section class="ub-mega-col ub-mega-col--shortcuts">
-              <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie:'Soutenance'}" class="ub-mega-card">
-                <span class="ub-mega-ico ub-mega-ico--soft"><i class="fa-solid fa-graduation-cap"></i></span>
-                <span class="ub-mega-card-txt">
-                  <span class="ub-mega-card-title">Soutenance</span>
-                  <span class="ub-mega-card-sub">Mémoires, reliure &amp; présentation</span>
-                </span>
-              </a>
-              <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie:'Jeux'}" class="ub-mega-card">
-                <span class="ub-mega-ico ub-mega-ico--soft"><i class="fa-solid fa-dice"></i></span>
-                <span class="ub-mega-card-txt">
-                  <span class="ub-mega-card-title">Jeux</span>
-                  <span class="ub-mega-card-sub">Jeux éducatifs &amp; de société</span>
-                </span>
-              </a>
-              <a routerLink="/boutique" [queryParams]="{domaine:'documents', payant:'1'}" class="ub-mega-card">
-                <span class="ub-mega-ico ub-mega-ico--soft"><i class="fa-solid fa-file-invoice"></i></span>
-                <span class="ub-mega-card-txt">
-                  <span class="ub-mega-card-title">Documents payants</span>
-                  <span class="ub-mega-card-sub">Contenus premium</span>
-                </span>
-              </a>
-              <a routerLink="/boutique" [queryParams]="{domaine:'documents', gratuit:'1'}" class="ub-mega-card">
-                <span class="ub-mega-ico ub-mega-ico--soft"><i class="fa-solid fa-gift"></i></span>
-                <span class="ub-mega-card-txt">
-                  <span class="ub-mega-card-title">Documents gratuits</span>
-                  <span class="ub-mega-card-sub">Accès libre</span>
-                </span>
-              </a>
+              <div class="ub-mega-col-head ub-mega-col-head--static">
+                <span class="ub-mega-ico ub-mega-ico--soft"><i class="fa-solid fa-bolt"></i></span>
+                <span class="ub-mega-col-title">Accès rapides</span>
+              </div>
+              <div class="ub-mega-col-body ub-mega-col-body--cards">
+                <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie:'Soutenance'}" class="ub-mega-card">
+                  <span class="ub-mega-ico ub-mega-ico--soft"><i class="fa-solid fa-graduation-cap"></i></span>
+                  <span class="ub-mega-card-txt">
+                    <span class="ub-mega-card-title">Soutenance</span>
+                    <span class="ub-mega-card-sub">Mémoires, reliure &amp; présentation</span>
+                  </span>
+                </a>
+                <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie:'Jeux'}" class="ub-mega-card">
+                  <span class="ub-mega-ico ub-mega-ico--soft"><i class="fa-solid fa-dice"></i></span>
+                  <span class="ub-mega-card-txt">
+                    <span class="ub-mega-card-title">Jeux</span>
+                    <span class="ub-mega-card-sub">Jeux éducatifs &amp; de société</span>
+                  </span>
+                </a>
+                <a routerLink="/boutique" [queryParams]="{domaine:'documents', payant:'1'}" class="ub-mega-card">
+                  <span class="ub-mega-ico ub-mega-ico--soft"><i class="fa-solid fa-file-invoice"></i></span>
+                  <span class="ub-mega-card-txt">
+                    <span class="ub-mega-card-title">Documents payants</span>
+                    <span class="ub-mega-card-sub">Contenus premium</span>
+                  </span>
+                </a>
+                <a routerLink="/boutique" [queryParams]="{domaine:'documents', gratuit:'1'}" class="ub-mega-card">
+                  <span class="ub-mega-ico ub-mega-ico--soft"><i class="fa-solid fa-gift"></i></span>
+                  <span class="ub-mega-card-txt">
+                    <span class="ub-mega-card-title">Documents gratuits</span>
+                    <span class="ub-mega-card-sub">Accès libre</span>
+                  </span>
+                </a>
+              </div>
             </section>
 
           </div>
