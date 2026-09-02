@@ -253,18 +253,28 @@ export class CommandesComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Échappe une valeur avant insertion dans le HTML écrit via document.write() : sans ça,
+   *  un nom/adresse/commentaire de commande (saisie libre du client au checkout invité)
+   *  contenant du HTML s'exécutait dans le navigateur de l'admin qui imprime la facture. */
+  private esc(v: string | number | null | undefined): string {
+    const d = document.createElement('div');
+    d.textContent = v === null || v === undefined ? '' : String(v);
+    return d.innerHTML;
+  }
+
   imprimerFacture(commande: AdminOrder): void {
     const fenetre = window.open('', '_blank', 'width=800,height=1000');
     if (!fenetre) return;
 
+    const e = (v: string | number | null | undefined) => this.esc(v);
     const lignes = commande.items
       .map(
         item => `
           <tr>
-            <td>${item.titre}</td>
-            <td style="text-align:center;">${item.quantite}</td>
-            <td style="text-align:right;">${item.prix.toFixed(3)} DT</td>
-            <td style="text-align:right;">${(item.prix * item.quantite).toFixed(3)} DT</td>
+            <td>${e(item.titre)}</td>
+            <td style="text-align:center;">${e(item.quantite)}</td>
+            <td style="text-align:right;">${e(item.prix.toFixed(3))} DT</td>
+            <td style="text-align:right;">${e((item.prix * item.quantite).toFixed(3))} DT</td>
           </tr>`
       )
       .join('');
@@ -274,7 +284,7 @@ export class CommandesComponent implements OnInit, OnDestroy {
       <html lang="fr">
       <head>
         <meta charset="UTF-8">
-        <title>Facture ${commande.numero}</title>
+        <title>Facture ${e(commande.numero)}</title>
         <style>
           body { font-family: Arial, sans-serif; color: #1B2430; padding: 40px; }
           .en-tete { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; }
@@ -300,26 +310,26 @@ export class CommandesComponent implements OnInit, OnDestroy {
           </div>
           <div class="facture-titre">
             <h2>Facture</h2>
-            <p>N° ${commande.numero}</p>
+            <p>N° ${e(commande.numero)}</p>
             <p>Date : ${new Date(commande.createdAt).toLocaleDateString('fr-FR')}</p>
-            <p>Statut : ${commande.statut}</p>
+            <p>Statut : ${e(commande.statut)}</p>
           </div>
         </div>
 
         <div class="bloc">
           <h3>Client</h3>
-          <p>${this.nomClient(commande)}</p>
-          <p>${this.emailClient(commande)}</p>
+          <p>${e(this.nomClient(commande))}</p>
+          <p>${e(this.emailClient(commande))}</p>
         </div>
 
         <div class="bloc">
           <h3>Adresse de livraison</h3>
-          <p>${commande.adresseLivraison || '—'}</p>
+          <p>${e(commande.adresseLivraison) || '—'}</p>
         </div>
 
         <div class="bloc">
           <h3>Mode de paiement</h3>
-          <p>${commande.paiement || '—'}</p>
+          <p>${e(commande.paiement) || '—'}</p>
         </div>
 
         <table>
@@ -336,7 +346,7 @@ export class CommandesComponent implements OnInit, OnDestroy {
           </tbody>
         </table>
 
-        <div class="total">Total : ${commande.total.toFixed(3)} DT</div>
+        <div class="total">Total : ${e(commande.total.toFixed(3))} DT</div>
 
         <div class="pied">Merci pour votre confiance — University Book</div>
       </body>
