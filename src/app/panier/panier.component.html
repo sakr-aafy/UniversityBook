@@ -270,6 +270,9 @@
             <button type="button" class="ck-btn-compte ck-btn-compte--principal" (click)="toggleFormulaireCompte()">
               <i class="fa-solid fa-user-plus"></i>Créer un compte
             </button>
+            <button type="button" class="ck-btn-compte ck-btn-compte--secondaire" (click)="seConnecter()">
+              <i class="fa-solid fa-right-to-bracket"></i>J'ai déjà un compte
+            </button>
             <button type="button" class="ck-btn-compte ck-btn-compte--google" (click)="connexionGoogle()" [disabled]="oauthChargement !== null">
               <i class="fab fa-google" *ngIf="oauthChargement !== 'google'"></i>
               <i class="fa-solid fa-spinner fa-spin" *ngIf="oauthChargement === 'google'"></i>

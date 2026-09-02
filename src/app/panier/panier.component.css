@@ -222,6 +222,12 @@
   box-shadow: 0 10px 22px -10px rgba(140,36,51,.5);
 }
 .ck-btn-compte--principal:hover:not(:disabled) { background: var(--accent-dark); transform: translateY(-1px); }
+.ck-btn-compte--secondaire {
+  border: 1.5px solid var(--accent);
+  background: #fff;
+  color: var(--accent);
+}
+.ck-btn-compte--secondaire:hover:not(:disabled) { background: var(--accent-light); transform: translateY(-1px); }
 .ck-btn-compte--google {
   border: 1.5px solid #E4E7EC;
   background: #fff;

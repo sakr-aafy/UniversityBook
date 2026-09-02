@@ -51,6 +51,10 @@ export class LoginComponent {
   forgotResetError             = '';
   forgotResetSuccess           = false;
 
+  /** Destination après connexion réussie si fournie en query param (ex. depuis le panier :
+   *  /login?returnUrl=/panier?checkout=1). Doit être un chemin interne ("/…") — sinon ignorée. */
+  private returnUrl: string | null = null;
+
   constructor(private authService: AuthService, private router: Router, route: ActivatedRoute) {
     // Redirection déclenchée par l'intercepteur HTTP quand le jeton stocké a été rejeté (401) —
     // voir auth.interceptor.ts. On informe l'utilisateur plutôt que de le renvoyer ici sans
@@ -58,6 +62,13 @@ export class LoginComponent {
     if (route.snapshot.queryParamMap.get('sessionExpiree') === '1') {
       this.erreur = 'Votre session a expiré. Veuillez vous reconnecter.';
     }
+    const retour = route.snapshot.queryParamMap.get('returnUrl');
+    if (retour && retour.startsWith('/')) this.returnUrl = retour;
+  }
+
+  /** Redirige vers `returnUrl` s'il a été fourni, sinon vers l'espace de l'utilisateur. */
+  private redirigerApresConnexion(): void {
+    this.router.navigateByUrl(this.returnUrl || this.authService.espaceUrl);
   }
 
   togglePassword(): void {
@@ -90,7 +101,7 @@ export class LoginComponent {
           this.otpErreur  = '';
           this.startOtpCooldown();
         } else {
-          this.router.navigate([this.authService.espaceUrl]);
+          this.redirigerApresConnexion();
         }
       },
       error: (err: HttpErrorResponse) => {
@@ -121,7 +132,7 @@ export class LoginComponent {
       next: () => {
         this.otpChargement = false;
         this.stopOtpCooldown();
-        this.router.navigate([this.authService.espaceUrl]);
+        this.redirigerApresConnexion();
       },
       error: (err: HttpErrorResponse) => {
         this.otpChargement = false;

@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Subscription } from 'rxjs';
 import { CartService, PanierItem } from '../services/cart.service';
@@ -77,7 +77,8 @@ export class PanierComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private userService: UserService,
     private ordersService: OrdersService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -348,6 +349,12 @@ export class PanierComponent implements OnInit, OnDestroy {
    *  utilisable normalement, aucune fonctionnalité existante n'est retirée). */
   continuerInvite(): void {
     this.compteCardMasquee = true;
+  }
+
+  /** L'utilisateur a déjà un compte : direction /login, puis retour sur /panier avec le
+   *  tunnel de commande rouvert (`returnUrl` honoré par LoginComponent). */
+  seConnecter(): void {
+    this.router.navigate(['/login'], { queryParams: { returnUrl: '/panier?checkout=1' } });
   }
 
   private motsDePasseIdentiquesValidator(group: AbstractControl): ValidationErrors | null {
