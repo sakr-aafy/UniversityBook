@@ -75,6 +75,19 @@ export class AuthService {
     );
   }
 
+  /**
+   * "Continuer avec Google" (POST /auth/google) : `credential` est le jeton d'identité (JWT)
+   * fourni par Google Identity Services côté client (voir login.component.ts) — vérifié côté
+   * serveur (auth.controller.js#loginGoogle) avant toute connexion/création de compte. Pas
+   * d'étape OTP supplémentaire, contrairement à login() : la réponse contient toujours
+   * directement le jeton final.
+   */
+  loginWithGoogle(credential: string): Observable<AuthResponse> {
+    return this.http
+      .post<AuthResponse>(`${this.apiUrl}/google`, { credential })
+      .pipe(tap(res => this.stocker(res)));
+  }
+
   /** Étape 2 de la connexion : vérifie le code OTP reçu par e-mail (POST /auth/verifier-otp-connexion). */
   verifierOtpConnexion(otpSession: string, code: string): Observable<AuthResponse> {
     return this.http
@@ -109,20 +122,12 @@ export class AuthService {
   }
 
   /**
-   * SCAFFOLD — pas d'intégration OAuth réelle dans ce projet (aucun SDK Google/Facebook chargé,
-   * aucun Client ID configuré). Ces deux méthodes gardent le même contrat Observable<AuthResponse>
-   * que login()/register() pour que les composants appelants n'aient rien de spécial à gérer,
-   * mais échouent toujours volontairement avec un message clair plutôt que de simuler une
-   * connexion. Pour brancher réellement : charger le SDK du fournisseur, obtenir un credential/
-   * jeton côté client, puis POST vers /api/auth/oauth/google|facebook (endpoints déjà en place,
-   * voir backend/controllers/auth.controller.js) au lieu de throwError ci-dessous.
+   * SCAFFOLD — pas d'intégration Facebook réelle dans ce projet (aucun SDK chargé, aucun App ID
+   * configuré). Garde le même contrat Observable<AuthResponse> que login()/register() pour que
+   * les composants appelants n'aient rien de spécial à gérer, mais échoue toujours volontairement
+   * avec un message clair plutôt que de simuler une connexion. Pour brancher réellement : même
+   * approche que loginWithGoogle() ci-dessus (SDK Facebook + endpoint backend dédié).
    */
-  loginWithGoogle(): Observable<AuthResponse> {
-    return throwError(() => ({
-      error: { message: 'Connexion avec Google indisponible pour le moment : configuration développeur requise (GOOGLE_CLIENT_ID).' }
-    }));
-  }
-
   loginWithFacebook(): Observable<AuthResponse> {
     return throwError(() => ({
       error: { message: 'Connexion avec Facebook indisponible pour le moment : configuration développeur requise (FACEBOOK_APP_ID).' }

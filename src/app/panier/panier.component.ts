@@ -410,19 +410,16 @@ export class PanierComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Le vrai widget Google (Identity Services, voir app/login/login.component.ts#initGoogle)
+   * exige son propre bouton rendu par Google — impossible à obtenir depuis ce bouton personnalisé
+   * (ck-btn-compte--google) sans perdre son style ici. Redirige vers la page de connexion, qui
+   * porte l'intégration réelle, plutôt que de dupliquer le rendu du widget dans ce panneau de
+   * checkout invité.
+   */
   connexionGoogle(): void {
     this.oauthErreur = '';
-    this.oauthChargement = 'google';
-    this.authService.loginWithGoogle().subscribe({
-      next: () => {
-        this.oauthChargement = null;
-        this.preremplirDepuisCompte();
-      },
-      error: (err: HttpErrorResponse) => {
-        this.oauthChargement = null;
-        this.oauthErreur = err.error?.message || 'Connexion avec Google indisponible pour le moment.';
-      }
-    });
+    this.router.navigate(['/login'], { queryParams: { returnUrl: '/panier' } });
   }
 
   connexionFacebook(): void {

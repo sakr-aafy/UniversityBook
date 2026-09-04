@@ -1,14 +1,25 @@
-import { Component } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../services/auth.service';
+import { environment } from '../../environments/environment';
+
+// Widget chargé globalement via <script> dans index.html (async/defer) — voir initGoogle().
+declare const google: {
+  accounts: {
+    id: {
+      initialize: (config: Record<string, unknown>) => void;
+      renderButton: (container: HTMLElement, options: Record<string, unknown>) => void;
+    };
+  };
+} | undefined;
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
-export class LoginComponent {
+export class LoginComponent implements AfterViewInit {
   identifiant: string = '';
   motDePasse: string = '';
   souvenir: boolean = false;
@@ -55,6 +66,11 @@ export class LoginComponent {
    *  /login?returnUrl=/panier?checkout=1). Doit être un chemin interne ("/…") — sinon ignorée. */
   private returnUrl: string | null = null;
 
+  // ── "Continuer avec Google" ──
+  @ViewChild('googleBtn') private googleBtnContainer?: ElementRef<HTMLElement>;
+  readonly googleDisponible = !!environment.googleClientId;
+  private googleChargementTentatives = 0;
+
   constructor(private authService: AuthService, private router: Router, route: ActivatedRoute) {
     // Redirection déclenchée par l'intercepteur HTTP quand le jeton stocké a été rejeté (401) —
     // voir auth.interceptor.ts. On informe l'utilisateur plutôt que de le renvoyer ici sans
@@ -69,6 +85,55 @@ export class LoginComponent {
   /** Redirige vers `returnUrl` s'il a été fourni, sinon vers l'espace de l'utilisateur. */
   private redirigerApresConnexion(): void {
     this.router.navigateByUrl(this.returnUrl || this.authService.espaceUrl);
+  }
+
+  // ═══════════════════════════════════
+  // "CONTINUER AVEC GOOGLE"
+  // ═══════════════════════════════════
+
+  ngAfterViewInit(): void {
+    if (this.googleDisponible) this.initGoogle();
+  }
+
+  /** Le script Google Identity Services est chargé en async/defer (index.html) : peut ne pas
+   *  encore être prêt au premier rendu du composant — on retente pendant quelques secondes. */
+  private initGoogle(): void {
+    if (google && this.googleBtnContainer) {
+      google.accounts.id.initialize({
+        client_id: environment.googleClientId,
+        callback: (response: { credential: string }) => this.onGoogleCredential(response)
+      });
+      google.accounts.id.renderButton(this.googleBtnContainer.nativeElement, {
+        type: 'standard',
+        theme: 'outline',
+        size: 'large',
+        shape: 'pill',
+        text: 'continue_with',
+        width: 360
+      });
+      return;
+    }
+    if (this.googleChargementTentatives < 40) {
+      this.googleChargementTentatives++;
+      setTimeout(() => this.initGoogle(), 250);
+    }
+  }
+
+  /** Reçoit le jeton d'identité Google (JWT signé, jamais un mot de passe) et le fait vérifier
+   *  côté serveur avant toute connexion — voir auth.controller.js#loginGoogle. */
+  private onGoogleCredential(response: { credential: string }): void {
+    this.erreur = '';
+    this.chargement = true;
+    this.authService.loginWithGoogle(response.credential).subscribe({
+      next: () => {
+        this.chargement = false;
+        this.redirigerApresConnexion();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.chargement = false;
+        this.erreur = err.error?.message || 'Une erreur est survenue lors de la connexion avec Google.';
+      }
+    });
   }
 
   togglePassword(): void {
@@ -114,6 +179,10 @@ export class LoginComponent {
   /** Retour à l'étape identifiant/mot de passe (avant l'envoi du code) */
   annulerOtpLogin(): void {
     this.otpRequis = false;
+    // Le *ngIf sur le formulaire détruit/recrée le conteneur du bouton Google en repassant par
+    // ici : il faut le re-rendre (le jeton précédemment initialisé par Google reste valable,
+    // seul le DOM cible a changé) — après un tick pour laisser Angular re-render le formulaire.
+    if (this.googleDisponible) setTimeout(() => this.initGoogle(), 0);
     this.otpCode   = '';
     this.otpErreur = '';
     this.stopOtpCooldown();
