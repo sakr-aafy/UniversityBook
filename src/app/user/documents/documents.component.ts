@@ -69,17 +69,27 @@ export class DocumentsComponent implements OnInit, OnDestroy {
     }
   }
 
-  /** Millisecondes restantes avant expiration de la fenêtre de téléchargement de 24h. */
+  /** Un document GRATUIT n'a pas de fenêtre de 24h : accès illimité, téléchargeable à volonté
+   *  (même règle que documents.controller.js#telecharger côté backend — voir plus bas). Seuls
+   *  les documents PAYANTS restent soumis au compte à rebours de 24h. */
+  estGratuit(doc: PurchasedDocument): boolean {
+    return !doc.prix;
+  }
+
+  /** Millisecondes restantes avant expiration de la fenêtre de téléchargement de 24h
+   *  (uniquement pertinent pour un document payant, voir estGratuit). */
   private msRestantes(doc: PurchasedDocument): number {
     const expireLe = new Date(doc.dateAchat).getTime() + FENETRE_TELECHARGEMENT_MS;
     return expireLe - Date.now();
   }
 
   estExpire(doc: PurchasedDocument): boolean {
+    if (this.estGratuit(doc)) return false;
     return this.msRestantes(doc) <= 0;
   }
 
   procheExpiration(doc: PurchasedDocument): boolean {
+    if (this.estGratuit(doc)) return false;
     const ms = this.msRestantes(doc);
     return ms > 0 && ms <= SEUIL_ALERTE_MS;
   }
@@ -100,21 +110,55 @@ export class DocumentsComponent implements OnInit, OnDestroy {
     return this.documents.filter(d => this.procheExpiration(d));
   }
 
+  telechargementEnCoursId: string | null = null;
+
   telecharger(doc: PurchasedDocument): void {
     this.message = '';
-    if (this.estExpire(doc)) return;
+    if (this.estExpire(doc) || this.telechargementEnCoursId) return;
     this.documentsService.telecharger(doc._id).subscribe({
       next: res => {
+        // Reprend TOUJOURS l'état renvoyé par le backend (source de vérité, notamment
+        // fichierUrl) plutôt que la copie locale — la liste peut avoir été chargée avant qu'un
+        // fichier ne soit associé au document côté catalogue.
         doc.telechargements = res.document.telechargements;
         doc.derniereTelechargementLe = res.document.derniereTelechargementLe;
-        if (doc.fichierUrl) {
-          window.open(doc.fichierUrl, '_blank');
-        } else {
-          this.message = 'Fichier non disponible pour cette démonstration (aucun document réel associé).';
+        doc.fichierUrl = res.document.fichierUrl;
+        if (!doc.fichierUrl) {
+          this.message = "Aucun fichier n'est encore associé à ce document. Contactez le support pour l'obtenir.";
+          return;
         }
+        this.enregistrerSurAppareil(doc);
       },
       error: err => {
         this.message = err.error?.message || 'Erreur lors du téléchargement.';
+      }
+    });
+  }
+
+  /**
+   * Déclenche un VRAI enregistrement local du fichier (boîte "Enregistrer sous" / dossier
+   * Téléchargements), au lieu de simplement l'ouvrir dans un nouvel onglet — `window.open()` sur
+   * l'URL R2 directement laissait le navigateur afficher le PDF inline, sans jamais proposer de
+   * téléchargement. Récupère les octets via le backend (Content-Disposition: attachment, voir
+   * documents.controller.js#telechargerFichier) puis les enregistre via un lien `<a download>`
+   * temporaire — même mécanisme que user/commandes/commandes.component.ts#telechargerFacture.
+   */
+  private enregistrerSurAppareil(doc: PurchasedDocument): void {
+    this.telechargementEnCoursId = doc._id;
+    this.documentsService.telechargerFichier(doc._id).subscribe({
+      next: blob => {
+        this.telechargementEnCoursId = null;
+        const url = URL.createObjectURL(blob);
+        const lien = document.createElement('a');
+        lien.href = url;
+        const extension = (doc.fichierUrl.match(/\.[a-z0-9]+$/i)?.[0]) || '.pdf';
+        lien.download = `${doc.titre || 'document'}${extension}`;
+        lien.click();
+        URL.revokeObjectURL(url);
+      },
+      error: () => {
+        this.telechargementEnCoursId = null;
+        this.message = "Erreur lors de l'enregistrement du fichier. Réessayez.";
       }
     });
   }

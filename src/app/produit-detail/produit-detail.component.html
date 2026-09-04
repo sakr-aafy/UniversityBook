@@ -203,6 +203,23 @@
           <div *ngIf="p.apercuDisponible" class="pdd-apercu">
             <i class="fa-regular fa-file-lines me-2"></i>Un aperçu de ce document est disponible avant achat.
           </div>
+
+          <!-- Composition du pack : miniatures des produits inclus -->
+          <div *ngIf="aComposition" class="pdd-pack-composition">
+            <h3 class="pdd-pack-composition-titre">
+              <i class="fa-solid fa-boxes-stacked me-2"></i>Ce pack contient {{ p.packItems!.length }} produit{{ p.packItems!.length > 1 ? 's' : '' }}
+            </h3>
+            <div class="pdd-pack-composition-grid">
+              <div class="pdd-pack-item" *ngFor="let it of p.packItems">
+                <div class="pdd-pack-item-img">
+                  <img *ngIf="it.image" [src]="imageComposition(it)" [alt]="it.titre" loading="lazy">
+                  <i *ngIf="!it.image" class="fa-solid fa-box"></i>
+                </div>
+                <span class="pdd-pack-item-titre">{{ it.titre }}</span>
+                <span class="pdd-pack-item-qte" *ngIf="it.quantite > 1">× {{ it.quantite }}</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div *ngIf="ongletActif === 'caracteristiques'" class="pdd-anim-fade">

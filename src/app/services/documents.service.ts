@@ -49,6 +49,14 @@ export class DocumentsService {
     return this.http.post<{ message: string; document: PurchasedDocument }>(`${this.apiUrl}/${id}/telecharger`, {});
   }
 
+  /** Octets réels du fichier (Content-Disposition: attachment côté backend), à appeler après
+   *  `telecharger()` — voir documents.component.ts#telecharger pour le déclenchement de
+   *  l'enregistrement local (URL.createObjectURL + <a download>), même mécanisme que
+   *  orders.service.ts#telechargerFacture. */
+  telechargerFichier(id: string): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/${id}/fichier`, { responseType: 'blob' });
+  }
+
   /** Documents gratuits : crée directement l'accès dans Mes Documents, sans passer par le panier/la commande. */
   acquerirGratuit(payload: {
     titre: string; image?: string; categorie?: string; type?: string; auteur?: string; produitId?: number;

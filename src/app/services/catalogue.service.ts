@@ -81,6 +81,17 @@ export interface Produit {
   compatibleAvec?: string;
   contenuPack?: string;
   uniteVente?: 'Pièce' | 'Pack';
+  /** Composition d'un pack multi-produits (admin, badge "Pack") : un item par produit inclus,
+   *  avec son image (chemin brut — appliquer photoUrl() à l'affichage, comme `images`).
+   *  Absent/vide pour tout produit qui n'est pas un pack de ce type. */
+  packItems?: PackItemVue[];
+}
+
+export interface PackItemVue {
+  titre: string;
+  quantite: number;
+  /** Image du produit inclus (chemin brut renvoyé par l'API — /uploads/... ou URL R2 absolue). */
+  image?: string;
 }
 
 /** Forme brute renvoyée par GET /api/catalogue/produits — voir backend/controllers/catalogue.controller.js. */
@@ -112,6 +123,10 @@ interface ProduitApi {
   packPrix?: number;
   categorieIcone?: string;
   categorieCouleur?: string;
+  /** Composition d'un pack multi-produits (badge "Pack") — `produit` peuplé côté backend
+   *  (catalogue.controller.js) avec seulement { image, titre } ; null si le produit source a été
+   *  supprimé depuis la création du pack. */
+  packItems?: { produit?: { image?: string; titre?: string } | null; titre: string; quantite: number }[];
 }
 
 /** Forme brute renvoyée par GET /api/catalogue/documents. */
@@ -321,7 +336,16 @@ export class CatalogueService {
       })(),
       description: p.description || undefined,
       couleurs: p.couleurs && p.couleurs.length > 0 ? p.couleurs : undefined,
-      formats: p.formats && p.formats.length > 0 ? p.formats : undefined
+      formats: p.formats && p.formats.length > 0 ? p.formats : undefined,
+      // Composition du pack (produits inclus) : titre repris du produit source si toujours
+      // existant, sinon celui figé à la création du pack (voir packItemSchema côté backend).
+      packItems: p.packItems && p.packItems.length > 0
+        ? p.packItems.map(it => ({
+            titre: it.produit?.titre || it.titre,
+            quantite: it.quantite,
+            image: it.produit?.image || undefined
+          }))
+        : undefined
     };
   }
 

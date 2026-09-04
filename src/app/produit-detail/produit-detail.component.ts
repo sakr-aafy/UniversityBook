@@ -229,7 +229,24 @@ export class ProduitDetailComponent implements OnInit, OnDestroy {
 
   get estDisponible(): boolean {
     if (this.produit?.disponible === false) return false;
+    // Un pack multi-produits (badge "Pack", créé côté admin) n'a pas de stock unitaire réel :
+    // `stock` reste à 0 par défaut (jamais renseigné pour ce type de produit — contrairement à
+    // une fourniture synchronisée depuis la caisse, dont le stock est réellement suivi). Le
+    // bloquer sur ce champ non pertinent l'affichait à tort "Rupture de stock" alors que
+    // `disponible` (seul signal qui fait foi pour un pack, voir catalogue.service.ts#mapProduit)
+    // était bien à true.
+    if (this.produit?.badge === 'Pack') return true;
     return this.stockAffiche === null || this.stockAffiche > 0;
+  }
+
+  /* ── Composition d'un pack (produits inclus, avec leur image) ── */
+
+  get aComposition(): boolean {
+    return !!this.produit?.packItems?.length;
+  }
+
+  imageComposition(item: { image?: string }): string {
+    return photoUrl(item.image);
   }
 
   get etatStock(): 'en-stock' | 'rupture' {

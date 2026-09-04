@@ -43,7 +43,11 @@
             <span class="ub-badge-expire ub-doc-card-statut" *ngIf="estExpire(doc)">
               <i class="fa-solid fa-lock me-1"></i>Accès expiré
             </span>
-            <span class="ub-badge-restant ub-doc-card-statut" *ngIf="!estExpire(doc)">
+            <!-- Gratuit : accès illimité, jamais de compte à rebours (voir estGratuit). -->
+            <span class="ub-badge-restant ub-doc-card-statut" *ngIf="estGratuit(doc)">
+              <i class="fa-solid fa-infinity me-1"></i>Accès illimité
+            </span>
+            <span class="ub-badge-restant ub-doc-card-statut" *ngIf="!estExpire(doc) && !estGratuit(doc)">
               <i class="fa-regular fa-clock me-1"></i>{{ tempsRestant(doc) }}
             </span>
           </div>
@@ -61,8 +65,9 @@
               <span class="small text-secondary"><i class="fa-solid fa-download me-1"></i>{{ doc.telechargements || 0 }}</span>
             </div>
             <div class="d-flex gap-2" *ngIf="!estExpire(doc)">
-              <button class="btn btn-accent btn-sm flex-grow-1 ub-ripple" (click)="telecharger(doc)">
-                <i class="fa-solid fa-download me-1"></i>Télécharger
+              <button class="btn btn-accent btn-sm flex-grow-1 ub-ripple" (click)="telecharger(doc)" [disabled]="telechargementEnCoursId === doc._id">
+                <i class="fa-solid" [class.fa-download]="telechargementEnCoursId !== doc._id" [class.fa-spinner]="telechargementEnCoursId === doc._id" [class.fa-spin]="telechargementEnCoursId === doc._id"></i>
+                {{ telechargementEnCoursId === doc._id ? ' Téléchargement…' : ' Télécharger' }}
               </button>
               <button class="btn btn-outline-dark-ub btn-sm" title="Voir" (click)="voirDetail(doc)">
                 <i class="fa-regular fa-eye"></i>
@@ -118,11 +123,16 @@
       <div class="ub-doc-modal-row">
         <span>Statut</span>
         <strong [style.color]="estExpire(documentSelectionne) ? '#DC2626' : '#16A34A'">
-          {{ estExpire(documentSelectionne) ? 'Accès expiré' : tempsRestant(documentSelectionne) + ' restant' }}
+          {{ estExpire(documentSelectionne) ? 'Accès expiré'
+             : estGratuit(documentSelectionne) ? 'Accès illimité'
+             : tempsRestant(documentSelectionne) + ' restant' }}
         </strong>
       </div>
-      <button *ngIf="!estExpire(documentSelectionne)" class="btn btn-accent w-100 mt-3" (click)="telecharger(documentSelectionne)">
-        <i class="fa-solid fa-download me-1"></i>Télécharger
+      <button *ngIf="!estExpire(documentSelectionne)" class="btn btn-accent w-100 mt-3"
+              (click)="telecharger(documentSelectionne)" [disabled]="telechargementEnCoursId === documentSelectionne._id">
+        <i class="fa-solid" [class.fa-download]="telechargementEnCoursId !== documentSelectionne._id"
+           [class.fa-spinner]="telechargementEnCoursId === documentSelectionne._id" [class.fa-spin]="telechargementEnCoursId === documentSelectionne._id"></i>
+        {{ telechargementEnCoursId === documentSelectionne._id ? ' Téléchargement…' : ' Télécharger' }}
       </button>
       <ng-container *ngIf="estExpire(documentSelectionne)">
         <p class="small text-secondary mt-3 mb-2">
