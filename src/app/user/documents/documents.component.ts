@@ -123,7 +123,8 @@ export class DocumentsComponent implements OnInit, OnDestroy {
         doc.telechargements = res.document.telechargements;
         doc.derniereTelechargementLe = res.document.derniereTelechargementLe;
         doc.fichierUrl = res.document.fichierUrl;
-        if (!doc.fichierUrl) {
+        doc.fichierDropboxPath = res.document.fichierDropboxPath;
+        if (!doc.fichierUrl && !doc.fichierDropboxPath) {
           this.message = "Aucun fichier n'est encore associé à ce document. Contactez le support pour l'obtenir.";
           return;
         }
@@ -151,7 +152,8 @@ export class DocumentsComponent implements OnInit, OnDestroy {
         const url = URL.createObjectURL(blob);
         const lien = document.createElement('a');
         lien.href = url;
-        const extension = (doc.fichierUrl.match(/\.[a-z0-9]+$/i)?.[0]) || '.pdf';
+        const source = doc.fichierUrl || doc.fichierDropboxPath || '';
+        const extension = (source.match(/\.[a-z0-9]+$/i)?.[0]) || '.pdf';
         lien.download = `${doc.titre || 'document'}${extension}`;
         lien.click();
         URL.revokeObjectURL(url);

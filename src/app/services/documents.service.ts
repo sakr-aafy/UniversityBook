@@ -9,6 +9,10 @@ export interface PurchasedDocument {
   image: string;
   categorie: string;
   fichierUrl: string;
+  // Repli quand le document provient du catalogue caisse (Dropbox) plutôt que du catalogue
+  // natif frontweb — voir documents.controller.js#resynchroniserFichierUrl. Résolu à la demande
+  // côté backend, jamais exploitable tel quel côté client.
+  fichierDropboxPath?: string;
   dateAchat: string;
   prix?: number;
   telechargements?: number;
