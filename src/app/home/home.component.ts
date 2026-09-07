@@ -237,12 +237,20 @@ export class HomeComponent implements OnInit, OnDestroy {
     // Sections "généralistes" (uniquement un domaine, sans catégorie ni payant/gratuit —
     // "Fournitures scolaires" et "Documents universitaires").
     const sectionGeneraliste = !categorie && !sousCategorie && !sousSousCategorie && !payantSeul && !gratuitSeul;
+
+    // Catégorie présente À LA FOIS dans "Documents" (sur site) et dans "Fournitures" (caisse) :
+    // le produit relève alors de Documents (voir chargerCategoriesCommunes).
+    const estCategorieCommune = (p: Produit) =>
+      this.nomsCategoriesCommunes.has((p.categorie || '').trim().toLowerCase());
+
     const dansLaVue = (p: Produit) => {
       // Sections fines : alignement exact sur "Voir tout" (vueDeProduit).
       if (!sectionGeneraliste) return this.vueDeProduit(p) === vue;
-      // "Documents universitaires" : domaine documents + les ouvrages "Livre"/"Droit" saisis en
-      // fournitures mais classés comme documents (estProduitDocument, via vueDeProduit).
-      if (vue === 'documents') return this.vueDeProduit(p) === 'documents';
+      // "Documents universitaires" : domaine documents + ouvrages "Livre"/"Droit" saisis en
+      // fournitures mais classés comme documents (estProduitDocument, via vueDeProduit) + les
+      // produits d'une catégorie partagée avec Fournitures (retirés du carrousel Fournitures
+      // ci-dessous — ils doivent réapparaître ici, sinon ils disparaissent de l'accueil).
+      if (vue === 'documents') return this.vueDeProduit(p) === 'documents' || estCategorieCommune(p);
       // "Fournitures scolaires" : appartenance STRICTE au domaine, jamais un ouvrage "Livre".
       return p.domaine === 'fournitures';
     };
@@ -254,12 +262,10 @@ export class HomeComponent implements OnInit, OnDestroy {
       sectionGeneraliste && vue === 'fournitures'
       && (estProduitDocument(p) || estCategorieJeux(p.categorie) || estCategorieSoutenance(p.categorie));
 
-    // Catégorie présente à la fois dans "Documents" et dans "Fournitures" : le produit relève de
-    // Documents (voir chargerCategoriesCommunes) — retiré du carrousel Fournitures pour ne pas
-    // apparaître deux fois.
+    // ... et pas non plus une catégorie partagée avec "Documents" (affichée uniquement dans
+    // le carrousel Documents, voir dansLaVue).
     const estCategorieCommuneDocuments = (p: Produit) =>
-      sectionGeneraliste && vue === 'fournitures'
-      && this.nomsCategoriesCommunes.has((p.categorie || '').trim().toLowerCase());
+      sectionGeneraliste && vue === 'fournitures' && estCategorieCommune(p);
 
     return this.catalogueService.produits
       .filter(dansLaVue)
