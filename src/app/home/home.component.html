@@ -135,7 +135,7 @@
               Voir tout
               <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i>
             </a>
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2" *ngIf="produitsDe(cat).length > 3">
               <button class="carousel-arrow" (click)="faireDefiler(track, -1)" aria-label="Précédent">
                 <i class="fa-solid fa-chevron-left"></i>
               </button>
@@ -147,6 +147,11 @@
         </div>
 
         <div class="cat-carousel-track" #track>
+          <!-- Aucun produit publié pour cette catégorie : message plutôt qu'un carrousel vide. -->
+          <div class="cat-carousel-empty" *ngIf="!produitsDe(cat).length">
+            <i class="fa-solid fa-box-open"></i>
+            <span>Bientôt de nouveaux produits dans cette catégorie.</span>
+          </div>
           <div class="cat-carousel-card" *ngFor="let p of produitsDe(cat); trackBy: trackById"
             (click)="ouvrirCategorie(cat.queryParams)">
             <div class="cat-carousel-visuel" [style.background]="p.iconeBg">

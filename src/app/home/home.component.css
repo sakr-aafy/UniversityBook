@@ -479,6 +479,27 @@
   display: none;
 }
 
+.cat-carousel-empty {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 180px;
+  padding: 24px;
+  border: 1px dashed #D8DCE2;
+  border-radius: 20px;
+  color: #8A94A3;
+  font-size: 14px;
+  text-align: center;
+  background: #FAFBFC;
+}
+.cat-carousel-empty i {
+  font-size: 26px;
+  color: #C3C9D2;
+}
+
 .cat-carousel-card {
   flex: 0 0 auto;
   width: 250px;

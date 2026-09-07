@@ -1,5 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { forkJoin, of, Subscription } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { CartService } from '../services/cart.service';
 import { CompareService } from '../services/compare.service';
 import { CatalogueService, Domaine, Produit, estProduitDocument, estCategorieJeux, estCategorieSoutenance } from '../services/catalogue.service';
@@ -63,8 +65,16 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   /** Noms de catégories présents À LA FOIS dans la taxonomie "Documents" (sur site) et dans celle
    *  des fournitures caisse — normalisés. Un produit de ce type n'apparaît alors QUE dans le
-   *  carrousel "Documents", jamais dans "Fournitures scolaires" (voir produitsDe). */
+   *  carrousel "Documents", jamais dans "Fournitures scolaires" (voir calculerProduitsDe). */
   private nomsCategoriesCommunes = new Set<string>();
+
+  /** Produits de chaque section, calculés une seule fois (au chargement du catalogue et des
+   *  catégories communes) plutôt qu'à chaque cycle de détection de changement — sinon `*ngFor`
+   *  rescanne tout le catalogue pour les 6 sections à chaque tick, d'où des carrousels qui
+   *  "sautent" pendant les chargements asynchrones. */
+  private produitsParSection = new Map<CategorieSection, Produit[]>();
+
+  private readonly abos = new Subscription();
 
   promoImage = 'assets/images/documents.svg';
 
@@ -200,13 +210,19 @@ export class HomeComponent implements OnInit, OnDestroy {
     return (p.categorie || '').localeCompare(categorie || '', 'fr', { sensitivity: 'base' }) === 0;
   }
 
+  /** Produits du carrousel d'une section — valeur mise en cache (voir recalculerSections),
+   *  recalculée seulement quand le catalogue ou les catégories communes changent. */
+  produitsDe(cat: CategorieSection): Produit[] {
+    return this.produitsParSection.get(cat) ?? [];
+  }
+
   /** Produits réels affichés dans le carrousel d'une section : appliqués les MÊMES filtres que
    *  boutique.component.ts#produitsFiltres à partir des `queryParams` de la section (domaine,
    *  categorie / sousCategorie / sousSousCategorie, payant / gratuit, + restriction aux
    *  documents publiés depuis la caisse pour Documents Payants/Gratuits). Nouveautés / best-sellers
    *  d'abord, 6 max. Alimenté par CatalogueService (tout produit caisse publié via "Ajouter sur
    *  Site Internet", voir syncProduitSite.js côté backend). */
-  produitsDe(cat: CategorieSection): Produit[] {
+  private calculerProduitsDe(cat: CategorieSection): Produit[] {
     const qp = cat.queryParams;
     const vue: Domaine = (qp['domaine'] === 'documents' || qp['domaine'] === 'fournitures') ? qp['domaine'] : cat.key;
     const categorie = qp['categorie'] || '';
@@ -284,6 +300,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     // boutique.component.ts#ngOnInit) : reflète les produits publiés/dépubliés côté admin ou
     // caisse sans qu'aucun code n'ait besoin d'être changé.
     this.catalogueService.actualiser();
+    // Recalcule les carrousels dès que le catalogue est prêt (et à chaque rechargement).
+    this.abos.add(this.catalogueService.pret$.subscribe(() => this.recalculerSections()));
     this.chargerCategoriesCommunes();
     this.demarrerGalerieAutoplay();
   }
@@ -293,24 +311,30 @@ export class HomeComponent implements OnInit, OnDestroy {
    *  présente dans les deux relève de "Documents" et est retirée du carrousel Fournitures. */
   private chargerCategoriesCommunes(): void {
     const norm = (v: string | undefined) => (v || '').trim().toLowerCase();
-    let site: Set<string> | null = null;
-    let caisse: Set<string> | null = null;
-    const fusionner = () => {
-      if (!site || !caisse) return;
-      this.nomsCategoriesCommunes = new Set([...site].filter(n => caisse!.has(n)));
-    };
-    this.categoriesSiteService.list().subscribe({
-      next: res => { site = new Set(res.categories.map(c => norm(c.nom))); fusionner(); },
-      error: () => { site = new Set(); fusionner(); }
-    });
-    this.categoriesCaisseService.list().subscribe({
-      next: res => { caisse = new Set(res.categories.map(c => norm(c.nom))); fusionner(); },
-      error: () => { caisse = new Set(); fusionner(); }
-    });
+    this.abos.add(
+      forkJoin({
+        site: this.categoriesSiteService.list().pipe(catchError(() => of({ categories: [] }))),
+        caisse: this.categoriesCaisseService.list().pipe(catchError(() => of({ categories: [] })))
+      }).subscribe(({ site, caisse }) => {
+        const nomsCaisse = new Set(caisse.categories.map(c => norm(c.nom)));
+        this.nomsCategoriesCommunes = new Set(
+          site.categories.map(c => norm(c.nom)).filter(n => n && nomsCaisse.has(n))
+        );
+        this.recalculerSections();
+      })
+    );
+  }
+
+  /** (Re)calcule et met en cache les produits de chaque section. */
+  private recalculerSections(): void {
+    for (const cat of this.categorySections) {
+      this.produitsParSection.set(cat, this.calculerProduitsDe(cat));
+    }
   }
 
   ngOnDestroy(): void {
     if (this.heroGalleryTimer) clearInterval(this.heroGalleryTimer);
+    this.abos.unsubscribe();
   }
 
   private demarrerGalerieAutoplay(): void {
