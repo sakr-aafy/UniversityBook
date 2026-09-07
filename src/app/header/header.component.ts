@@ -57,12 +57,21 @@ export class HeaderComponent implements OnInit, OnDestroy {
    *  sont du texte libre ("JEUX", "jeux"…). N'affecte que ce sous-menu, pas les filtres Boutique. */
   private readonly categoriesCaisseExclues = ['soutenance', 'jeux', 'livre'];
 
+  /** Noms des catégories de la taxonomie "Documents" (sur site), normalisés — sert à ne pas
+   *  afficher une même catégorie dans les DEUX sous-menus : si une catégorie caisse porte le même
+   *  nom qu'une catégorie Documents, elle n'apparaît que sous "Documents". */
+  private get nomsCategoriesDocuments(): Set<string> {
+    return new Set(this.categoriesSite.map(c => (c.nom || '').trim().toLowerCase()));
+  }
+
   /** Liste "Fournitures scolaires" du mega-menu, privée des catégories gérées ailleurs
-   *  (categoriesCaisseExclues). */
+   *  (categoriesCaisseExclues) ET de celles déjà présentes dans la taxonomie "Documents". */
   get categoriesCaisseVisibles(): CategorieCaisseDto[] {
-    return this.categoriesCaisse.filter(
-      c => !this.categoriesCaisseExclues.includes((c.nom || '').trim().toLowerCase())
-    );
+    const nomsDocuments = this.nomsCategoriesDocuments;
+    return this.categoriesCaisse.filter(c => {
+      const nom = (c.nom || '').trim().toLowerCase();
+      return !this.categoriesCaisseExclues.includes(nom) && !nomsDocuments.has(nom);
+    });
   }
 
   /** Équivalent tactile du survol desktop : clés des sections dépliées de l'accordéon Boutique

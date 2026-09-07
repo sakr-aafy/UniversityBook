@@ -3,6 +3,8 @@ import { Router } from '@angular/router';
 import { CartService } from '../services/cart.service';
 import { CompareService } from '../services/compare.service';
 import { CatalogueService, Domaine, Produit, estProduitDocument, estCategorieJeux, estCategorieSoutenance } from '../services/catalogue.service';
+import { CategoriesSiteService } from '../services/categories-site.service';
+import { CategoriesCaisseService } from '../services/categories-caisse.service';
 
 interface HeroGalleryImage {
   /** Emplacement attendu pour une future photo grand format. */
@@ -54,8 +56,15 @@ export class HomeComponent implements OnInit, OnDestroy {
     private cartService: CartService,
     private compareService: CompareService,
     public catalogueService: CatalogueService,
+    private categoriesSiteService: CategoriesSiteService,
+    private categoriesCaisseService: CategoriesCaisseService,
     private router: Router
   ) {}
+
+  /** Noms de catégories présents À LA FOIS dans la taxonomie "Documents" (sur site) et dans celle
+   *  des fournitures caisse — normalisés. Un produit de ce type n'apparaît alors QUE dans le
+   *  carrousel "Documents", jamais dans "Fournitures scolaires" (voir produitsDe). */
+  private nomsCategoriesCommunes = new Set<string>();
 
   promoImage = 'assets/images/documents.svg';
 
@@ -229,9 +238,17 @@ export class HomeComponent implements OnInit, OnDestroy {
       sectionGeneraliste && vue === 'fournitures'
       && (estProduitDocument(p) || estCategorieJeux(p.categorie) || estCategorieSoutenance(p.categorie));
 
+    // Catégorie présente à la fois dans "Documents" et dans "Fournitures" : le produit relève de
+    // Documents (voir chargerCategoriesCommunes) — retiré du carrousel Fournitures pour ne pas
+    // apparaître deux fois.
+    const estCategorieCommuneDocuments = (p: Produit) =>
+      sectionGeneraliste && vue === 'fournitures'
+      && this.nomsCategoriesCommunes.has((p.categorie || '').trim().toLowerCase());
+
     return this.catalogueService.produits
       .filter(dansLaVue)
       .filter(p => !estSousSectionDediee(p))
+      .filter(p => !estCategorieCommuneDocuments(p))
       .filter(p => !categorie || this.correspondCategorie(p, categorie))
       .filter(p => !sousCategorie || p.sousCategorie === sousCategorie)
       .filter(p => !sousSousCategorie || p.sousSousCategorie === sousSousCategorie)
@@ -267,7 +284,29 @@ export class HomeComponent implements OnInit, OnDestroy {
     // boutique.component.ts#ngOnInit) : reflète les produits publiés/dépubliés côté admin ou
     // caisse sans qu'aucun code n'ait besoin d'être changé.
     this.catalogueService.actualiser();
+    this.chargerCategoriesCommunes();
     this.demarrerGalerieAutoplay();
+  }
+
+  /** Calcule l'intersection des noms de catégories "Documents" (sur site) et "Fournitures"
+   *  (caisse) — même règle que header.component.ts#nomsCategoriesDocuments : une catégorie
+   *  présente dans les deux relève de "Documents" et est retirée du carrousel Fournitures. */
+  private chargerCategoriesCommunes(): void {
+    const norm = (v: string | undefined) => (v || '').trim().toLowerCase();
+    let site: Set<string> | null = null;
+    let caisse: Set<string> | null = null;
+    const fusionner = () => {
+      if (!site || !caisse) return;
+      this.nomsCategoriesCommunes = new Set([...site].filter(n => caisse!.has(n)));
+    };
+    this.categoriesSiteService.list().subscribe({
+      next: res => { site = new Set(res.categories.map(c => norm(c.nom))); fusionner(); },
+      error: () => { site = new Set(); fusionner(); }
+    });
+    this.categoriesCaisseService.list().subscribe({
+      next: res => { caisse = new Set(res.categories.map(c => norm(c.nom))); fusionner(); },
+      error: () => { caisse = new Set(); fusionner(); }
+    });
   }
 
   ngOnDestroy(): void {
