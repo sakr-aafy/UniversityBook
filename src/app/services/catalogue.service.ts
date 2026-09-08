@@ -187,7 +187,15 @@ const ICONE_DEFAUT: Record<Domaine, { icone: string; iconeBg: string }> = {
  * façon.
  */
 export function estCategorieLivre(categorie: string | undefined | null): boolean {
-  return (categorie || '').trim().toLowerCase().includes('livre');
+  const c = (categorie || '')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .trim().toLowerCase();
+  // "protège-livre" / "protège livres" : couverture plastique de protection = fourniture
+  // scolaire, jamais un ouvrage — le mot "livre(s)" y est présent mais ne fait pas du produit
+  // un document (bug : "protege livres vertex" apparaissait dans la vue Documents).
+  if (c.includes('protege') || c.includes('couvre-livre') || c.includes('couvre livre')) return false;
+  // Mot entier "livre"/"livres" (et non une sous-chaîne comme "livraison" ou "délivré").
+  return /\blivres?\b/.test(c);
 }
 
 /**

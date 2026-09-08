@@ -86,19 +86,19 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
   /** Détermine la vue d'affichage d'un produit — voir le commentaire sur `Vue` plus haut. */
   private vueDeProduit(p: Produit): Vue {
     if (p.domaine === 'documents') return 'documents';
-    // Un produit caisse de la branche "Droit" (sous-catégories "Examen", "Livre concours",
-    // "Code juridique") ou tout ouvrage "Livre" est un document : il s'affiche dans la vue
-    // Documents, pas dans Fournitures scolaires — voir estProduitDocument / MOTS_CLES_DOCUMENT
-    // dans catalogue.service.ts.
-    if (estProduitDocument(p)) return 'documents';
-    // Publié sous une catégorie de la taxonomie "Documents" (sur site) : `CategorieSite`, celle
-    // qui alimente la colonne "Documents" du mega-menu Header et dont le nom est recopié tel quel
-    // sur `Produit.categorie` (syncProduitSite.js). Un lien "Documents › Prépa › Deuxième" du
-    // Header doit alors trouver ses produits ici, même si "prépa" n'a aucun mot-clé documentaire
-    // — sinon ils tombaient tous dans "Fournitures scolaires" et la Boutique s'affichait vide.
+    // La taxonomie "Documents" (sur site) — `CategorieSite`, celle qui alimente la colonne
+    // "Documents" du mega-menu Header et dont le nom est recopié tel quel sur `Produit.categorie`
+    // par syncProduitSite.js — fait foi dès qu'elle est chargée : un produit publié sous une de
+    // ces catégories est un document, TOUS les autres sont des fournitures. On évite ainsi les
+    // deux travers de l'heuristique par mots-clés : "prépa" (aucun mot-clé) qui manquait la vue
+    // Documents, et "protège livres vertex" (couverture plastique) qui y atterrissait à tort.
     const cat = this.cleUniforme(p.categorie);
-    if (cat && this.nomsCategoriesSite.has(cat)) return 'documents';
-    return 'fournitures';
+    if (this.nomsCategoriesSite.size > 0) {
+      return cat && this.nomsCategoriesSite.has(cat) ? 'documents' : 'fournitures';
+    }
+    // Repli le temps du 1er rendu (avant la réponse de /catalogue/categories-site) : mots-clés
+    // "Droit"/"Examen"/"Livre"… — voir estProduitDocument / MOTS_CLES_DOCUMENT.
+    return estProduitDocument(p) ? 'documents' : 'fournitures';
   }
 
   categorieActive: string = 'Tous';
