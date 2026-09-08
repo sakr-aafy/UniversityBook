@@ -514,13 +514,19 @@
 .filtres-titre i { color: var(--accent); font-size: 13px; }
 
 .ub-btn-reset {
-  border: none;
-  background: none;
-  font-size: 12px;
-  font-weight: 700;
+  border: 1px solid var(--border, #E4E8EF);
+  background: #fff;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #6B7480;
+  padding: 5px 12px;
+  border-radius: 999px;
+  transition: color .15s, border-color .15s, background .15s;
+}
+.ub-btn-reset:hover {
   color: var(--accent);
-  text-decoration: underline;
-  text-underline-offset: 2px;
+  border-color: var(--accent);
+  background: #FDF4F5;
 }
 
 .ub-btn-filtrer {
@@ -549,11 +555,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 12px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: .6px;
-  color: #1B2430;
+  letter-spacing: .09em;
+  color: #8A929C;
   cursor: pointer;
   list-style: none;
   padding: 2px 0;
@@ -561,17 +567,19 @@
 }
 .filtre-accordion-titre::-webkit-details-marker { display: none; }
 .filtre-accordion-chevron {
-  font-size: 11px;
-  color: #9AA2AB;
+  font-size: 10px;
+  color: #B4BAC2;
   transition: transform .22s cubic-bezier(.16,.84,.44,1);
 }
 .filtre-accordion[open] > .filtre-accordion-titre .filtre-accordion-chevron {
   transform: rotate(180deg);
 }
 .filtre-accordion-body {
-  padding-top: 14px;
+  padding-top: 12px;
   animation: ub-fade-up .2s ease both;
 }
+
+.filtre-cat-liste { display: flex; flex-direction: column; gap: 2px; }
 
 .filtre-chip {
   padding: 8px 16px;
@@ -605,78 +613,146 @@
 }
 
 .filtre-cat-icon {
-  width: 26px;
-  height: 26px;
-  border-radius: 8px;
-  background: #F4E7E8;
-  color: var(--accent);
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  background: #F2F3F5;
+  color: #9AA2AB;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 11px;
   flex-shrink: 0;
+  transition: background .15s, color .15s;
 }
 
 .filtre-cat-btn {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   width: 100%;
-  padding: 9px 10px;
-  border-radius: 12px;
+  padding: 8px 10px 8px 12px;
+  border-radius: 10px;
   border: none;
   background: transparent;
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 500;
-  color: #3C444E;
+  color: #495059;
   cursor: pointer;
   text-align: left;
-  transition: background .15s, color .15s, transform .15s;
+  transition: background .15s, color .15s;
 }
-.filtre-cat-btn:hover {
-  background: #F7F8FA;
-  transform: translateX(2px);
+/* Rail d'accent à gauche de la ligne active — repère net sans le pavé de couleur envahissant. */
+.filtre-cat-btn::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 50%;
+  width: 3px;
+  height: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  transform: translateY(-50%);
+  transition: height .18s cubic-bezier(.16,.84,.44,1);
 }
+.filtre-cat-nom {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.filtre-cat-btn:hover { background: #F5F6F8; color: #1B2430; }
+.filtre-cat-btn:hover .filtre-cat-icon { color: #6B7480; }
 .filtre-cat-btn.active {
-  background: #FDF2F3;
+  background: #FBF4F5;
   color: var(--accent);
-  font-weight: 700;
+  font-weight: 600;
 }
+.filtre-cat-btn.active::before { height: 18px; }
 .filtre-cat-btn.active .filtre-cat-icon {
   background: var(--accent);
   color: #fff;
 }
 
 .filtre-count {
+  flex-shrink: 0;
   font-size: 11px;
-  font-weight: 700;
-  padding: 2px 9px;
-  border-radius: 999px;
-  background: #F0F1F4;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  padding: 2px 7px;
+  border-radius: 7px;
+  background: #EEF0F3;
   color: #8A929C;
+  transition: background .15s, color .15s;
 }
 .filtre-cat-btn.active .filtre-count {
   background: var(--accent);
   color: #fff;
 }
 
-.filtre-sub-btn {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  padding: 7px 10px;
-  border-radius: 8px;
-  border: none;
-  background: transparent;
-  font-size: 13px;
-  font-weight: 500;
-  color: #6B7480;
-  cursor: pointer;
-  text-align: left;
-  transition: background .15s, color .15s;
+/* Indice dans la barre latérale : les sous-catégories sont désormais au-dessus des produits. */
+.filtre-souscat-hint {
+  margin: 8px 0 0;
+  padding-left: 12px;
+  font-size: 11.5px;
+  color: #9AA2AB;
+  font-style: italic;
 }
-.filtre-sub-btn:hover { background: #F7F8FA; color: #1B2430; }
-.filtre-sub-btn.active { background: #FDF2F3; color: var(--accent); font-weight: 600; }
+.filtre-souscat-hint i { font-size: 9px; margin-right: 6px; color: var(--accent); }
+
+/* ══════════════════════════════════════════════════════════════
+   BARRE DE SOUS-CATÉGORIES (au-dessus de la grille produits)
+═══════════════════════════════════════════════════════════════ */
+.souscat-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  margin-bottom: 16px;
+}
+.souscat-bar--niv2 {
+  margin-top: -6px;
+  padding-left: 14px;
+  border-left: 2px solid #EDEFF2;
+}
+
+.souscat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border, #E4E8EF);
+  background: #fff;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #5A626C;
+  cursor: pointer;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.souscat-chip:hover { border-color: var(--accent); color: var(--accent); }
+.souscat-chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.souscat-chip-count {
+  font-size: 10.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: #EEF0F3;
+  color: #8A929C;
+}
+.souscat-chip.active .souscat-chip-count { background: rgba(255, 255, 255, .22); color: #fff; }
 
 /* ══════════════════════════════════════════════════════════════
    CHIPS TYPE DE DOCUMENT

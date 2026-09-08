@@ -25,6 +25,7 @@ import { DashbordAdminComponent } from './admin/dashbord-admin/dashbord-admin.co
 import { UtilisateursComponent } from './admin/utilisateurs/utilisateurs.component';
 import { CommandesComponent as AdminCommandesComponent } from './admin/commandes/commandes.component';
 import { FournisseursComponent as AdminDocumentsComponent } from './admin/fournisseurs/fournisseurs.component';
+import { DocumentsProposesComponent } from './admin/documents-proposes/documents-proposes.component';
 import { ProduitsComponent } from './admin/produits/produits.component';
 import { AdminProfilComponent } from './admin/profil/admin-profil.component';
 
@@ -63,6 +64,7 @@ const routes: Routes = [
       { path: 'utilisateurs', component: UtilisateursComponent },
       { path: 'commandes', component: AdminCommandesComponent },
       { path: 'documents', component: AdminDocumentsComponent },
+      { path: 'documents-proposes', component: DocumentsProposesComponent },
       { path: 'produits', component: ProduitsComponent },
       { path: 'profil', component: AdminProfilComponent }
     ]

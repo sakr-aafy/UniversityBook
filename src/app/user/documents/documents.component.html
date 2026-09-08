@@ -1,5 +1,10 @@
 <div class="p-4 p-lg-5">
-  <h1 class="font-spectral fw-bold mb-4" style="font-size:24px;">Mes documents</h1>
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+    <h1 class="font-spectral fw-bold mb-0" style="font-size:24px;">Mes documents</h1>
+    <button class="btn btn-accent btn-sm ub-ripple" (click)="ouvrirProposer()">
+      <i class="fa-solid fa-file-circle-plus me-1"></i>Proposer un document
+    </button>
+  </div>
 
   <div class="d-flex flex-wrap gap-2 mb-4">
     <div class="input-group" style="max-width:320px;">
@@ -100,6 +105,43 @@
     </div>
   </ng-container>
 
+  <!-- ══ Mes propositions de documents ══ -->
+  <section class="ub-prop-section" *ngIf="propositions.length > 0 || chargementPropositions">
+    <h2 class="font-spectral fw-bold mb-1" style="font-size:19px;">Mes propositions</h2>
+    <p class="text-secondary small mb-3">
+      Documents que vous avez soumis pour publication sur le site. Un administrateur les examine avant mise en ligne.
+    </p>
+
+    <div class="d-flex justify-content-center py-4" *ngIf="chargementPropositions">
+      <i class="fa-solid fa-spinner fa-spin fa-lg" style="color:var(--accent)"></i>
+    </div>
+
+    <div class="ub-prop-list" *ngIf="!chargementPropositions">
+      <div class="ub-prop-row" *ngFor="let p of propositions; trackBy: trackByPropId">
+        <div class="ub-prop-thumb">
+          <img *ngIf="p.image" [src]="p.image" [alt]="p.titre">
+          <i *ngIf="!p.image" class="fa-solid fa-file-lines"></i>
+        </div>
+        <div class="ub-prop-main">
+          <div class="d-flex align-items-center gap-2 flex-wrap">
+            <span class="fw-semibold" style="font-size:14.5px;">{{ p.titre }}</span>
+            <span class="ub-prop-badge" [ngClass]="'is-' + p.statut">{{ libelleStatut(p.statut) }}</span>
+          </div>
+          <div class="text-secondary small mt-1">
+            <span *ngIf="p.categorie">{{ p.categorie }}<span *ngIf="p.sousCategorie"> · {{ p.sousCategorie }}</span> — </span>
+            Soumis le {{ p.createdAt | date:'dd/MM/yyyy' }}
+          </div>
+          <p class="ub-prop-refus small mb-0 mt-1" *ngIf="p.statut === 'refuse' && p.motifRefus">
+            <i class="fa-solid fa-circle-info me-1"></i>Motif du refus : {{ p.motifRefus }}
+          </p>
+          <p class="ub-prop-ok small mb-0 mt-1" *ngIf="p.statut === 'approuve'">
+            <i class="fa-solid fa-circle-check me-1"></i>Publié sur le site (document gratuit).
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Détail document -->
   <div *ngIf="documentSelectionne" class="ub-doc-overlay" (click)="fermerDetail()">
     <div class="ub-doc-modal" (click)="$event.stopPropagation()">
@@ -142,6 +184,94 @@
           <i class="fa-solid fa-cart-shopping me-1"></i>Acheter de nouveau
         </button>
       </ng-container>
+    </div>
+  </div>
+
+  <!-- ══ Modale : Proposer un document ══ -->
+  <div *ngIf="showProposerModal" class="ub-doc-overlay" (click)="fermerProposer()">
+    <div class="ub-doc-modal ub-prop-modal" (click)="$event.stopPropagation()">
+      <button class="ub-doc-modal-close" (click)="fermerProposer()" aria-label="Fermer"><i class="fa-solid fa-xmark"></i></button>
+      <h3 class="fw-bold mb-1" style="font-size:18px;">Proposer un document</h3>
+      <p class="text-secondary small mb-3">
+        Le document sera examiné par un administrateur. S'il est approuvé, il sera publié gratuitement sur le site.
+      </p>
+
+      <div class="alert alert-danger py-2 px-3 small" *ngIf="propositionErreur">{{ propositionErreur }}</div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-semibold">Titre <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" [(ngModel)]="propositionForm.titre" [disabled]="envoiEnCours"
+               placeholder="Ex. Résumé de cours — Droit constitutionnel">
+      </div>
+
+      <div class="row g-2 mb-3">
+        <div class="col-12 col-sm-6">
+          <label class="form-label small fw-semibold">Catégorie</label>
+          <select class="form-select" [(ngModel)]="propositionForm.categorie" (ngModelChange)="onPropCategorieChange()"
+                  [disabled]="envoiEnCours">
+            <option value="">— Choisir une catégorie —</option>
+            <option *ngFor="let c of categoriesArbre" [value]="c.nom">{{ c.nom }}</option>
+          </select>
+        </div>
+        <div class="col-12 col-sm-6">
+          <label class="form-label small fw-semibold">Sous-catégorie</label>
+          <select class="form-select" [(ngModel)]="propositionForm.sousCategorie"
+                  [disabled]="envoiEnCours || !propositionForm.categorie || sousCategoriesDispo.length === 0">
+            <option value="">
+              {{ !propositionForm.categorie ? '— Choisir d’abord une catégorie —'
+                 : sousCategoriesDispo.length === 0 ? '— Aucune sous-catégorie —'
+                 : '— Aucune (facultatif) —' }}
+            </option>
+            <option *ngFor="let sc of sousCategoriesDispo" [value]="sc">{{ sc }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-semibold">Description</label>
+        <textarea class="form-control" rows="3" [(ngModel)]="propositionForm.description" [disabled]="envoiEnCours"
+                  placeholder="Contenu, niveau, faculté concernée…"></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-semibold">Fichier du document <span class="text-danger">*</span></label>
+        <div class="ub-prop-file">
+          <label class="btn btn-outline-dark-ub btn-sm mb-0">
+            <i class="fa-solid fa-paperclip me-1"></i>Choisir un fichier
+            <input type="file" hidden [accept]="accepteFichier" (change)="onPropositionFichier($event)" [disabled]="envoiEnCours">
+          </label>
+          <span class="small text-secondary text-truncate" *ngIf="propositionFichierNom">{{ propositionFichierNom }}</span>
+        </div>
+        <span class="small text-secondary d-block mt-1">Formats acceptés : {{ extFichierLabel }} — 50 Mo max.</span>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-semibold">Image de couverture <span class="text-secondary">(optionnelle)</span></label>
+        <div class="ub-prop-file">
+          <label class="btn btn-outline-dark-ub btn-sm mb-0">
+            <i class="fa-solid fa-image me-1"></i>Choisir une image
+            <input type="file" hidden accept="image/jpeg,image/png,image/webp" (change)="onPropositionImage($event)" [disabled]="envoiEnCours">
+          </label>
+          <div class="ub-prop-imgprev" *ngIf="propositionImageApercu">
+            <img [src]="propositionImageApercu" alt="Aperçu">
+            <button type="button" class="ub-prop-imgprev-x" (click)="retirerPropositionImage()" [disabled]="envoiEnCours" aria-label="Retirer">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="ub-prop-progress" *ngIf="envoiEnCours">
+        <div class="ub-prop-progress-bar" [style.width.%]="progressionUpload"></div>
+      </div>
+
+      <div class="d-flex gap-2 mt-3">
+        <button class="btn btn-outline-dark-ub flex-grow-1" (click)="fermerProposer()" [disabled]="envoiEnCours">Annuler</button>
+        <button class="btn btn-accent flex-grow-1 ub-ripple" (click)="envoyerProposition()" [disabled]="envoiEnCours">
+          <i class="fa-solid" [class.fa-paper-plane]="!envoiEnCours" [class.fa-spinner]="envoiEnCours" [class.fa-spin]="envoiEnCours"></i>
+          {{ envoiEnCours ? ' Envoi… ' + progressionUpload + '%' : ' Soumettre' }}
+        </button>
+      </div>
     </div>
   </div>
 </div>

@@ -189,6 +189,39 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
     return [...set].sort((a, b) => this.comparerAlpha(a, b));
   }
 
+  /** Nombre de produits de la catégorie active (toutes sous-catégories confondues) — pastille du
+   *  chip « Tous » de la barre de sous-catégories au-dessus de la grille. */
+  get compteCategorieActive(): number {
+    if (this.categorieActive === 'Tous') return 0;
+    return this.produits.filter(p =>
+      this.vueDeProduit(p) === this.vueActive && this.correspondCategorie(p, this.categorieActive)
+    ).length;
+  }
+
+  /** Nombre de produits de la vue active, dans la catégorie active, pour cette sous-catégorie —
+   *  affiché en pastille à côté du nom (même repère visuel que le compteur des catégories). */
+  compteSousCategorie(sc: string): number {
+    const cible = this.cleUniforme(sc);
+    return this.produits.filter(p =>
+      this.vueDeProduit(p) === this.vueActive
+      && (this.categorieActive === 'Tous' || this.correspondCategorie(p, this.categorieActive))
+      && this.cleUniforme(p.sousCategorie) === cible
+    ).length;
+  }
+
+  /** Idem un niveau plus bas : produits de la sous-sous-catégorie donnée (dans la catégorie +
+   *  sous-catégorie actives). */
+  compteSousSousCategorie(ssc: string): number {
+    const cible = this.cleUniforme(ssc);
+    const cibleSous = this.cleUniforme(this.sousCategorieActive);
+    return this.produits.filter(p =>
+      this.vueDeProduit(p) === this.vueActive
+      && (this.categorieActive === 'Tous' || this.correspondCategorie(p, this.categorieActive))
+      && (!this.sousCategorieActive || this.cleUniforme(p.sousCategorie) === cibleSous)
+      && this.cleUniforme(p.sousSousCategorie) === cible
+    ).length;
+  }
+
   /** Types présents dans le catalogue pour la vue active. */
   get typesActifs(): string[] {
     const set = new Set<string>();
@@ -400,22 +433,36 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
     return index;
   }
 
+  /** Après un clic sur une catégorie / sous-catégorie : referme le tiroir de filtres (mobile) et
+   *  amène la grille produits à l'écran — on voit alors les produits de la catégorie tout de
+   *  suite, sans avoir à remonter la page ni à fermer le tiroir à la main. */
+  private revelerProduits(): void {
+    this.filtresOuverts = false;
+    // Différé : laisse Angular re-rendre la grille filtrée avant de la faire défiler dans la vue.
+    setTimeout(() => {
+      document.getElementById('grille-produits')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 0);
+  }
+
   filtrerCategorie(cat: string): void {
     this.categorieActive = cat;
     this.sousCategorieActive = '';
     this.sousSousCategorieActive = '';
     this.resetPage();
+    this.revelerProduits();
   }
 
   filtrerSousCategorie(sc: string): void {
     this.sousCategorieActive = this.sousCategorieActive === sc ? '' : sc;
     this.sousSousCategorieActive = '';
     this.resetPage();
+    this.revelerProduits();
   }
 
   filtrerSousSousCategorie(ssc: string): void {
     this.sousSousCategorieActive = this.sousSousCategorieActive === ssc ? '' : ssc;
     this.resetPage();
+    this.revelerProduits();
   }
 
   /** Efface uniquement la sous-sous-catégorie active — utilisé par le breadcrumb de filtres pour
@@ -432,9 +479,23 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
     return this.vueActive === 'documents' ? 'Documents' : 'Fournitures scolaires';
   }
 
+  /** Vue « Documents Gratuits » (lien du Header : domaine=documents + filtre gratuit, ou case
+   *  « Documents gratuits uniquement » de la barre latérale) : les cartes y sont affichées SANS
+   *  photo — demande explicite, seule l'image est retirée (repli icône + couleur conservé). */
+  get vueDocumentsGratuits(): boolean {
+    return this.vueActive === 'documents' && this.filtreGratuit;
+  }
+
+  /** Affiche-t-on la (les) photo(s) réelle(s) du produit sur sa carte ? Non en vue
+   *  « Documents Gratuits » (voir vueDocumentsGratuits) — le repli icône prend alors le relais. */
+  imagesVisibles(p: Produit): boolean {
+    return !this.vueDocumentsGratuits && !!(p.images && p.images.length > 0);
+  }
+
   filtrerType(t: string): void {
     this.typeActif = t;
     this.resetPage();
+    this.revelerProduits();
   }
 
   onRechercheChange(): void {

@@ -173,3 +173,93 @@
   border-bottom: 1px solid #F0F1F4;
 }
 .ub-doc-modal-row strong { color: #1B2430; }
+
+/* ── « Mes propositions » ─────────────────────────────────────────────── */
+.ub-prop-section {
+  margin-top: 40px;
+  padding-top: 28px;
+  border-top: 1px solid #ECEEF1;
+}
+
+.ub-prop-list { display: flex; flex-direction: column; gap: 10px; }
+
+.ub-prop-row {
+  display: flex;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid #ECEEF1;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.ub-prop-thumb {
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  background: #F4F6F8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9AA3AE;
+  font-size: 18px;
+  overflow: hidden;
+}
+.ub-prop-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.ub-prop-main { min-width: 0; }
+
+.ub-prop-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+}
+.ub-prop-badge.is-en_attente { background: #FEF3C7; color: #92620E; }
+.ub-prop-badge.is-approuve   { background: #DCFCE7; color: #15803D; }
+.ub-prop-badge.is-refuse     { background: #FEE2E2; color: #B91C1C; }
+
+.ub-prop-refus { color: #B91C1C; }
+.ub-prop-ok    { color: #15803D; }
+
+/* ── Modale « Proposer un document » ──────────────────────────────────── */
+.ub-prop-modal {
+  max-width: 520px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+
+.ub-prop-file { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+.ub-prop-imgprev { position: relative; width: 54px; height: 54px; border-radius: 10px; overflow: hidden; }
+.ub-prop-imgprev img { width: 100%; height: 100%; object-fit: cover; }
+.ub-prop-imgprev-x {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 18px;
+  height: 18px;
+  border: none;
+  border-radius: 6px;
+  background: rgba(10, 14, 20, .6);
+  color: #fff;
+  font-size: 9px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ub-prop-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: #EDEFF2;
+  overflow: hidden;
+}
+.ub-prop-progress-bar {
+  height: 100%;
+  background: var(--accent, #8C2433);
+  transition: width .2s ease;
+}

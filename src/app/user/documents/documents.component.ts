@@ -1,9 +1,18 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
+import { HttpEventType } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { DocumentsService, PurchasedDocument } from '../../services/documents.service';
+import {
+  DocumentsService, PurchasedDocument, DocumentPropose, PropositionForm, StatutProposition,
+  CategorieArbreDoc
+} from '../../services/documents.service';
 
 const FENETRE_TELECHARGEMENT_MS = 24 * 60 * 60 * 1000;
 const SEUIL_ALERTE_MS = 60 * 60 * 1000;
+
+/** Extensions acceptées pour le fichier d'une proposition — miroir de
+ *  uploadDocumentCatalogue.middleware.js côté backend. */
+const EXT_FICHIER_ACCEPTEES = ['.pdf', '.doc', '.docx', '.ppt', '.pptx', '.zip'];
+const TAILLE_MAX_FICHIER = 50 * 1024 * 1024;
 
 @Component({
   selector: 'app-documents',
@@ -23,10 +32,29 @@ export class DocumentsComponent implements OnInit, OnDestroy {
   documentSelectionne: PurchasedDocument | null = null;
   private minuteur?: ReturnType<typeof setInterval>;
 
+  // ── « Proposer un document » ──────────────────────────────────────────────
+  showProposerModal = false;
+  categoriesArbre: CategorieArbreDoc[] = [];
+  propositionForm: PropositionForm = { titre: '', description: '', categorie: '', sousCategorie: '', type: '' };
+  propositionFichier: File | null = null;
+  propositionFichierNom = '';
+  propositionImage: File | null = null;
+  propositionImageApercu = '';
+  envoiEnCours = false;
+  progressionUpload = 0;
+  propositionErreur = '';
+  readonly extFichierLabel = EXT_FICHIER_ACCEPTEES.map(e => e.slice(1).toUpperCase()).join(', ');
+  readonly accepteFichier = EXT_FICHIER_ACCEPTEES.join(',');
+
+  // ── « Mes propositions » ─────────────────────────────────────────────────
+  propositions: DocumentPropose[] = [];
+  chargementPropositions = false;
+
   constructor(private documentsService: DocumentsService, private router: Router) {}
 
   ngOnInit(): void {
     this.charger();
+    this.chargerPropositions();
     // Force le recalcul du compte à rebours (et de l'expiration) affiché sans recharger les données.
     this.minuteur = setInterval(() => {}, 30000);
   }
@@ -225,6 +253,141 @@ export class DocumentsComponent implements OnInit, OnDestroy {
   }
 
   trackById(_index: number, item: PurchasedDocument): string {
+    return item._id;
+  }
+
+  // ── « Proposer un document » ─────────────────────────────────────────────
+
+  ouvrirProposer(): void {
+    this.propositionForm = { titre: '', description: '', categorie: '', sousCategorie: '', type: '' };
+    this.propositionFichier = null;
+    this.propositionFichierNom = '';
+    this.propositionImage = null;
+    this.propositionImageApercu = '';
+    this.propositionErreur = '';
+    this.progressionUpload = 0;
+    this.showProposerModal = true;
+    if (this.categoriesArbre.length === 0) {
+      this.documentsService.categoriesDocumentsArbre().subscribe({
+        next: cats => (this.categoriesArbre = cats || []),
+        error: () => { /* les sélecteurs restent vides si l'API échoue — catégorie non obligatoire */ }
+      });
+    }
+  }
+
+  /** Sous-catégories de la catégorie actuellement sélectionnée dans le formulaire de proposition. */
+  get sousCategoriesDispo(): string[] {
+    return this.categoriesArbre.find(c => c.nom === this.propositionForm.categorie)?.sousCategories || [];
+  }
+
+  /** Changement de catégorie : on remet la sous-catégorie à zéro (celle d'avant n'appartient
+   *  plus forcément à la nouvelle catégorie). */
+  onPropCategorieChange(): void {
+    this.propositionForm.sousCategorie = '';
+  }
+
+  fermerProposer(): void {
+    if (this.envoiEnCours) return;
+    this.showProposerModal = false;
+  }
+
+  onPropositionFichier(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    const ext = ('.' + (file.name.split('.').pop() || '')).toLowerCase();
+    if (!EXT_FICHIER_ACCEPTEES.includes(ext)) {
+      this.propositionErreur = `Format non supporté. Fichiers acceptés : ${this.extFichierLabel}.`;
+      return;
+    }
+    if (file.size > TAILLE_MAX_FICHIER) {
+      this.propositionErreur = 'Le fichier dépasse la taille maximale de 50 Mo.';
+      return;
+    }
+    this.propositionErreur = '';
+    this.propositionFichier = file;
+    this.propositionFichierNom = file.name;
+  }
+
+  onPropositionImage(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
+      this.propositionErreur = 'Image invalide (JPEG, PNG ou WEBP uniquement).';
+      return;
+    }
+    this.propositionErreur = '';
+    this.propositionImage = file;
+    const lecteur = new FileReader();
+    lecteur.onload = () => (this.propositionImageApercu = lecteur.result as string);
+    lecteur.readAsDataURL(file);
+  }
+
+  retirerPropositionImage(): void {
+    this.propositionImage = null;
+    this.propositionImageApercu = '';
+  }
+
+  envoyerProposition(): void {
+    if (this.envoiEnCours) return;
+    this.propositionErreur = '';
+    if (!this.propositionForm.titre.trim()) {
+      this.propositionErreur = 'Le titre du document est requis.';
+      return;
+    }
+    if (!this.propositionFichier) {
+      this.propositionErreur = 'Veuillez joindre le fichier du document.';
+      return;
+    }
+    this.envoiEnCours = true;
+    this.progressionUpload = 0;
+    this.documentsService.proposerDocument(
+      { ...this.propositionForm, titre: this.propositionForm.titre.trim() },
+      this.propositionFichier,
+      this.propositionImage
+    ).subscribe({
+      next: event => {
+        if (event.type === HttpEventType.UploadProgress && event.total) {
+          this.progressionUpload = Math.round((event.loaded / event.total) * 100);
+        } else if (event.type === HttpEventType.Response) {
+          this.envoiEnCours = false;
+          this.showProposerModal = false;
+          this.message = event.body?.message
+            || 'Votre document a été soumis. Il sera examiné par un administrateur avant publication.';
+          this.chargerPropositions();
+        }
+      },
+      error: err => {
+        this.envoiEnCours = false;
+        this.propositionErreur = err?.error?.message || "Erreur lors de l'envoi de votre proposition. Réessayez.";
+      }
+    });
+  }
+
+  // ── « Mes propositions » ────────────────────────────────────────────────
+
+  chargerPropositions(): void {
+    this.chargementPropositions = true;
+    this.documentsService.mesPropositions().subscribe({
+      next: res => {
+        this.propositions = res.propositions || [];
+        this.chargementPropositions = false;
+      },
+      error: () => {
+        this.propositions = [];
+        this.chargementPropositions = false;
+      }
+    });
+  }
+
+  libelleStatut(s: StatutProposition): string {
+    return s === 'approuve' ? 'Approuvé' : s === 'refuse' ? 'Refusé' : 'En attente';
+  }
+
+  trackByPropId(_index: number, item: DocumentPropose): string {
     return item._id;
   }
 }

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -28,6 +28,39 @@ export interface DocumentsResponse {
   total: number;
   page: number;
   totalPages: number;
+}
+
+export type StatutProposition = 'en_attente' | 'approuve' | 'refuse';
+
+/** Document proposé par l'utilisateur, en attente de validation par un administrateur. */
+export interface DocumentPropose {
+  _id: string;
+  titre: string;
+  description: string;
+  categorie: string;
+  sousCategorie: string;
+  type: string;
+  image: string;
+  fichier: string;
+  fichierNom: string;
+  statut: StatutProposition;
+  motifRefus: string;
+  createdAt: string;
+  traiteLe?: string;
+}
+
+export interface PropositionForm {
+  titre: string;
+  description: string;
+  categorie: string;
+  sousCategorie: string;
+  type: string;
+}
+
+/** Catégorie de documents + ses sous-catégories (par nom) — sélecteurs du formulaire de proposition. */
+export interface CategorieArbreDoc {
+  nom: string;
+  sousCategories: string[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -66,5 +99,41 @@ export class DocumentsService {
     titre: string; image?: string; categorie?: string; type?: string; auteur?: string; produitId?: number;
   }): Observable<{ message: string; document: PurchasedDocument }> {
     return this.http.post<{ message: string; document: PurchasedDocument }>(`${this.apiUrl}/acquerir-gratuit`, payload);
+  }
+
+  /** Catégories "Documents" + leurs sous-catégories (arbre) — alimente les deux sélecteurs
+   *  Catégorie / Sous-Catégorie du formulaire « Proposer un document ». Endpoint public. */
+  categoriesDocumentsArbre(): Observable<CategorieArbreDoc[]> {
+    return this.http.get<CategorieArbreDoc[]>(`${environment.apiUrl}/catalogue/categories-arbre`, {
+      params: new HttpParams().set('type', 'documents')
+    });
+  }
+
+  /** Propositions de documents de l'utilisateur connecté (section « Mes propositions »). */
+  mesPropositions(): Observable<{ propositions: DocumentPropose[] }> {
+    return this.http.get<{ propositions: DocumentPropose[] }>(`${this.apiUrl}/propositions`);
+  }
+
+  /** Soumet un document à la validation d'un administrateur. `observe:'events'` + `reportProgress`
+   *  pour une vraie barre de progression pendant l'upload du fichier (même schéma que
+   *  admin-documents.service.ts#create). */
+  proposerDocument(
+    data: PropositionForm,
+    fichier: File,
+    image?: File | null
+  ): Observable<HttpEvent<{ message: string; proposition: DocumentPropose }>> {
+    const formData = new FormData();
+    formData.append('titre', data.titre);
+    formData.append('description', data.description || '');
+    formData.append('categorie', data.categorie || '');
+    formData.append('sousCategorie', data.sousCategorie || '');
+    formData.append('type', data.type || '');
+    formData.append('fichier', fichier);
+    if (image) formData.append('image', image);
+    return this.http.post<{ message: string; proposition: DocumentPropose }>(
+      `${this.apiUrl}/propositions`,
+      formData,
+      { reportProgress: true, observe: 'events' }
+    );
   }
 }

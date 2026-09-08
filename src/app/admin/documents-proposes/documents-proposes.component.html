@@ -1,0 +1,107 @@
+<div class="dp-page">
+
+  <div class="dp-hdr">
+    <div class="dp-hdr-title">
+      <i class="fa-solid fa-file-circle-plus dp-hdr-icon"></i>
+      <div>
+        <h1>Documents proposés</h1>
+        <p>Documents soumis par les utilisateurs. L'approbation publie un document gratuit sur le site.</p>
+      </div>
+    </div>
+    <button class="dp-btn-ghost" (click)="charger()" [disabled]="chargement">
+      <i class="fa-solid" [class.fa-rotate-right]="!chargement" [class.fa-spinner]="chargement" [class.fa-spin]="chargement"></i>
+      Actualiser
+    </button>
+  </div>
+
+  <div class="dp-filters">
+    <button class="dp-chip" [class.active]="filtreStatut === 'en_attente'" (click)="changerFiltre('en_attente')">
+      En attente
+      <span class="dp-chip-count" *ngIf="nbEnAttente > 0">{{ nbEnAttente }}</span>
+    </button>
+    <button class="dp-chip" [class.active]="filtreStatut === 'approuve'" (click)="changerFiltre('approuve')">Approuvés</button>
+    <button class="dp-chip" [class.active]="filtreStatut === 'refuse'" (click)="changerFiltre('refuse')">Refusés</button>
+    <button class="dp-chip" [class.active]="filtreStatut === ''" (click)="changerFiltre('')">Tous</button>
+  </div>
+
+  <div class="dp-alert dp-alert-ok" *ngIf="message">{{ message }}</div>
+  <div class="dp-alert dp-alert-err" *ngIf="erreur">{{ erreur }}</div>
+
+  <div class="dp-loading" *ngIf="chargement">
+    <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+  </div>
+
+  <p class="dp-empty" *ngIf="!chargement && propositions.length === 0">
+    Aucune proposition dans cette catégorie.
+  </p>
+
+  <div class="dp-list" *ngIf="!chargement && propositions.length > 0">
+    <article class="dp-card" *ngFor="let p of propositions; trackBy: trackById">
+      <div class="dp-thumb">
+        <img *ngIf="p.image" [src]="p.image" [alt]="p.titre">
+        <i *ngIf="!p.image" class="fa-solid fa-file-lines"></i>
+      </div>
+
+      <div class="dp-body">
+        <div class="dp-body-top">
+          <h3>{{ p.titre }}</h3>
+          <span class="dp-badge" [ngClass]="'is-' + p.statut">{{ libelleStatut(p.statut) }}</span>
+        </div>
+
+        <p class="dp-meta">
+          <span *ngIf="p.categorie"><i class="fa-solid fa-tag"></i>{{ p.categorie }}<span *ngIf="p.sousCategorie"> · {{ p.sousCategorie }}</span></span>
+          <span><i class="fa-solid fa-user"></i>{{ p.proposeParNom || p.proposeParEmail || 'Utilisateur' }}</span>
+          <span><i class="fa-regular fa-clock"></i>{{ p.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+        </p>
+
+        <p class="dp-desc" *ngIf="p.description">{{ p.description }}</p>
+
+        <p class="dp-note dp-note-err" *ngIf="p.statut === 'refuse' && p.motifRefus">
+          <i class="fa-solid fa-circle-info"></i>Motif du refus : {{ p.motifRefus }}
+        </p>
+        <p class="dp-note dp-note-ok" *ngIf="p.statut === 'approuve'">
+          <i class="fa-solid fa-circle-check"></i>Publié sur le site le {{ p.traiteLe | date:'dd/MM/yyyy' }}
+        </p>
+
+        <div class="dp-actions">
+          <button class="dp-btn-outline" (click)="ouvrirFichier(p)" [disabled]="!p.fichier">
+            <i class="fa-solid fa-file-arrow-down"></i>
+            {{ p.fichierNom || 'Voir le fichier' }}
+          </button>
+
+          <ng-container *ngIf="p.statut !== 'approuve'">
+            <button class="dp-btn-ok" (click)="approuver(p)" [disabled]="actionEnCoursId === p._id">
+              <i class="fa-solid fa-check"></i>Approuver
+            </button>
+          </ng-container>
+          <ng-container *ngIf="p.statut === 'en_attente'">
+            <button class="dp-btn-err" (click)="ouvrirRefus(p)" [disabled]="actionEnCoursId === p._id">
+              <i class="fa-solid fa-xmark"></i>Refuser
+            </button>
+          </ng-container>
+          <button class="dp-btn-ghost dp-btn-sm" (click)="supprimer(p)" [disabled]="actionEnCoursId === p._id" title="Supprimer la proposition">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <!-- Modale de refus -->
+  <div class="dp-overlay" *ngIf="refusPour" (click)="fermerRefus()">
+    <div class="dp-modal" (click)="$event.stopPropagation()">
+      <h3>Refuser la proposition</h3>
+      <p class="dp-modal-sub">« {{ refusPour.titre }} »</p>
+      <label class="dp-label">Motif (visible par l'utilisateur)</label>
+      <textarea class="dp-textarea" rows="3" [(ngModel)]="motifRefus"
+                placeholder="Ex. Document illisible, hors sujet, doublon…"></textarea>
+      <div class="dp-modal-actions">
+        <button class="dp-btn-outline" (click)="fermerRefus()" [disabled]="actionEnCoursId">Annuler</button>
+        <button class="dp-btn-err" (click)="confirmerRefus()" [disabled]="actionEnCoursId === refusPour._id">
+          <i class="fa-solid" [class.fa-xmark]="actionEnCoursId !== refusPour._id" [class.fa-spinner]="actionEnCoursId === refusPour._id" [class.fa-spin]="actionEnCoursId === refusPour._id"></i>
+          Confirmer le refus
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

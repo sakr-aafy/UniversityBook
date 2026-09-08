@@ -145,6 +145,29 @@
           </button>
         </div>
 
+        <!-- Sous-catégories de la catégorie active — présentées au-dessus des produits (et non
+             plus imbriquées dans la barre latérale) : un clic filtre la grille juste en dessous. -->
+        <div class="souscat-bar ub-anim-fade-up" *ngIf="sousCategoriesActives.length > 0">
+          <button type="button" class="souscat-chip" [class.active]="!sousCategorieActive"
+                  (click)="filtrerSousCategorie('')">
+            Tous <span class="souscat-chip-count">{{ compteCategorieActive }}</span>
+          </button>
+          <button type="button" *ngFor="let sc of sousCategoriesActives; trackBy: trackByStr"
+                  class="souscat-chip" [class.active]="sousCategorieActive === sc"
+                  (click)="filtrerSousCategorie(sc)">
+            {{ sc }} <span class="souscat-chip-count">{{ compteSousCategorie(sc) }}</span>
+          </button>
+        </div>
+
+        <!-- Niveau 3 : sous-sous-catégories de la sous-catégorie active. -->
+        <div class="souscat-bar souscat-bar--niv2 ub-anim-fade-up" *ngIf="sousSousCategoriesActives.length > 0">
+          <button type="button" *ngFor="let ssc of sousSousCategoriesActives; trackBy: trackByStr"
+                  class="souscat-chip" [class.active]="sousSousCategorieActive === ssc"
+                  (click)="filtrerSousSousCategorie(ssc)">
+            {{ ssc }} <span class="souscat-chip-count">{{ compteSousSousCategorie(ssc) }}</span>
+          </button>
+        </div>
+
         <!-- Chips type de produit -->
         <div class="d-flex flex-wrap gap-2 mb-4">
           <button *ngFor="let t of typesActifs; trackBy: trackByStr"
@@ -287,20 +310,20 @@
     <div class="produit-visuel" (click)="voirDetail(p)"
          (mouseenter)="demarrerCarrousel(p)" (mouseleave)="arreterCarrousel()">
 
-      <!-- Image réelle (upload admin) si disponible -->
-      <img *ngIf="p.images && p.images.length > 0" [src]="imageActuelle(p)" [alt]="p.titre" class="produit-img">
+      <!-- Image réelle (upload admin) si disponible — masquée en vue « Documents Gratuits » -->
+      <img *ngIf="imagesVisibles(p)" [src]="imageActuelle(p)" [alt]="p.titre" class="produit-img">
 
-      <!-- Repli icône + couleur (aucune photo réelle pour ce produit) -->
-      <div *ngIf="!p.images || p.images.length === 0" class="produit-icone-wrap" [style.background]="p.iconeBg">
+      <!-- Repli icône + couleur (aucune photo réelle, ou vue « Documents Gratuits ») -->
+      <div *ngIf="!imagesVisibles(p)" class="produit-icone-wrap" [style.background]="p.iconeBg">
         <i class="fa-solid {{ p.icone }}"></i>
       </div>
 
       <!-- Indicateur carrousel (plusieurs images) -->
-      <div class="produit-img-dots" *ngIf="p.images && p.images.length > 1">
+      <div class="produit-img-dots" *ngIf="imagesVisibles(p) && p.images && p.images.length > 1">
         <span *ngFor="let img of p.images; let i = index; trackBy: trackByIndex"
               class="produit-img-dot" [class.active]="i === indexImageActuel(p)"></span>
       </div>
-      <span class="produit-img-compteur" *ngIf="p.images && p.images.length > 1">
+      <span class="produit-img-compteur" *ngIf="imagesVisibles(p) && p.images && p.images.length > 1">
         <i class="fa-solid fa-images"></i>{{ indexImageActuel(p) + 1 }}/{{ p.images.length }}
       </span>
 
@@ -477,12 +500,12 @@
       Catégorie <i class="fa-solid fa-chevron-down filtre-accordion-chevron"></i>
     </summary>
     <div class="filtre-accordion-body">
-      <div class="d-flex flex-column gap-1">
+      <div class="filtre-cat-liste">
         <button *ngFor="let cat of categories; trackBy: trackByStr"
                 (click)="filtrerCategorie(cat.nom)"
                 class="filtre-cat-btn"
                 [class.active]="categorieActive === cat.nom">
-          <span class="d-flex align-items-center gap-2">
+          <span class="filtre-cat-nom">
             <span class="filtre-cat-icon"><i class="fa-solid {{ cat.icone }}"></i></span>
             {{ cat.nom }}
           </span>
@@ -490,25 +513,12 @@
         </button>
       </div>
 
-      <div *ngIf="sousCategoriesActives.length > 0" class="mt-2 ms-3 d-flex flex-column gap-1">
-        <button *ngFor="let sc of sousCategoriesActives; trackBy: trackByStr"
-                (click)="filtrerSousCategorie(sc)"
-                class="filtre-sub-btn"
-                [class.active]="sousCategorieActive === sc">
-          <i class="fa-solid fa-circle-dot me-2" style="font-size:9px; opacity:.5;"></i>
-          {{ sc }}
-        </button>
-      </div>
-
-      <div *ngIf="sousSousCategoriesActives.length > 0" class="mt-2 ms-4 d-flex flex-column gap-1">
-        <button *ngFor="let ssc of sousSousCategoriesActives; trackBy: trackByStr"
-                (click)="filtrerSousSousCategorie(ssc)"
-                class="filtre-sub-btn"
-                [class.active]="sousSousCategorieActive === ssc">
-          <i class="fa-solid fa-circle-dot me-2" style="font-size:8px; opacity:.4;"></i>
-          {{ ssc }}
-        </button>
-      </div>
+      <!-- Les sous-catégories ne sont plus listées ici : elles s'affichent en chips au-dessus de
+           la grille produits (voir .souscat-bar dans produits-col), au plus près des résultats. -->
+      <p *ngIf="sousCategoriesActives.length > 0" class="filtre-souscat-hint">
+        <i class="fa-solid fa-arrow-right"></i>
+        {{ sousCategoriesActives.length }} sous-catégorie<span *ngIf="sousCategoriesActives.length > 1">s</span> — voir au-dessus des produits
+      </p>
     </div>
   </details>
 
