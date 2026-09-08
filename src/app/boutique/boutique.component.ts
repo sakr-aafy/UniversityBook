@@ -6,6 +6,7 @@ import { CartService } from '../services/cart.service';
 import { CompareService } from '../services/compare.service';
 import { BoutiqueFavoritesService } from '../services/boutique-favorites.service';
 import { CatalogueService, Produit, estProduitDocument, estCategorieJeux, estCategorieSoutenance } from '../services/catalogue.service';
+import { CategoriesSiteService } from '../services/categories-site.service';
 import { DocumentsService } from '../services/documents.service';
 import { AuthService } from '../services/auth.service';
 import { AdminProduitsService, ProduitForm } from '../services/admin-produits.service';
@@ -40,6 +41,7 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
     private compareService: CompareService,
     private favService: BoutiqueFavoritesService,
     public catalogueService: CatalogueService,
+    private categoriesSiteService: CategoriesSiteService,
     private documentsService: DocumentsService,
     private authService: AuthService,
     private adminProduitsService: AdminProduitsService,
@@ -53,6 +55,22 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
    *  calcule un repli dynamique (voir le getter ci-dessous) plutôt que de figer "Documents" par
    *  défaut, qui peut être vide alors que Fournitures a du contenu publié (ou l'inverse). */
   private vueChoisie: Vue | null = null;
+
+  /** Noms des catégories de la taxonomie "Documents" (sur site) — `CategorieSite`, celle qui
+   *  alimente la colonne "Documents" du mega-menu Header (voir header.component.ts) et dont le nom
+   *  est recopié tel quel sur `Produit.categorie` par syncProduitSite.js. Normalisés (casse /
+   *  accents / espaces) pour la comparaison. Sert à classer un produit dans la vue Documents même
+   *  quand son libellé n'a aucun mot-clé documentaire ("prépa", "Médecine"…) — voir vueDeProduit. */
+  private nomsCategoriesSite = new Set<string>();
+
+  /** Clé de comparaison uniforme d'un libellé de catégorie : minuscules, sans accents, espaces
+   *  normalisés — les libellés viennent de saisies caisse en texte libre, jamais garanties
+   *  cohérentes en casse/accentuation d'une collection à l'autre. */
+  private cleUniforme(v: string | undefined | null): string {
+    return (v || '')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .trim().toLowerCase().replace(/\s+/g, ' ');
+  }
 
   get vueActive(): Vue {
     if (this.vueChoisie) return this.vueChoisie;
@@ -73,6 +91,13 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
     // Documents, pas dans Fournitures scolaires — voir estProduitDocument / MOTS_CLES_DOCUMENT
     // dans catalogue.service.ts.
     if (estProduitDocument(p)) return 'documents';
+    // Publié sous une catégorie de la taxonomie "Documents" (sur site) : `CategorieSite`, celle
+    // qui alimente la colonne "Documents" du mega-menu Header et dont le nom est recopié tel quel
+    // sur `Produit.categorie` (syncProduitSite.js). Un lien "Documents › Prépa › Deuxième" du
+    // Header doit alors trouver ses produits ici, même si "prépa" n'a aucun mot-clé documentaire
+    // — sinon ils tombaient tous dans "Fournitures scolaires" et la Boutique s'affichait vide.
+    const cat = this.cleUniforme(p.categorie);
+    if (cat && this.nomsCategoriesSite.has(cat)) return 'documents';
     return 'fournitures';
   }
 
@@ -215,11 +240,16 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
     if (this.categorieActive !== 'Tous') {
       res = res.filter(p => this.correspondCategorie(p, this.categorieActive));
     }
+    // Comparaison tolérante (casse / accents / espaces) : la valeur vient d'un lien du Header
+    // (nom de sous-catégorie `CategorieSite`) ou des filtres latéraux, et n'est pas garantie
+    // d'être écrite exactement comme sur le produit — un `===` strict masquait tous les résultats.
     if (this.sousCategorieActive) {
-      res = res.filter(p => p.sousCategorie === this.sousCategorieActive);
+      const cible = this.cleUniforme(this.sousCategorieActive);
+      res = res.filter(p => this.cleUniforme(p.sousCategorie) === cible);
     }
     if (this.sousSousCategorieActive) {
-      res = res.filter(p => p.sousSousCategorie === this.sousSousCategorieActive);
+      const cible = this.cleUniforme(this.sousSousCategorieActive);
+      res = res.filter(p => this.cleUniforme(p.sousSousCategorie) === cible);
     }
     if (this.typeActif !== 'Tous') {
       res = res.filter(p => p.type === this.typeActif);
@@ -753,6 +783,16 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
     // suppressions faits côté admin sans qu'aucun code n'ait besoin d'être changé (pas de
     // push temps réel — voir catalogue.service.ts#actualiser()).
     this.catalogueService.actualiser();
+
+    // Taxonomie "Documents" (sur site) : sert à ranger dans la vue Documents les produits publiés
+    // sous une catégorie CategorieSite sans mot-clé documentaire (voir vueDeProduit). Échec
+    // silencieux — la classification par mots-clés reste opérante.
+    this.categoriesSiteService.list().subscribe({
+      next: res => (this.nomsCategoriesSite = new Set(
+        (res.categories || []).map(c => this.cleUniforme(c.nom)).filter(n => n)
+      )),
+      error: () => {}
+    });
 
     // Abonnement (pas une simple lecture ponctuelle du snapshot) : Angular ne réinstancie pas
     // ce composant quand seuls les query params changent sur la même route /boutique — un clic
