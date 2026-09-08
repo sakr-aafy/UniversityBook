@@ -144,6 +144,41 @@ export class DocumentsComponent implements OnInit, OnDestroy {
    * documents.controller.js#telechargerFichier) puis les enregistre via un lien `<a download>`
    * temporaire — même mécanisme que user/commandes/commandes.component.ts#telechargerFacture.
    */
+  /** Extensions courantes par type MIME — repli quand ni l'URL ni le chemin du fichier n'en
+   *  portent (Word, PowerPoint, Excel, texte, archives, images…). */
+  private static readonly EXT_PAR_MIME: Record<string, string> = {
+    'application/pdf': '.pdf',
+    'application/msword': '.doc',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+    'application/vnd.oasis.opendocument.text': '.odt',
+    'application/vnd.ms-powerpoint': '.ppt',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation': '.pptx',
+    'application/vnd.oasis.opendocument.presentation': '.odp',
+    'application/vnd.ms-excel': '.xls',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
+    'application/vnd.oasis.opendocument.spreadsheet': '.ods',
+    'text/plain': '.txt',
+    'text/csv': '.csv',
+    'application/rtf': '.rtf',
+    'text/rtf': '.rtf',
+    'application/zip': '.zip',
+    'application/epub+zip': '.epub',
+    'image/jpeg': '.jpg',
+    'image/png': '.png',
+    'image/webp': '.webp',
+    'image/gif': '.gif',
+    'image/svg+xml': '.svg',
+  };
+
+  /** Extension du fichier : depuis l'URL/le chemin (query et hash retirés), sinon depuis le type
+   *  MIME du blob renvoyé par le backend, sinon repli `.pdf`. */
+  private extensionFichier(doc: PurchasedDocument, blob: Blob): string {
+    const source = (doc.fichierUrl || doc.fichierDropboxPath || '').split(/[?#]/)[0];
+    const m = source.match(/(\.[a-z0-9]{1,8})$/i);
+    if (m) return m[1].toLowerCase();
+    return DocumentsComponent.EXT_PAR_MIME[(blob.type || '').split(';')[0].trim().toLowerCase()] || '.pdf';
+  }
+
   private enregistrerSurAppareil(doc: PurchasedDocument): void {
     this.telechargementEnCoursId = doc._id;
     this.documentsService.telechargerFichier(doc._id).subscribe({
@@ -152,15 +187,14 @@ export class DocumentsComponent implements OnInit, OnDestroy {
         const url = URL.createObjectURL(blob);
         const lien = document.createElement('a');
         lien.href = url;
-        const source = doc.fichierUrl || doc.fichierDropboxPath || '';
-        const extension = (source.match(/\.[a-z0-9]+$/i)?.[0]) || '.pdf';
-        lien.download = `${doc.titre || 'document'}${extension}`;
+        const nomBase = (doc.titre || 'document').replace(/[\\/:*?"<>|\r\n]+/g, ' ').trim().slice(0, 100) || 'document';
+        lien.download = `${nomBase}${this.extensionFichier(doc, blob)}`;
         lien.click();
         URL.revokeObjectURL(url);
       },
-      error: () => {
+      error: err => {
         this.telechargementEnCoursId = null;
-        this.message = "Erreur lors de l'enregistrement du fichier. Réessayez.";
+        this.message = err?.error?.message || "Erreur lors de l'enregistrement du fichier. Réessayez.";
       }
     });
   }
