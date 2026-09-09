@@ -66,6 +66,11 @@
           <div class="d-flex align-items-center gap-3 flex-wrap pdd-meta">
             <span><i class="fa-solid fa-hashtag me-1"></i>{{ reference(p) }}</span>
             <span><i class="fa-solid fa-barcode me-1"></i>{{ p.sku }}</span>
+            <!-- Deux états seulement : « En stock » ou « Hors stock » — jamais « Rupture de stock ». -->
+            <span [style.color]="estDisponible ? '#166534' : '#8C2433'">
+              <i class="fa-solid" [class.fa-circle-check]="estDisponible" [class.fa-circle-xmark]="!estDisponible"></i>
+              {{ estDisponible ? 'En stock' : 'Hors stock' }}
+            </span>
           </div>
 
           <div class="pdd-prix-wrap">
