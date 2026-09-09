@@ -267,10 +267,17 @@ export class HomeComponent implements OnInit, OnDestroy {
     const estCategorieCommuneDocuments = (p: Produit) =>
       sectionGeneraliste && vue === 'fournitures' && estCategorieCommune(p);
 
+    // La section généraliste "Documents universitaires" ne reprend PAS les documents numériques
+    // publiés depuis la caisse (Produit.origineCaisse) : ceux-ci ont déjà leurs propres
+    // carrousels "Documents payants" et "Documents gratuits" juste en dessous.
+    const estDocumentPayantOuGratuit = (p: Produit) =>
+      sectionGeneraliste && vue === 'documents' && !!p.origineCaisse;
+
     return this.catalogueService.produits
       .filter(dansLaVue)
       .filter(p => !estSousSectionDediee(p))
       .filter(p => !estCategorieCommuneDocuments(p))
+      .filter(p => !estDocumentPayantOuGratuit(p))
       .filter(p => !categorie || this.correspondCategorie(p, categorie))
       .filter(p => !sousCategorie || p.sousCategorie === sousCategorie)
       .filter(p => !sousSousCategorie || p.sousSousCategorie === sousSousCategorie)
