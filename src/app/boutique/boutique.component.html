@@ -304,7 +304,7 @@
      TEMPLATE : CARTE PRODUIT (réutilisée grille + carrousel)
 ═══════════════════════════════════════════════════════════════ -->
 <ng-template #produitCardTpl let-p="p">
-  <article class="produit-card h-100" [class.indisponible]="p.disponible === false">
+  <article class="produit-card h-100">
 
     <!-- Visuel -->
     <div class="produit-visuel" (click)="voirDetail(p)"
@@ -361,8 +361,6 @@
         {{ p.formatDocument }}
       </span>
 
-      <span *ngIf="p.disponible === false" class="produit-indispo-tag">Hors stock</span>
-
       <!-- Menu admin (⋮) : édition rapide du produit, visible seulement pour un admin connecté -->
       <div class="produit-admin" *ngIf="peutEditerProduit(p)" (click)="$event.stopPropagation()">
         <button type="button" class="produit-admin-btn" (click)="basculerMenuAdmin(p, $event)"
@@ -412,13 +410,9 @@
         <span class="produit-avis-count">{{ p.note }} ({{ p.nombreAvis }} avis)</span>
       </div>
 
-      <div class="d-flex align-items-center justify-content-between produit-meta">
+      <div class="d-flex align-items-center produit-meta" *ngIf="p.type">
         <span class="small" style="color:#8A929C; font-size:12.5px;">
           <i class="fa-solid fa-tag me-1" style="font-size:10px;"></i>{{ p.type }}
-        </span>
-        <span class="produit-dispo" [class.rupture]="p.disponible === false">
-          <i class="fa-solid" [class.fa-circle-check]="p.disponible !== false" [class.fa-circle-xmark]="p.disponible === false"></i>
-          {{ p.disponible === false ? 'Hors stock' : 'En stock' }}
         </span>
       </div>
 
@@ -461,6 +455,7 @@
         <button *ngIf="!(p.domaine === 'documents' && p.gratuit)"
                 (click)="ajouterPanier(p); $event.stopPropagation()"
                 [disabled]="p.disponible === false"
+                [title]="p.disponible === false ? 'Produit indisponible pour le moment' : 'Ajouter au panier'"
                 class="produit-btn-ajouter d-flex align-items-center justify-content-center gap-2 ub-ripple">
           <i class="fa-solid fa-cart-plus"></i>
           Ajouter au panier
