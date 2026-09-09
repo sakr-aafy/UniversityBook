@@ -228,15 +228,10 @@ export class ProduitDetailComponent implements OnInit, OnDestroy {
   }
 
   get estDisponible(): boolean {
-    if (this.produit?.disponible === false) return false;
-    // Un pack multi-produits (badge "Pack", créé côté admin) n'a pas de stock unitaire réel :
-    // `stock` reste à 0 par défaut (jamais renseigné pour ce type de produit — contrairement à
-    // une fourniture synchronisée depuis la caisse, dont le stock est réellement suivi). Le
-    // bloquer sur ce champ non pertinent l'affichait à tort "Rupture de stock" alors que
-    // `disponible` (seul signal qui fait foi pour un pack, voir catalogue.service.ts#mapProduit)
-    // était bien à true.
-    if (this.produit?.badge === 'Pack') return true;
-    return this.stockAffiche === null || this.stockAffiche > 0;
+    // Seul signal qui fait foi : le drapeau `disponible` piloté par l'admin (menu ⋮ « Marquer
+    // Hors stock »). La quantité en stock ne bloque plus l'achat — un produit reste commandable
+    // tant qu'il n'a pas été explicitement marqué indisponible (même règle qu'en boutique).
+    return this.produit?.disponible !== false;
   }
 
   /* ── Composition d'un pack (produits inclus, avec leur image) ── */
@@ -266,7 +261,8 @@ export class ProduitDetailComponent implements OnInit, OnDestroy {
   /* ── Quantité ── */
 
   incrementerQuantite(): void {
-    if (this.stockAffiche !== null && this.quantite >= this.stockAffiche) return;
+    // Plus de plafond lié au stock : la quantité n'est bornée que par une limite de sécurité.
+    if (this.quantite >= 999) return;
     this.quantite++;
   }
 

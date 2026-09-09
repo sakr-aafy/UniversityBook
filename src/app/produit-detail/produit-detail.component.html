@@ -66,12 +66,6 @@
           <div class="d-flex align-items-center gap-3 flex-wrap pdd-meta">
             <span><i class="fa-solid fa-hashtag me-1"></i>{{ reference(p) }}</span>
             <span><i class="fa-solid fa-barcode me-1"></i>{{ p.sku }}</span>
-            <span [style.color]="etatStock === 'rupture' ? '#8C2433' : '#166534'">
-              <i class="fa-solid"
-                 [class.fa-circle-check]="etatStock === 'en-stock'"
-                 [class.fa-circle-xmark]="etatStock === 'rupture'"></i>
-              {{ etatStock === 'en-stock' ? 'En stock' : 'Rupture de stock' }}
-            </span>
           </div>
 
           <div class="pdd-prix-wrap">
@@ -128,7 +122,7 @@
                 <i class="fa-solid fa-minus"></i>
               </button>
               <span style="min-width:28px;text-align:center;font-weight:700;">{{ quantite }}</span>
-              <button class="qty-btn" (click)="incrementerQuantite()" [disabled]="stockAffiche !== null && quantite >= stockAffiche">
+              <button class="qty-btn" (click)="incrementerQuantite()" [disabled]="quantite >= 999">
                 <i class="fa-solid fa-plus"></i>
               </button>
             </div>
