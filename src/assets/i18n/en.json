@@ -1,0 +1,60 @@
+{
+  "header": {
+    "admin": "Admin",
+    "topbar": {
+      "hours": "Mon – Sat · 8:00 am – 6:00 pm"
+    },
+    "nav": {
+      "home": "Home",
+      "shop": "Shop",
+      "paidDocs": "Paid Documents",
+      "freeDocs": "Free Documents",
+      "contact": "Contact"
+    },
+    "mega": {
+      "seeAll": "See all",
+      "footAll": "Browse the whole shop",
+      "rail": {
+        "documents": "Documents",
+        "soutenance": "Thesis defense",
+        "supplies": "School supplies",
+        "games": "Games",
+        "paidDocs": "Paid documents",
+        "freeDocs": "Free documents"
+      },
+      "title": {
+        "documents": "University documents",
+        "supplies": "School supplies",
+        "soutenance": "Thesis defense",
+        "games": "Games",
+        "paidDocs": "Paid documents",
+        "freeDocs": "Free documents"
+      },
+      "blurb": {
+        "documents": "Lectures, tutorials, solved exams and books, sorted by faculty.",
+        "supplies": "Writing, paper, filing, technical drawing and small classroom tools.",
+        "soutenance": "Printing and binding of dissertations, cover pages and presentation accessories.",
+        "games": "Educational games, board games, puzzles and card games.",
+        "paidDocs": "Verified premium content — instant access after purchase.",
+        "freeDocs": "Open-access resources shared by the student community."
+      }
+    },
+    "search": {
+      "placeholder": "Search for a document, a course, a legal code…",
+      "button": "Search"
+    },
+    "actions": {
+      "notifications": "Notifications",
+      "markAllRead": "Mark all as read",
+      "noNotifications": "No notifications.",
+      "login": "Sign in",
+      "register": "Sign up",
+      "mySpace": "My account",
+      "logout": "Sign out",
+      "quit": "Exit"
+    },
+    "mobile": {
+      "cart": "Cart"
+    }
+  }
+}

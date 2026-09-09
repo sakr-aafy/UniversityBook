@@ -8,6 +8,7 @@ import { NotificationsService, AppNotification } from '../services/notifications
 import { ConfirmDialogService } from '../services/confirm-dialog.service';
 import { CategoriesSiteService, CategorieSiteDto } from '../services/categories-site.service';
 import { CategoriesCaisseService, CategorieCaisseDto } from '../services/categories-caisse.service';
+import { LangueService, CodeLangue } from '../services/langue.service';
 import { photoUrl } from '../shared/photo-url.util';
 import { formatCategorieLabel } from '../shared/format-label.util';
 
@@ -24,7 +25,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   isMobile: boolean = false;
   menuOpen: boolean = false;
   searchOpen: boolean = false;
-  currentLang: string = 'FR';
+  /** Codes de langue affichés dans le sélecteur (voir template). */
+  readonly langues = ['FR', 'EN', 'AR'];
   cartCount: number = 0;
   cartTotal: string = '0,000';
   cartBump: boolean = false;
@@ -103,6 +105,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private confirmDialogService: ConfirmDialogService,
     private categoriesSiteService: CategoriesSiteService,
     private categoriesCaisseService: CategoriesCaisseService,
+    private langueService: LangueService,
     private router: Router
   ) {}
 
@@ -200,8 +203,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.mobileExpanded.clear();
   }
 
+  /** Code de langue actif en majuscules (FR / EN / AR) — pour l'état actif du sélecteur. */
+  get currentLang(): string {
+    return this.langueService.courante.toUpperCase();
+  }
+
   setLang(l: string): void {
-    this.currentLang = l;
+    this.langueService.definir(l.toLowerCase() as CodeLangue);
   }
 
   // ── Notifications ──

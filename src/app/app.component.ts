@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { LangueService } from './services/langue.service';
 
 @Component({
   selector: 'app-root',
@@ -16,9 +17,10 @@ export class AppComponent implements OnInit {
    *  branding, formulaires écrasés entre les deux — voir admin/produits). */
   afficherChromePublic = true;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private langue: LangueService) {}
 
   ngOnInit(): void {
+    this.langue.init();
     this.majChromePublic(this.router.url);
     this.router.events.pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
       .subscribe(e => this.majChromePublic(e.urlAfterRedirects));

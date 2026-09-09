@@ -1,0 +1,60 @@
+{
+  "header": {
+    "admin": "Admin",
+    "topbar": {
+      "hours": "Lun – Sam · 8h00 – 18h00"
+    },
+    "nav": {
+      "home": "Accueil",
+      "shop": "Boutique",
+      "paidDocs": "Documents Payants",
+      "freeDocs": "Documents Gratuits",
+      "contact": "Contact"
+    },
+    "mega": {
+      "seeAll": "Tout voir",
+      "footAll": "Voir toute la boutique",
+      "rail": {
+        "documents": "Documents",
+        "soutenance": "Soutenance",
+        "supplies": "Fournitures scolaires",
+        "games": "Jeux",
+        "paidDocs": "Documents payants",
+        "freeDocs": "Documents gratuits"
+      },
+      "title": {
+        "documents": "Documents universitaires",
+        "supplies": "Fournitures scolaires",
+        "soutenance": "Soutenance",
+        "games": "Jeux",
+        "paidDocs": "Documents payants",
+        "freeDocs": "Documents gratuits"
+      },
+      "blurb": {
+        "documents": "Cours, TD, examens corrigés et ouvrages, classés par faculté.",
+        "supplies": "Écriture, papier, classement, dessin technique et petit matériel de classe.",
+        "soutenance": "Impression et reliure de mémoires, pages de garde et accessoires de présentation.",
+        "games": "Jeux éducatifs, jeux de société, puzzles et jeux de cartes.",
+        "paidDocs": "Contenus premium vérifiés — accès immédiat après achat.",
+        "freeDocs": "Ressources en accès libre partagées par la communauté étudiante."
+      }
+    },
+    "search": {
+      "placeholder": "Rechercher un document, un cours, un code juridique…",
+      "button": "Rechercher"
+    },
+    "actions": {
+      "notifications": "Notifications",
+      "markAllRead": "Tout marquer lu",
+      "noNotifications": "Aucune notification.",
+      "login": "Connexion",
+      "register": "Inscription",
+      "mySpace": "Mon espace",
+      "logout": "Déconnexion",
+      "quit": "Quitter"
+    },
+    "mobile": {
+      "cart": "Panier"
+    }
+  }
+}

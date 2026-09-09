@@ -22,7 +22,7 @@
       <div class="d-flex align-items-center gap-3">
         <span class="d-none d-lg-flex align-items-center gap-2 small text-secondary">
           <i class="fa-regular fa-clock"></i>
-          Lun – Sam · 8h00 – 18h00
+          {{ 'header.topbar.hours' | translate }}
         </span>
         <span class="vr d-none d-lg-block"></span>
 
@@ -30,7 +30,7 @@
         <div class="d-flex align-items-center gap-1 border rounded-pill px-2 py-1">
           <i class="fa-solid fa-globe text-secondary" style="font-size:12px"></i>
           <div class="vr mx-1"></div>
-          <button *ngFor="let l of ['FR','EN','AR']"
+          <button *ngFor="let l of langues"
                   (click)="setLang(l)"
                   class="btn btn-sm rounded-pill px-2 py-0"
                   style="font-size:11px; font-weight:700;"
@@ -78,7 +78,7 @@
       <!-- Accueil -->
       <a routerLink="/" routerLinkActive="ub-active" [routerLinkActiveOptions]="{exact:true}"
          class="nav-link fw-semibold text-dark px-0 py-2 position-relative">
-        Accueil
+        {{ 'header.nav.home' | translate }}
       </a>
 
       <!-- Boutique : mega-menu au survol (souris). Panneau large : rail des rayons à gauche,
@@ -88,7 +88,7 @@
       <div class="ub-boutique-item position-relative">
         <a routerLink="/boutique" routerLinkActive="ub-active"
            class="nav-link fw-semibold text-secondary py-2 d-flex align-items-center gap-1">
-          Boutique
+          {{ 'header.nav.shop' | translate }}
           <i class="fa-solid fa-chevron-down" style="font-size:10px;"></i>
         </a>
 
@@ -100,42 +100,42 @@
                (mouseenter)="megaDomaine = 'documents'" (focus)="megaDomaine = 'documents'"
                routerLink="/boutique" [queryParams]="{domaine:'documents'}">
               <i class="fa-solid fa-book"></i>
-              <span class="ubm2-rail-label">Documents</span>
+              <span class="ubm2-rail-label">{{ 'header.mega.rail.documents' | translate }}</span>
               <i class="fa-solid fa-chevron-right ubm2-rail-arrow"></i>
             </a>
             <a class="ubm2-rail-item" [class.is-active]="megaDomaine === 'soutenance'"
                (mouseenter)="megaDomaine = 'soutenance'" (focus)="megaDomaine = 'soutenance'"
                routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie:'Soutenance'}">
               <i class="fa-solid fa-graduation-cap"></i>
-              <span class="ubm2-rail-label">Soutenance</span>
+              <span class="ubm2-rail-label">{{ 'header.mega.rail.soutenance' | translate }}</span>
               <i class="fa-solid fa-chevron-right ubm2-rail-arrow"></i>
             </a>
             <a class="ubm2-rail-item" [class.is-active]="megaDomaine === 'fournitures'"
                (mouseenter)="megaDomaine = 'fournitures'" (focus)="megaDomaine = 'fournitures'"
                routerLink="/boutique" [queryParams]="{domaine:'fournitures'}">
               <i class="fa-solid fa-pen-ruler"></i>
-              <span class="ubm2-rail-label">Fournitures scolaires</span>
+              <span class="ubm2-rail-label">{{ 'header.mega.rail.supplies' | translate }}</span>
               <i class="fa-solid fa-chevron-right ubm2-rail-arrow"></i>
             </a>
             <a class="ubm2-rail-item" [class.is-active]="megaDomaine === 'jeux'"
                (mouseenter)="megaDomaine = 'jeux'" (focus)="megaDomaine = 'jeux'"
                routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie:'Jeux'}">
               <i class="fa-solid fa-dice"></i>
-              <span class="ubm2-rail-label">Jeux</span>
+              <span class="ubm2-rail-label">{{ 'header.mega.rail.games' | translate }}</span>
               <i class="fa-solid fa-chevron-right ubm2-rail-arrow"></i>
             </a>
             <a class="ubm2-rail-item" [class.is-active]="megaDomaine === 'payants'"
                (mouseenter)="megaDomaine = 'payants'" (focus)="megaDomaine = 'payants'"
                routerLink="/boutique" [queryParams]="{domaine:'documents', payant:'1'}">
               <i class="fa-solid fa-file-invoice"></i>
-              <span class="ubm2-rail-label">Documents payants</span>
+              <span class="ubm2-rail-label">{{ 'header.mega.rail.paidDocs' | translate }}</span>
               <i class="fa-solid fa-chevron-right ubm2-rail-arrow"></i>
             </a>
             <a class="ubm2-rail-item" [class.is-active]="megaDomaine === 'gratuits'"
                (mouseenter)="megaDomaine = 'gratuits'" (focus)="megaDomaine = 'gratuits'"
                routerLink="/boutique" [queryParams]="{domaine:'documents', gratuit:'1'}">
               <i class="fa-solid fa-gift"></i>
-              <span class="ubm2-rail-label">Documents gratuits</span>
+              <span class="ubm2-rail-label">{{ 'header.mega.rail.freeDocs' | translate }}</span>
               <i class="fa-solid fa-chevron-right ubm2-rail-arrow"></i>
             </a>
           </div>
@@ -146,9 +146,9 @@
             <!-- Documents -->
             <div class="ubm2-domain" *ngIf="megaDomaine === 'documents'">
               <div class="ubm2-domain-head">
-                <h3>Documents universitaires</h3>
+                <h3>{{ 'header.mega.title.documents' | translate }}</h3>
                 <a routerLink="/boutique" [queryParams]="{domaine:'documents'}" class="ubm2-see-all">
-                  Tout voir <i class="fa-solid fa-arrow-right"></i>
+                  {{ 'header.mega.seeAll' | translate }} <i class="fa-solid fa-arrow-right"></i>
                 </a>
               </div>
               <div class="ubm2-cols" *ngIf="categoriesSite.length; else docVide">
@@ -161,16 +161,16 @@
                 </div>
               </div>
               <ng-template #docVide>
-                <p class="ubm2-blurb">Cours, TD, examens corrigés et ouvrages, classés par faculté.</p>
+                <p class="ubm2-blurb">{{ 'header.mega.blurb.documents' | translate }}</p>
               </ng-template>
             </div>
 
             <!-- Fournitures scolaires -->
             <div class="ubm2-domain" *ngIf="megaDomaine === 'fournitures'">
               <div class="ubm2-domain-head">
-                <h3>Fournitures scolaires</h3>
+                <h3>{{ 'header.mega.title.supplies' | translate }}</h3>
                 <a routerLink="/boutique" [queryParams]="{domaine:'fournitures'}" class="ubm2-see-all">
-                  Tout voir <i class="fa-solid fa-arrow-right"></i>
+                  {{ 'header.mega.seeAll' | translate }} <i class="fa-solid fa-arrow-right"></i>
                 </a>
               </div>
               <div class="ubm2-cols" *ngIf="categoriesCaisseVisibles.length; else fourVide">
@@ -183,65 +183,65 @@
                 </div>
               </div>
               <ng-template #fourVide>
-                <p class="ubm2-blurb">Écriture, papier, classement, dessin technique et petit matériel de classe.</p>
+                <p class="ubm2-blurb">{{ 'header.mega.blurb.supplies' | translate }}</p>
               </ng-template>
             </div>
 
             <!-- Soutenance -->
             <div class="ubm2-domain" *ngIf="megaDomaine === 'soutenance'">
               <div class="ubm2-domain-head">
-                <h3>Soutenance</h3>
+                <h3>{{ 'header.mega.title.soutenance' | translate }}</h3>
                 <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie:'Soutenance'}" class="ubm2-see-all">
-                  Tout voir <i class="fa-solid fa-arrow-right"></i>
+                  {{ 'header.mega.seeAll' | translate }} <i class="fa-solid fa-arrow-right"></i>
                 </a>
               </div>
-              <p class="ubm2-blurb">Impression et reliure de mémoires, pages de garde et accessoires de présentation.</p>
+              <p class="ubm2-blurb">{{ 'header.mega.blurb.soutenance' | translate }}</p>
             </div>
 
             <!-- Jeux -->
             <div class="ubm2-domain" *ngIf="megaDomaine === 'jeux'">
               <div class="ubm2-domain-head">
-                <h3>Jeux</h3>
+                <h3>{{ 'header.mega.title.games' | translate }}</h3>
                 <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie:'Jeux'}" class="ubm2-see-all">
-                  Tout voir <i class="fa-solid fa-arrow-right"></i>
+                  {{ 'header.mega.seeAll' | translate }} <i class="fa-solid fa-arrow-right"></i>
                 </a>
               </div>
-              <p class="ubm2-blurb">Jeux éducatifs, jeux de société, puzzles et jeux de cartes.</p>
+              <p class="ubm2-blurb">{{ 'header.mega.blurb.games' | translate }}</p>
             </div>
 
             <!-- Documents payants -->
             <div class="ubm2-domain" *ngIf="megaDomaine === 'payants'">
               <div class="ubm2-domain-head">
-                <h3>Documents payants</h3>
+                <h3>{{ 'header.mega.title.paidDocs' | translate }}</h3>
                 <a routerLink="/boutique" [queryParams]="{domaine:'documents', payant:'1'}" class="ubm2-see-all">
-                  Tout voir <i class="fa-solid fa-arrow-right"></i>
+                  {{ 'header.mega.seeAll' | translate }} <i class="fa-solid fa-arrow-right"></i>
                 </a>
               </div>
-              <p class="ubm2-blurb">Contenus premium vérifiés — accès immédiat après achat.</p>
+              <p class="ubm2-blurb">{{ 'header.mega.blurb.paidDocs' | translate }}</p>
             </div>
 
             <!-- Documents gratuits -->
             <div class="ubm2-domain" *ngIf="megaDomaine === 'gratuits'">
               <div class="ubm2-domain-head">
-                <h3>Documents gratuits</h3>
+                <h3>{{ 'header.mega.title.freeDocs' | translate }}</h3>
                 <a routerLink="/boutique" [queryParams]="{domaine:'documents', gratuit:'1'}" class="ubm2-see-all">
-                  Tout voir <i class="fa-solid fa-arrow-right"></i>
+                  {{ 'header.mega.seeAll' | translate }} <i class="fa-solid fa-arrow-right"></i>
                 </a>
               </div>
-              <p class="ubm2-blurb">Ressources en accès libre partagées par la communauté étudiante.</p>
+              <p class="ubm2-blurb">{{ 'header.mega.blurb.freeDocs' | translate }}</p>
             </div>
           </div>
 
           <!-- FOOT -->
           <a routerLink="/boutique" class="ubm2-foot">
-            Voir toute la boutique
+            {{ 'header.mega.footAll' | translate }}
             <i class="fa-solid fa-arrow-right"></i>
           </a>
         </div>
       </div>
-      <a routerLink="/boutique" [queryParams]="{domaine:'documents', payant:'1'}" class="nav-link fw-semibold text-secondary py-2">Documents Payants</a>
-      <a routerLink="/boutique" [queryParams]="{domaine:'documents', gratuit:'1'}" class="nav-link fw-semibold text-secondary py-2">Documents Gratuits</a>
-      <a routerLink="/contact" class="nav-link fw-semibold text-secondary py-2">Contact</a>
+      <a routerLink="/boutique" [queryParams]="{domaine:'documents', payant:'1'}" class="nav-link fw-semibold text-secondary py-2">{{ 'header.nav.paidDocs' | translate }}</a>
+      <a routerLink="/boutique" [queryParams]="{domaine:'documents', gratuit:'1'}" class="nav-link fw-semibold text-secondary py-2">{{ 'header.nav.freeDocs' | translate }}</a>
+      <a routerLink="/contact" class="nav-link fw-semibold text-secondary py-2">{{ 'header.nav.contact' | translate }}</a>
     </div>
 
     <!-- ACTIONS DESKTOP -->
@@ -283,11 +283,11 @@
 
         <div class="ub-dropdown-panel" *ngIf="notifOuvert" (click)="$event.stopPropagation()">
           <div class="d-flex align-items-center justify-content-between px-3 pt-3 pb-2">
-            <span class="fw-bold small">Notifications</span>
-            <button class="ub-lien-discret" *ngIf="notifications.length > 0" (click)="toutMarquerLu()">Tout marquer lu</button>
+            <span class="fw-bold small">{{ 'header.actions.notifications' | translate }}</span>
+            <button class="ub-lien-discret" *ngIf="notifications.length > 0" (click)="toutMarquerLu()">{{ 'header.actions.markAllRead' | translate }}</button>
           </div>
           <div class="ub-notif-list">
-            <p class="text-secondary small px-3 pb-3 mb-0" *ngIf="notifications.length === 0">Aucune notification.</p>
+            <p class="text-secondary small px-3 pb-3 mb-0" *ngIf="notifications.length === 0">{{ 'header.actions.noNotifications' | translate }}</p>
             <div class="ub-notif-item" *ngFor="let n of notifications" (click)="marquerLue(n, $event)">
               <span class="ub-notif-dot" [style.background]="n.lu ? '#D6D9DE' : 'var(--accent)'"></span>
               <div>
@@ -303,10 +303,10 @@
       <ng-container *ngIf="!currentUser">
         <a routerLink="/login" class="btn btn-outline-dark-ub d-flex align-items-center gap-2 px-4">
           <i class="fa-regular fa-user"></i>
-          Connexion
+          {{ 'header.actions.login' | translate }}
         </a>
         <a routerLink="/register" class="btn btn-accent px-4">
-          Inscription
+          {{ 'header.actions.register' | translate }}
         </a>
       </ng-container>
 
@@ -317,18 +317,18 @@
             <img *ngIf="photoUrl" [src]="photoUrl" alt="Photo de profil">
             <i *ngIf="!photoUrl" class="fa-solid" [class.fa-user-shield]="currentUser.role==='admin'" [class.fa-circle-user]="currentUser.role!=='admin'"></i>
           </span>
-          <span class="small fw-semibold text-dark d-none d-xxl-inline">{{ currentUser.role === 'admin' ? 'Admin' : currentUser.nom }}</span>
+          <span class="small fw-semibold text-dark d-none d-xxl-inline">{{ currentUser.role === 'admin' ? ('header.admin' | translate) : currentUser.nom }}</span>
           <i class="fa-solid fa-chevron-down" style="font-size:10px;color:#9AA0A8;"></i>
         </button>
 
         <div class="ub-dropdown-panel ub-user-panel" *ngIf="userMenuOuvert" (click)="$event.stopPropagation()">
           <button class="ub-user-menu-item" (click)="goToEspace()">
-            <i class="fa-solid fa-gauge"></i>Mon espace
+            <i class="fa-solid fa-gauge"></i>{{ 'header.actions.mySpace' | translate }}
           </button>
           
           <div class="ub-user-menu-sep"></div>
           <button class="ub-user-menu-item ub-user-menu-danger" (click)="logout()">
-            <i class="fa-solid fa-right-from-bracket"></i>Déconnexion
+            <i class="fa-solid fa-right-from-bracket"></i>{{ 'header.actions.logout' | translate }}
           </button>
         </div>
       </div>
@@ -356,11 +356,11 @@
         <i class="fa-solid fa-magnifying-glass ub-field-icon"></i>
         <input type="text"
                class="ub-field-input"
-               placeholder="Rechercher un document, un cours, un code juridique…"
+               [attr.placeholder]="'header.search.placeholder' | translate"
                [(ngModel)]="rechercheHeader"
                (keyup.enter)="lancerRecherche()">
       </div>
-      <button class="btn btn-accent px-4 rounded-pill fw-semibold" (click)="lancerRecherche()">Rechercher</button>
+      <button class="btn btn-accent px-4 rounded-pill fw-semibold" (click)="lancerRecherche()">{{ 'header.search.button' | translate }}</button>
     </div>
   </div>
 </div>
@@ -371,13 +371,13 @@
 
     <!-- Panier -->
     <a href="#" (click)="onCartClick($event)" class="d-flex align-items-center justify-content-between py-3 fw-semibold border-bottom">
-      <span><i class="fa-solid fa-cart-shopping me-2" style="color:var(--accent)"></i>Panier</span>
+      <span><i class="fa-solid fa-cart-shopping me-2" style="color:var(--accent)"></i>{{ 'header.mobile.cart' | translate }}</span>
       <span class="badge rounded-pill" style="background:var(--accent);font-size:11px;">{{ cartCount }}</span>
     </a>
 
     <!-- Accueil -->
     <a routerLink="/" (click)="closeMenu()" class="d-block py-3 fw-semibold border-bottom">
-      <i class="fa-solid fa-house me-2" style="color:var(--accent)"></i>Accueil
+      <i class="fa-solid fa-house me-2" style="color:var(--accent)"></i>{{ 'header.nav.home' | translate }}
     </a>
 
     <!-- Boutique : équivalent tactile du mega-menu desktop — le survol n'existe pas au tactile,
@@ -389,7 +389,7 @@
            d'un seul tap sur tactile (pas de survol). -->
       <button type="button" class="ub-mobile-row ub-mobile-row--toggle" (click)="toggleMobileExpand('boutique', $event)" [attr.aria-expanded]="isMobileExpanded('boutique')">
         <span class="ub-mobile-row-link py-3 fw-semibold">
-          <i class="fa-solid fa-shop me-2" style="color:var(--accent)"></i>Boutique
+          <i class="fa-solid fa-shop me-2" style="color:var(--accent)"></i>{{ 'header.nav.shop' | translate }}
         </span>
         <span class="ub-mobile-row-toggle" aria-hidden="true">
           <i class="fa-solid fa-chevron-down" [class.ub-rotated]="isMobileExpanded('boutique')"></i>
@@ -400,14 +400,14 @@
 
         <!-- Documents -->
         <button *ngIf="categoriesSite.length; else lienDocuments" type="button" class="ub-mobile-row ub-mobile-row--indent1 ub-mobile-row--toggle" (click)="toggleMobileExpand('doc', $event)" [attr.aria-expanded]="isMobileExpanded('doc')">
-          <span class="ub-mobile-row-link"><i class="fa-solid fa-book me-2"></i>Documents</span>
+          <span class="ub-mobile-row-link"><i class="fa-solid fa-book me-2"></i>{{ 'header.mega.rail.documents' | translate }}</span>
           <span class="ub-mobile-row-toggle" aria-hidden="true">
             <i class="fa-solid fa-chevron-down" [class.ub-rotated]="isMobileExpanded('doc')"></i>
           </span>
         </button>
         <ng-template #lienDocuments>
           <a routerLink="/boutique" [queryParams]="{domaine:'documents'}" (click)="closeMenu()" class="ub-mobile-row-link d-block ub-mobile-row--indent1">
-            <i class="fa-solid fa-book me-2"></i>Documents
+            <i class="fa-solid fa-book me-2"></i>{{ 'header.mega.rail.documents' | translate }}
           </a>
         </ng-template>
         <div class="ub-mobile-subaccordion" *ngIf="isMobileExpanded('doc')">
@@ -442,20 +442,20 @@
 
         <!-- Soutenance -->
         <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie:'Soutenance'}" (click)="closeMenu()" class="ub-mobile-row-link d-block ub-mobile-row--indent1">
-          <i class="fa-solid fa-graduation-cap me-2"></i>Soutenance
+          <i class="fa-solid fa-graduation-cap me-2"></i>{{ 'header.mega.rail.soutenance' | translate }}
         </a>
 
         <!-- Fournitures scolaires (Soutenance / Jeux / Livre exclus — voir
              header.component.ts#categoriesCaisseExclues) -->
         <button *ngIf="categoriesCaisseVisibles.length; else lienFournitures" type="button" class="ub-mobile-row ub-mobile-row--indent1 ub-mobile-row--toggle" (click)="toggleMobileExpand('four', $event)" [attr.aria-expanded]="isMobileExpanded('four')">
-          <span class="ub-mobile-row-link"><i class="fa-solid fa-pen-ruler me-2"></i>Fournitures scolaires</span>
+          <span class="ub-mobile-row-link"><i class="fa-solid fa-pen-ruler me-2"></i>{{ 'header.mega.rail.supplies' | translate }}</span>
           <span class="ub-mobile-row-toggle" aria-hidden="true">
             <i class="fa-solid fa-chevron-down" [class.ub-rotated]="isMobileExpanded('four')"></i>
           </span>
         </button>
         <ng-template #lienFournitures>
           <a routerLink="/boutique" [queryParams]="{domaine:'fournitures'}" (click)="closeMenu()" class="ub-mobile-row-link d-block ub-mobile-row--indent1">
-            <i class="fa-solid fa-pen-ruler me-2"></i>Fournitures scolaires
+            <i class="fa-solid fa-pen-ruler me-2"></i>{{ 'header.mega.rail.supplies' | translate }}
           </a>
         </ng-template>
         <div class="ub-mobile-subaccordion" *ngIf="isMobileExpanded('four')">
@@ -480,19 +480,19 @@
 
         <!-- Jeux -->
         <a routerLink="/boutique" [queryParams]="{domaine:'fournitures', categorie:'Jeux'}" (click)="closeMenu()" class="ub-mobile-row-link d-block ub-mobile-row--indent1">
-          <i class="fa-solid fa-dice me-2"></i>Jeux
+          <i class="fa-solid fa-dice me-2"></i>{{ 'header.mega.rail.games' | translate }}
         </a>
       </div>
     </div>
 
     <a routerLink="/boutique" [queryParams]="{domaine:'documents', payant:'1'}" (click)="closeMenu()" class="d-block py-3 fw-semibold border-bottom">
-      <i class="fa-solid fa-file-invoice me-2" style="color:var(--accent)"></i>Documents Payants
+      <i class="fa-solid fa-file-invoice me-2" style="color:var(--accent)"></i>{{ 'header.nav.paidDocs' | translate }}
     </a>
     <a routerLink="/boutique" [queryParams]="{domaine:'documents', gratuit:'1'}" (click)="closeMenu()" class="d-block py-3 fw-semibold border-bottom">
-      <i class="fa-solid fa-file me-2" style="color:var(--accent)"></i>Documents Gratuits
+      <i class="fa-solid fa-file me-2" style="color:var(--accent)"></i>{{ 'header.nav.freeDocs' | translate }}
     </a>
     <a routerLink="/contact" (click)="closeMenu()" class="d-block py-3 fw-semibold">
-      <i class="fa-solid fa-envelope me-2" style="color:var(--accent)"></i>Contact
+      <i class="fa-solid fa-envelope me-2" style="color:var(--accent)"></i>{{ 'header.nav.contact' | translate }}
     </a>
   </div>
 
@@ -512,16 +512,16 @@
     <div class="ms-auto d-flex gap-2">
       <ng-container *ngIf="!currentUser">
         <a routerLink="/login" (click)="closeMenu()" class="btn btn-outline-dark-ub btn-sm px-3">
-          <i class="fa-regular fa-user me-1"></i>Connexion
+          <i class="fa-regular fa-user me-1"></i>{{ 'header.actions.login' | translate }}
         </a>
-        <a routerLink="/register" (click)="closeMenu()" class="btn btn-accent btn-sm px-3">Inscription</a>
+        <a routerLink="/register" (click)="closeMenu()" class="btn btn-accent btn-sm px-3">{{ 'header.actions.register' | translate }}</a>
       </ng-container>
       <ng-container *ngIf="currentUser">
         <button (click)="goToEspace()" class="btn btn-accent btn-sm px-3">
-          <i class="fa-solid fa-gauge me-1"></i>Mon espace
+          <i class="fa-solid fa-gauge me-1"></i>{{ 'header.actions.mySpace' | translate }}
         </button>
         <button (click)="logout()" class="btn btn-outline-dark-ub btn-sm px-3">
-          <i class="fa-solid fa-right-from-bracket me-1"></i>Quitter
+          <i class="fa-solid fa-right-from-bracket me-1"></i>{{ 'header.actions.quit' | translate }}
         </button>
       </ng-container>
     </div>
