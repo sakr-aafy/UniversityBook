@@ -14,6 +14,9 @@ type MoyenPaiement = 'livraison' | 'carte';
  *  piloté par `orderConfirmed`, elle n'a pas besoin d'une valeur dédiée ici. */
 type EtapeCheckout = 'livraison' | 'paiement';
 
+/** Lettres (accents compris), espaces, apostrophes et tirets — pour prénom/nom/titulaire carte. */
+const NOM_PATTERN = /^[A-Za-zÀ-ÖØ-öø-ÿ' -]+$/;
+
 @Component({
   selector: 'app-panier',
   templateUrl: './panier.component.html',
@@ -86,19 +89,19 @@ export class PanierComponent implements OnInit, OnDestroy {
 
     this.checkoutForm = this.fb.group({
       /* ── Coordonnées ── */
-      prenom:              ['', [Validators.required, Validators.minLength(2)]],
-      nom:                 ['', [Validators.required, Validators.minLength(2)]],
-      email:                ['', [Validators.email]],
+      prenom:              ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50), Validators.pattern(NOM_PATTERN)]],
+      nom:                 ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50), Validators.pattern(NOM_PATTERN)]],
+      email:                ['', [Validators.email, Validators.maxLength(100)]],
       telephone:           ['', [Validators.required, Validators.pattern(/^[0-9]{8}$/)]],
       telephoneSecondaire: ['', [Validators.pattern(/^[0-9]{8}$/)]],
       /* ── Adresse ── */
       gouvernorat:   ['', Validators.required],
       delegation:    ['', Validators.required],
-      adresseDetaillee: [''],
+      adresseDetaillee: ['', Validators.maxLength(200)],
       /* ── Options ── */
       typeLivraison: ['domicile', Validators.required],
       moyenPaiement: ['livraison', Validators.required],
-      commentaire:   [''],
+      commentaire:   ['', Validators.maxLength(500)],
       /* ── Carte bancaire (validée uniquement si moyenPaiement === 'carte') ── */
       carteNumero:     [''],
       carteNom:        [''],
@@ -107,11 +110,11 @@ export class PanierComponent implements OnInit, OnDestroy {
     });
 
     this.compteForm = this.fb.group({
-      prenom:       ['', [Validators.required, Validators.minLength(2)]],
-      nom:          ['', [Validators.required, Validators.minLength(2)]],
-      email:        ['', [Validators.required, Validators.email]],
+      prenom:       ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50), Validators.pattern(NOM_PATTERN)]],
+      nom:          ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50), Validators.pattern(NOM_PATTERN)]],
+      email:        ['', [Validators.required, Validators.email, Validators.maxLength(100)]],
       telephone:    ['', [Validators.required, Validators.pattern(/^[0-9]{8}$/)]],
-      motDePasse:   ['', [Validators.required, Validators.minLength(6)]],
+      motDePasse:   ['', [Validators.required, Validators.minLength(6), Validators.maxLength(50)]],
       confirmation: ['', [Validators.required]],
     }, { validators: this.motsDePasseIdentiquesValidator });
 
@@ -374,7 +377,15 @@ export class PanierComponent implements OnInit, OnDestroy {
     if (ctrl.errors['required'])  return 'Ce champ est obligatoire.';
     if (ctrl.errors['email'])     return 'Adresse e-mail invalide.';
     if (ctrl.errors['minlength']) return `Minimum ${ctrl.errors['minlength'].requiredLength} caractères requis.`;
-    if (ctrl.errors['pattern'])   return 'Numéro à 8 chiffres requis (ex : 22 345 678).';
+    if (ctrl.errors['maxlength']) return `Maximum ${ctrl.errors['maxlength'].requiredLength} caractères autorisés.`;
+    if (ctrl.errors['pattern']) {
+      const msgs: Record<string, string> = {
+        prenom: 'Seules les lettres sont autorisées.',
+        nom: 'Seules les lettres sont autorisées.',
+        telephone: 'Numéro à 8 chiffres requis (ex : 22 345 678).',
+      };
+      return msgs[name] ?? 'Format invalide.';
+    }
     return '';
   }
 
@@ -509,7 +520,7 @@ export class PanierComponent implements OnInit, OnDestroy {
     const carteActive = moyen === 'carte';
     const config: Record<string, ValidatorFn[]> = {
       carteNumero: [Validators.required, Validators.pattern(/^(\d{4} ){3}\d{4}$/)],
-      carteNom: [Validators.required, Validators.minLength(3)],
+      carteNom: [Validators.required, Validators.minLength(3), Validators.maxLength(26), Validators.pattern(NOM_PATTERN)],
       carteExpiration: [Validators.required, this.validerExpiration],
       carteCvv: [Validators.required, Validators.pattern(/^\d{3}$/)],
     };
@@ -591,15 +602,39 @@ export class PanierComponent implements OnInit, OnDestroy {
     if (ctrl.errors['maxlength']) return `Maximum ${ctrl.errors['maxlength'].requiredLength} caractères autorisés.`;
     if (ctrl.errors['pattern']) {
       const msgs: Record<string, string> = {
+        prenom: 'Seules les lettres sont autorisées.',
+        nom: 'Seules les lettres sont autorisées.',
         telephone: 'Numéro à 8 chiffres requis (ex : 22 345 678).',
         telephoneSecondaire: 'Numéro à 8 chiffres requis (ex : 22 345 678).',
         carteNumero: 'Numéro de carte incomplet (16 chiffres requis).',
+        carteNom: 'Seules les lettres sont autorisées.',
         carteExpiration: 'Format attendu : MM/AA.',
         carteCvv: 'CVV à 3 chiffres requis.',
       };
       return msgs[name] ?? 'Format invalide.';
     }
     return '';
+  }
+
+  /** Empêche la saisie de caractères hors du motif autorisé (ex : lettres seules, chiffres
+   *  seuls) directement au clavier/collage, en plus de la validation du FormControl. */
+  private filtrerCaracteres(control: AbstractControl | null, event: Event, interdits: RegExp): void {
+    const input = event.target as HTMLInputElement;
+    const filtre = input.value.replace(interdits, '');
+    if (filtre !== input.value) {
+      input.value = filtre;
+    }
+    control?.setValue(filtre);
+  }
+
+  /** À utiliser sur les champs nom/prénom/titulaire carte : lettres, espaces, apostrophes, tirets. */
+  filtrerLettres(event: Event, form: FormGroup, controlName: string): void {
+    this.filtrerCaracteres(form.get(controlName), event, /[^A-Za-zÀ-ÖØ-öø-ÿ' -]/g);
+  }
+
+  /** À utiliser sur les champs téléphone : chiffres uniquement. */
+  filtrerChiffres(event: Event, form: FormGroup, controlName: string): void {
+    this.filtrerCaracteres(form.get(controlName), event, /\D/g);
   }
 
   /* ── Soumission ────────────────────────────────────────────── */
