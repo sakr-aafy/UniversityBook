@@ -250,21 +250,21 @@
       </button>
     </div>
 
-    <!-- Étape 1 : email -->
+    <!-- Étape 1 : numéro WhatsApp -->
     <div class="ub-modal-body" *ngIf="forgotStep === 1">
       <p class="mb-4" style="font-size:14px;color:#6B7480;">
-        Saisissez l'adresse email associée à votre compte.<br>
-        Nous vous enverrons un code de vérification à 6 chiffres.
+        Saisissez le numéro WhatsApp associé à votre compte.<br>
+        Nous vous enverrons un code de vérification à 6 chiffres par WhatsApp.
       </p>
 
       <div class="mb-3">
         <div class="input-group-ub">
-          <i class="fa-regular fa-envelope input-icon-ub" style="color:#9AA0A8"></i>
-          <input type="email" class="form-control ub-input" name="forgotEmail"
-                 [(ngModel)]="forgotEmail" (blur)="onForgotEmailBlur()"
-                 placeholder="Votre adresse email" autocomplete="email">
+          <i class="fa-brands fa-whatsapp input-icon-ub" style="color:#25D366"></i>
+          <input type="tel" class="form-control ub-input" name="forgotPhone"
+                 [(ngModel)]="forgotPhone" (blur)="onForgotPhoneBlur()"
+                 placeholder="Votre numéro WhatsApp" autocomplete="tel">
         </div>
-        <p class="small mt-1 mb-0" style="color:#DC2626;" *ngIf="forgotEmailError">{{ forgotEmailError }}</p>
+        <p class="small mt-1 mb-0" style="color:#DC2626;" *ngIf="forgotPhoneError">{{ forgotPhoneError }}</p>
       </div>
 
       <div class="mb-3" *ngIf="forgotError">
@@ -283,8 +283,8 @@
     <!-- Étape 2 : OTP -->
     <div class="ub-modal-body" *ngIf="forgotStep === 2">
       <p class="mb-4" style="font-size:14px;color:#6B7480;">
-        Un code à 6 chiffres a été envoyé à<br>
-        <strong style="color:#1B2430;">{{ forgotEmail }}</strong>
+        Un code à 6 chiffres a été envoyé par WhatsApp au<br>
+        <strong style="color:#1B2430;">{{ forgotPhone }}</strong>
       </p>
 
       <div class="mb-3">

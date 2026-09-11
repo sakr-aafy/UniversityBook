@@ -121,6 +121,39 @@ export class AuthService {
     );
   }
 
+  // ═══════════════════════════════════
+  // "MOT DE PASSE OUBLIÉ" PAR WHATSAPP
+  // ═══════════════════════════════════
+  // Variante du flux ci-dessus par numéro WhatsApp (voir whatsappAuth.controller.js côté
+  // backend) — mêmes 3 étapes, mais aucun `resetToken` renvoyé ici n'a de sens sans passer par
+  // `verifierOtpWhatsapp` d'abord (jeton JWT propre à ce flux, distinct de celui de l'e-mail).
+
+  /** Étape 1 : demande l'envoi d'un code OTP par WhatsApp à ce numéro. */
+  demanderOtpWhatsapp(telephone: string): Observable<string | null> {
+    return this.http.post(`${this.apiUrl}/whatsapp/mot-de-passe-oublie`, { telephone }).pipe(
+      map(() => null),
+      catchError(err => of(err.error?.message || "Erreur lors de l'envoi du code."))
+    );
+  }
+
+  /** Étape 2 : vérifie le code OTP saisi, renvoie un jeton de réinitialisation. */
+  verifierOtpWhatsapp(telephone: string, code: string): Observable<{ resetToken: string | null; error: string | null }> {
+    return this.http.post<{ resetToken: string }>(`${this.apiUrl}/whatsapp/mot-de-passe-oublie/verifier`, { telephone, code }).pipe(
+      map(res => ({ resetToken: res.resetToken, error: null })),
+      catchError(err => of({ resetToken: null, error: err.error?.message || 'Code incorrect ou expiré.' }))
+    );
+  }
+
+  /** Étape 3 : applique le nouveau mot de passe à partir du jeton renvoyé par verifierOtpWhatsapp. */
+  reinitialiserMotDePasseWhatsapp(resetToken: string, nouveauMotDePasse: string): Observable<string | null> {
+    return this.http.post(`${this.apiUrl}/whatsapp/mot-de-passe-oublie/nouveau-mot-de-passe`, {
+      resetToken, nouveauMotDePasse
+    }).pipe(
+      map(() => null),
+      catchError(err => of(err.error?.message || 'Erreur lors de la réinitialisation du mot de passe.'))
+    );
+  }
+
   /**
    * SCAFFOLD — pas d'intégration Facebook réelle dans ce projet (aucun SDK chargé, aucun App ID
    * configuré). Garde le même contrat Observable<AuthResponse> que login()/register() pour que
