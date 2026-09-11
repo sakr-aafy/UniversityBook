@@ -250,21 +250,22 @@
       </button>
     </div>
 
-    <!-- Étape 1 : numéro WhatsApp -->
+    <!-- Étape 1 : email OU numéro WhatsApp (détecté automatiquement, voir detecterMethodeForgot()) -->
     <div class="ub-modal-body" *ngIf="forgotStep === 1">
       <p class="mb-4" style="font-size:14px;color:#6B7480;">
-        Saisissez le numéro WhatsApp associé à votre compte.<br>
-        Nous vous enverrons un code de vérification à 6 chiffres par WhatsApp.
+        Saisissez l'email ou le numéro WhatsApp associé à votre compte.<br>
+        Nous vous enverrons un code de vérification à 6 chiffres par email ou par WhatsApp selon votre choix.
       </p>
 
       <div class="mb-3">
         <div class="input-group-ub">
-          <i class="fa-brands fa-whatsapp input-icon-ub" style="color:#25D366"></i>
-          <input type="tel" class="form-control ub-input" name="forgotPhone"
-                 [(ngModel)]="forgotPhone" (blur)="onForgotPhoneBlur()"
-                 placeholder="Votre numéro WhatsApp" autocomplete="tel">
+          <i class="fa-regular fa-envelope input-icon-ub" *ngIf="forgotIdentifiantEstEmail" style="color:#9AA0A8"></i>
+          <i class="fa-brands fa-whatsapp input-icon-ub" *ngIf="!forgotIdentifiantEstEmail" style="color:#25D366"></i>
+          <input type="text" class="form-control ub-input" name="forgotIdentifiant"
+                 [(ngModel)]="forgotIdentifiant" (blur)="onForgotIdentifiantBlur()"
+                 placeholder="Email ou numéro WhatsApp" autocomplete="email">
         </div>
-        <p class="small mt-1 mb-0" style="color:#DC2626;" *ngIf="forgotPhoneError">{{ forgotPhoneError }}</p>
+        <p class="small mt-1 mb-0" style="color:#DC2626;" *ngIf="forgotIdentifiantError">{{ forgotIdentifiantError }}</p>
       </div>
 
       <div class="mb-3" *ngIf="forgotError">
@@ -283,8 +284,8 @@
     <!-- Étape 2 : OTP -->
     <div class="ub-modal-body" *ngIf="forgotStep === 2">
       <p class="mb-4" style="font-size:14px;color:#6B7480;">
-        Un code à 6 chiffres a été envoyé par WhatsApp au<br>
-        <strong style="color:#1B2430;">{{ forgotPhone }}</strong>
+        Un code à 6 chiffres a été envoyé {{ forgotMethod === 'email' ? 'par email à' : 'par WhatsApp au' }}<br>
+        <strong style="color:#1B2430;">{{ forgotIdentifiant }}</strong>
       </p>
 
       <div class="mb-3">

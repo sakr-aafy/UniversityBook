@@ -37,11 +37,15 @@ export class LoginComponent implements AfterViewInit {
   otpResendCooldown = 0;
   private otpCooldownInterval: ReturnType<typeof setInterval> | null = null;
 
-  // ── Modale "mot de passe oublié" (code OTP envoyé par WhatsApp) ──
+  // ── Modale "mot de passe oublié" — un seul champ, email OU numéro WhatsApp : le code est
+  // envoyé par e-mail si une adresse email est saisie, par WhatsApp si c'est un numéro (voir
+  // détection dans onSendForgotOtp()). Les étapes 2 et 3 retiennent la méthode choisie
+  // (`forgotMethod`) pour appeler le bon couple d'endpoints jusqu'au bout du flux.
   showForgotModal    = false;
-  forgotStep: 1 | 2 | 3 = 1;          // 1 = numéro WhatsApp, 2 = OTP, 3 = nouveau mot de passe
-  forgotPhone        = '';
-  forgotPhoneTouched = false;
+  forgotStep: 1 | 2 | 3 = 1;          // 1 = identifiant, 2 = OTP, 3 = nouveau mot de passe
+  forgotMethod: 'email' | 'whatsapp' | null = null;
+  forgotIdentifiant        = '';
+  forgotIdentifiantTouched = false;
   forgotLoading      = false;
   forgotError        = '';
 
@@ -147,6 +151,19 @@ export class LoginComponent implements AfterViewInit {
   private isValidTelephone(v: string): boolean {
     const chiffres = (v || '').replace(/[^\d]/g, '');
     return chiffres.length === 8 || (chiffres.length >= 9 && chiffres.length <= 15);
+  }
+
+  private isValidEmail(v: string): boolean {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+  }
+
+  /** Détecte la méthode d'après la forme de la saisie ("mot de passe oublié", champ unique) :
+   *  un "@" → email, sinon on tente un numéro WhatsApp. Ni email ni téléphone reconnu → `null`. */
+  private detecterMethodeForgot(v: string): 'email' | 'whatsapp' | null {
+    const saisie = (v || '').trim();
+    if (!saisie) return null;
+    if (saisie.includes('@')) return this.isValidEmail(saisie) ? 'email' : null;
+    return this.isValidTelephone(saisie) ? 'whatsapp' : null;
   }
 
   // ═══════════════════════════════════
@@ -257,8 +274,9 @@ export class LoginComponent implements AfterViewInit {
   openForgotModal(): void {
     this.showForgotModal    = true;
     this.forgotStep         = 1;
-    this.forgotPhone        = '';
-    this.forgotPhoneTouched = false;
+    this.forgotMethod       = null;
+    this.forgotIdentifiant        = '';
+    this.forgotIdentifiantTouched = false;
     this.forgotError        = '';
     this.forgotLoading      = false;
 
@@ -290,32 +308,46 @@ export class LoginComponent implements AfterViewInit {
     }
   }
 
-  // ── Étape 1 : numéro WhatsApp ──
-  get forgotPhoneError(): string {
-    if (!this.forgotPhoneTouched) return '';
-    if (!this.forgotPhone.trim()) return 'Le numéro WhatsApp est obligatoire.';
-    if (!this.isValidTelephone(this.forgotPhone)) return 'Veuillez saisir un numéro WhatsApp valide.';
+  // ── Étape 1 : identifiant (email OU numéro WhatsApp) ──
+  get forgotIdentifiantError(): string {
+    if (!this.forgotIdentifiantTouched) return '';
+    if (!this.forgotIdentifiant.trim()) return 'Un email ou un numéro WhatsApp est obligatoire.';
+    if (!this.detecterMethodeForgot(this.forgotIdentifiant)) {
+      return 'Veuillez saisir un email valide ou un numéro WhatsApp valide.';
+    }
     return '';
   }
 
-  get isForgotPhoneValid(): boolean {
-    return this.isValidTelephone(this.forgotPhone);
+  get isForgotIdentifiantValid(): boolean {
+    return !!this.detecterMethodeForgot(this.forgotIdentifiant);
   }
 
-  onForgotPhoneBlur(): void { this.forgotPhoneTouched = true; }
+  /** true tant que la saisie ressemble à un email (contient "@") — pilote l'icône du champ,
+   *  purement indicatif (la validation réelle passe par detecterMethodeForgot()). */
+  get forgotIdentifiantEstEmail(): boolean {
+    return this.forgotIdentifiant.includes('@');
+  }
+
+  onForgotIdentifiantBlur(): void { this.forgotIdentifiantTouched = true; }
 
   onSendForgotOtp(): void {
-    this.forgotPhoneTouched = true;
-    this.forgotError        = '';
-    if (!this.isForgotPhoneValid) return;
+    this.forgotIdentifiantTouched = true;
+    this.forgotError              = '';
+    const methode = this.detecterMethodeForgot(this.forgotIdentifiant);
+    if (!methode) return;
 
     this.forgotLoading = true;
-    this.authService.demanderOtpWhatsapp(this.forgotPhone).subscribe(error => {
+    const envoi = methode === 'email'
+      ? this.authService.demanderOtp(this.forgotIdentifiant.trim())
+      : this.authService.demanderOtpWhatsapp(this.forgotIdentifiant.trim());
+
+    envoi.subscribe(error => {
       this.forgotLoading = false;
       if (error) {
         this.forgotError = error;
         return;
       }
+      this.forgotMethod     = methode;
       this.forgotStep       = 2;
       this.forgotOtpInput   = '';
       this.forgotOtpTouched = false;
@@ -340,7 +372,12 @@ export class LoginComponent implements AfterViewInit {
     if (!/^\d{6}$/.test(this.forgotOtpInput)) return;
 
     this.forgotOtpVerifyLoading = true;
-    this.authService.verifierOtpWhatsapp(this.forgotPhone, this.forgotOtpInput.trim()).subscribe(({ resetToken, error }) => {
+    const identifiant = this.forgotIdentifiant.trim();
+    const verification = this.forgotMethod === 'email'
+      ? this.authService.verifierOtp(identifiant, this.forgotOtpInput.trim())
+      : this.authService.verifierOtpWhatsapp(identifiant, this.forgotOtpInput.trim());
+
+    verification.subscribe(({ resetToken, error }) => {
       this.forgotOtpVerifyLoading = false;
       if (error || !resetToken) {
         this.forgotOtpError = error || 'Code incorrect ou expiré.';
@@ -354,7 +391,12 @@ export class LoginComponent implements AfterViewInit {
 
   resendForgotOtp(): void {
     if (this.forgotOtpResendCooldown > 0) return;
-    this.authService.demanderOtpWhatsapp(this.forgotPhone).subscribe(error => {
+    const identifiant = this.forgotIdentifiant.trim();
+    const envoi = this.forgotMethod === 'email'
+      ? this.authService.demanderOtp(identifiant)
+      : this.authService.demanderOtpWhatsapp(identifiant);
+
+    envoi.subscribe(error => {
       if (error) { this.forgotOtpError = error; return; }
       this.forgotOtpInput   = '';
       this.forgotOtpTouched = false;
@@ -393,7 +435,11 @@ export class LoginComponent implements AfterViewInit {
     if (!this.isForgotResetFormValid) return;
 
     this.forgotResetLoading = true;
-    this.authService.reinitialiserMotDePasseWhatsapp(this.forgotResetToken, this.forgotNewPassword).subscribe(error => {
+    const reinitialisation = this.forgotMethod === 'email'
+      ? this.authService.reinitialiserMotDePasse(this.forgotIdentifiant.trim(), this.forgotResetToken, this.forgotNewPassword)
+      : this.authService.reinitialiserMotDePasseWhatsapp(this.forgotResetToken, this.forgotNewPassword);
+
+    reinitialisation.subscribe(error => {
       this.forgotResetLoading = false;
       if (error) {
         this.forgotResetError = error;
