@@ -1,0 +1,153 @@
+/* ── Tableau ─────────────────────────────────────────────────── */
+.da-table-wrap {
+  background: #fff;
+  border: 1px solid #ECEEF1;
+  border-radius: 14px;
+  overflow-x: auto;
+}
+
+.da-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 620px;
+}
+
+.da-table thead th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: #8A929C;
+  padding: 12px 16px;
+  border-bottom: 1px solid #ECEEF1;
+  background: #FAFBFC;
+  white-space: nowrap;
+}
+
+.da-table tbody td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #F1F3F6;
+  font-size: 13.5px;
+  color: #1B2430;
+  vertical-align: middle;
+}
+.da-table tbody tr:last-child td { border-bottom: none; }
+.da-table tbody tr:hover td { background: #FAFBFC; }
+
+.da-col-prix   { white-space: nowrap; }
+.da-col-action { width: 1%; white-space: nowrap; text-align: right; }
+
+/* ── Cellule titre ─────────────────────────────────────────── */
+.da-titre-cell { display: flex; align-items: center; gap: 12px; }
+
+.da-thumb {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: #F4F6F8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #C3C9D2;
+  font-size: 17px;
+  overflow: hidden;
+}
+.da-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+.da-titre-txt { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.da-nom {
+  font-weight: 600;
+  line-height: 1.35;
+  max-width: 340px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.da-badge {
+  align-self: flex-start;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #DCFCE7;
+  color: #15803D;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+/* ── Catégorie ─────────────────────────────────────────────── */
+.da-tag {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: #F1F3F6;
+  color: #5A626C;
+  font-size: 11px;
+  font-weight: 600;
+  margin-right: 5px;
+}
+.da-tag-sub { background: #EEF2FF; color: #4338CA; }
+
+/* ── Prix ──────────────────────────────────────────────────── */
+.da-prix { font-weight: 800; color: #1B2430; }
+.da-prix-old {
+  margin-left: 8px;
+  color: #9AA3AE;
+  text-decoration: line-through;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* ── Bouton ajouter ───────────────────────────────────────── */
+.da-btn-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: none;
+  background: var(--accent, #8C2433);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+}
+.da-btn-add:hover { background: #73202c; }
+.da-btn-add:active { transform: scale(.97); }
+.da-btn-add.added { background: #15803D; }
+
+.da-no-result {
+  text-align: center;
+  color: #6B7480;
+  padding: 28px 16px !important;
+}
+
+/* ── Empty state ──────────────────────────────────────────── */
+.da-empty {
+  max-width: 420px;
+  margin: 24px auto;
+  text-align: center;
+  padding: 40px 24px;
+  border: 1px dashed #D9DDE3;
+  border-radius: 16px;
+}
+.da-empty-icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  background: #F4F6F8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #9AA3AE;
+}
+.da-empty-title { font-size: 15px; font-weight: 700; color: #1B2430; margin-bottom: 4px; }
+.da-empty-sub { font-size: 13px; color: #6B7480; line-height: 1.5; }
+
+@media (max-width: 575px) {
+  .da-nom { max-width: 180px; }
+}

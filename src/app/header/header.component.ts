@@ -8,6 +8,7 @@ import { NotificationsService, AppNotification } from '../services/notifications
 import { ConfirmDialogService } from '../services/confirm-dialog.service';
 import { CategoriesSiteService, CategorieSiteDto } from '../services/categories-site.service';
 import { CategoriesCaisseService, CategorieCaisseDto } from '../services/categories-caisse.service';
+import { DocumentsService } from '../services/documents.service';
 import { LangueService, CodeLangue } from '../services/langue.service';
 import { photoUrl } from '../shared/photo-url.util';
 import { formatCategorieLabel } from '../shared/format-label.util';
@@ -32,6 +33,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
   cartBump: boolean = false;
   scrolled: boolean = false;
   currentUser: AuthUser | null = null;
+
+  /** true si le compte connecté (rattaché à un client caisse) possède au moins une autorisation
+   *  de photocopie — le lien « Documents autorisés » du menu n'apparaît que dans ce cas. */
+  aDocumentsAutorises: boolean = false;
 
   favorisCount: number = 0;
 
@@ -105,6 +110,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private confirmDialogService: ConfirmDialogService,
     private categoriesSiteService: CategoriesSiteService,
     private categoriesCaisseService: CategoriesCaisseService,
+    private documentsService: DocumentsService,
     private langueService: LangueService,
     private router: Router
   ) {}
@@ -147,9 +153,21 @@ export class HeaderComponent implements OnInit, OnDestroy {
       // un 403 sur cet appel, les notifications admin passant par un système séparé.
       if (user && user.role === 'user') {
         this.chargerNotifications();
+        this.verifierDocumentsAutorises();
       } else {
         this.notifications = [];
+        this.aDocumentsAutorises = false;
       }
+    });
+  }
+
+  /** Vérifie côté serveur si le compte connecté a au moins une autorisation de photocopie
+   *  (rattachement au client caisse par e-mail / téléphone). Pilote l'affichage du lien
+   *  « Documents autorisés » du menu. Silencieux en cas d'échec (lien masqué). */
+  private verifierDocumentsAutorises(): void {
+    this.documentsService.documentsAutorises().subscribe({
+      next: res => (this.aDocumentsAutorises = (res.documents || []).length > 0),
+      error: () => (this.aDocumentsAutorises = false)
     });
   }
 

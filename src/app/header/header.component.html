@@ -241,7 +241,10 @@
       </div>
       <a routerLink="/boutique" [queryParams]="{domaine:'documents', payant:'1'}" class="nav-link fw-semibold text-secondary py-2">{{ 'header.nav.paidDocs' | translate }}</a>
       <a routerLink="/boutique" [queryParams]="{domaine:'documents', gratuit:'1'}" class="nav-link fw-semibold text-secondary py-2">{{ 'header.nav.freeDocs' | translate }}</a>
-      <a routerLink="/contact" class="nav-link fw-semibold text-secondary py-2">{{ 'header.nav.contact' | translate }}</a>
+      <!-- <a routerLink="/contact" class="nav-link fw-semibold text-secondary py-2">{{ 'header.nav.contact' | translate }}</a> -->
+      <!-- Visible uniquement pour un compte connecté ayant au moins une autorisation de photocopie. -->
+      <a *ngIf="currentUser && aDocumentsAutorises" routerLink="/documents-autorises"
+         class="nav-link fw-semibold text-secondary py-2">{{ 'header.nav.authorizedDocs' | translate }}</a>
     </div>
 
     <!-- ACTIONS DESKTOP -->

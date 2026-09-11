@@ -63,6 +63,22 @@ export interface CategorieArbreDoc {
   sousCategories: string[];
 }
 
+/** Livre photocopié que le compte connecté est autorisé à faire photocopier (autorisation caisse). */
+export interface DocumentAutorise {
+  id: string;
+  /** Id numérique (hash 32 bits du _id) — pour le panier / la commande. */
+  produitId: number;
+  titre: string;
+  categorie?: string;
+  sousCategorie?: string;
+  image?: string;
+  /** Prix de vente effectif (promo appliquée si active). */
+  prix: number;
+  prixNormal?: number;
+  enPromo?: boolean;
+  dateAutorisation?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class DocumentsService {
   private readonly apiUrl = `${environment.apiUrl}/documents`;
@@ -80,6 +96,12 @@ export class DocumentsService {
 
   addToFavorites(id: string): Observable<{ message: string }> {
     return this.http.post<{ message: string }>(`${this.apiUrl}/${id}/favoris`, {});
+  }
+
+  /** Livres photocopiés que le compte connecté est autorisé à faire photocopier. Liste vide si
+   *  le compte n'est rattaché à aucun client caisse ou n'a aucune autorisation. */
+  documentsAutorises(): Observable<{ documents: DocumentAutorise[] }> {
+    return this.http.get<{ documents: DocumentAutorise[] }>(`${this.apiUrl}/autorises`);
   }
 
   telecharger(id: string): Observable<{ message: string; document: PurchasedDocument }> {
