@@ -549,130 +549,30 @@
             </label>
           </div>
           <div class="col-12 col-md-6">
-            <label class="ck-radio-card ck-radio-card--disabled" [class.selected]="moyenPaiement === 'carte'">
+            <label class="ck-radio-card" [class.selected]="moyenPaiement === 'carte'">
               <input type="radio" formControlName="moyenPaiement" value="carte" class="ck-radio-input">
               <div class="ck-radio-icon" style="background:#EFF6FF;">
                 <span style="font-size:18px;">💳</span>
               </div>
               <div>
-                <div class="ck-radio-title">Paiement en ligne <span class="ck-badge-soon">Bientôt</span></div>
-                <div class="ck-radio-desc">Carte bancaire Visa / Mastercard</div>
+                <div class="ck-radio-title">Paiement en ligne</div>
+                <div class="ck-radio-desc">Carte bancaire, e-DINAR — via Konnect</div>
               </div>
               <i class="fa-solid fa-circle-check ck-radio-check"></i>
             </label>
           </div>
         </div>
 
-        <div class="alert py-2 px-3 mt-3 mb-0" *ngIf="paiementEnLigneMessage"
-             style="background:#FFFBEB;color:#92400E;border:none;">
-          <i class="fa-solid fa-triangle-exclamation me-1"></i>{{ paiementEnLigneMessage }}
-        </div>
-
-        <!-- ── Panneau Paiement en ligne : formulaire + carte 3D interactive ── -->
+        <!-- ── Panneau Paiement en ligne : redirection vers la page hébergée Konnect ──
+             Aucune saisie de carte sur ce site (jamais conforme PCI-DSS) : le client règle sur
+             la page Konnect elle-même, après avoir validé sa commande ci-dessous. -->
         <div class="ck-payment-fields" *ngIf="moyenPaiement === 'carte'">
-          <div class="ck-payment-panel ck-payment-panel--carte mt-3">
-            <div class="row g-4 align-items-start">
-
-              <!-- Carte bancaire 3D -->
-              <div class="col-12 col-md-5">
-                <div class="cc-card-scene">
-                  <div class="cc-card" [class.flipped]="carteFlipped">
-
-                    <!-- Face avant -->
-                    <div class="cc-card-face cc-card-front">
-                      <div class="d-flex align-items-start justify-content-between">
-                        <div class="cc-chip"></div>
-                        <i class="fab fa-cc-visa cc-brand-logo" *ngIf="carteMarque === 'visa'"></i>
-                        <i class="fab fa-cc-mastercard cc-brand-logo" *ngIf="carteMarque === 'mastercard'"></i>
-                      </div>
-                      <div class="cc-number">{{ checkoutForm.get('carteNumero')?.value || '•••• •••• •••• ••••' }}</div>
-                      <div class="d-flex align-items-end justify-content-between">
-                        <div class="cc-holder">
-                          <div class="cc-field-label">Titulaire</div>
-                          <div class="cc-uppercase">{{ (checkoutForm.get('carteNom')?.value || 'NOM DU TITULAIRE') | uppercase }}</div>
-                        </div>
-                        <div class="cc-expiry">
-                          <div class="cc-field-label">Exp.</div>
-                          <div>{{ checkoutForm.get('carteExpiration')?.value || 'MM/AA' }}</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Face arrière -->
-                    <div class="cc-card-face cc-card-back">
-                      <div class="cc-magnetic-strip"></div>
-                      <div class="cc-cvv-strip">
-                        <span class="cc-cvv-value">{{ checkoutForm.get('carteCvv')?.value || '•••' }}</span>
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
-                <div class="text-center mt-3">
-                  <span class="ck-security-badge">
-                    <i class="fa-solid fa-lock"></i> Paiement chiffré et sécurisé
-                  </span>
-                </div>
-              </div>
-
-              <!-- Formulaire carte -->
-              <div class="col-12 col-md-7">
-                <div class="row g-3">
-
-                  <div class="col-12">
-                    <label class="ck-label">Numéro de carte <span class="ck-required">*</span></label>
-                    <div class="ck-input-wrap">
-                      <input formControlName="carteNumero" type="text" inputmode="numeric"
-                             placeholder="0000 0000 0000 0000" maxlength="19"
-                             (input)="onCarteNumeroInput($event)"
-                             class="ck-input has-icon-right ck-mono" [class.is-invalid]="fieldInvalid('carteNumero')">
-                      <i class="fab fa-cc-visa ck-card-brand" *ngIf="carteMarque === 'visa'"></i>
-                      <i class="fab fa-cc-mastercard ck-card-brand" *ngIf="carteMarque === 'mastercard'"></i>
-                    </div>
-                    <div *ngIf="fieldInvalid('carteNumero')" class="ck-error">
-                      <i class="fa-solid fa-circle-exclamation me-1"></i>{{ getFieldError('carteNumero') }}
-                    </div>
-                  </div>
-
-                  <div class="col-12">
-                    <label class="ck-label">Nom du titulaire <span class="ck-required">*</span></label>
-                    <input formControlName="carteNom" type="text" placeholder="Ex : MEHDI BEN SALEM" maxlength="26"
-                           (input)="filtrerLettres($event, checkoutForm, 'carteNom')"
-                           class="ck-input ck-uppercase" [class.is-invalid]="fieldInvalid('carteNom')">
-                    <div *ngIf="fieldInvalid('carteNom')" class="ck-error">
-                      <i class="fa-solid fa-circle-exclamation me-1"></i>{{ getFieldError('carteNom') }}
-                    </div>
-                  </div>
-
-                  <div class="col-6">
-                    <label class="ck-label">Date d'expiration <span class="ck-required">*</span></label>
-                    <input formControlName="carteExpiration" type="text" inputmode="numeric"
-                           placeholder="MM/AA" maxlength="5"
-                           (input)="onCarteExpirationInput($event)"
-                           class="ck-input ck-mono" [class.is-invalid]="fieldInvalid('carteExpiration')">
-                    <div *ngIf="fieldInvalid('carteExpiration')" class="ck-error">
-                      <i class="fa-solid fa-circle-exclamation me-1"></i>{{ getFieldError('carteExpiration') }}
-                    </div>
-                  </div>
-
-                  <div class="col-6">
-                    <label class="ck-label">
-                      CVV <span class="ck-required">*</span>
-                      <span class="ck-cvv-hint" title="Les 3 chiffres au dos de la carte"><i class="fa-regular fa-circle-question"></i></span>
-                    </label>
-                    <input formControlName="carteCvv" type="text" inputmode="numeric"
-                           placeholder="•••" maxlength="3"
-                           (focus)="onCvvFocus()" (blur)="onCvvBlur()"
-                           class="ck-input ck-mono" [class.is-invalid]="fieldInvalid('carteCvv')">
-                    <div *ngIf="fieldInvalid('carteCvv')" class="ck-error">
-                      <i class="fa-solid fa-circle-exclamation me-1"></i>{{ getFieldError('carteCvv') }}
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-
-            </div>
+          <div class="ck-payment-panel ck-payment-panel--carte mt-3 text-center py-4">
+            <i class="fa-solid fa-lock mb-2" style="font-size:22px;color:var(--accent)"></i>
+            <p class="mb-0" style="font-size:14px;color:#3C444E;">
+              Vous serez redirigé·e vers la page de paiement sécurisée <strong>Konnect</strong>
+              pour régler par carte bancaire ou e-DINAR.
+            </p>
           </div>
         </div>
 
@@ -760,12 +660,12 @@
         <button type="submit" class="btn btn-accent px-5 py-3 rounded-pill fw-semibold" style="font-size:15px;"
                 [disabled]="chargementCommande">
           <span *ngIf="!chargementCommande">
-            <i class="fa-solid fa-check me-2"></i>
-            Confirmer la commande
+            <i class="fa-solid" [class.fa-check]="moyenPaiement !== 'carte'" [class.fa-lock]="moyenPaiement === 'carte'" style="margin-right:8px;"></i>
+            {{ moyenPaiement === 'carte' ? 'Payer en ligne' : 'Confirmer la commande' }}
           </span>
           <span *ngIf="chargementCommande">
             <i class="fa-solid fa-spinner fa-spin me-2"></i>
-            Enregistrement...
+            {{ redirectionKonnectEnCours ? 'Redirection vers Konnect...' : 'Enregistrement...' }}
           </span>
         </button>
       </div>

@@ -8,6 +8,7 @@ import { ContactComponent } from './contact/contact.component';
 import { BoutiqueComponent } from './boutique/boutique.component';
 import { ProduitDetailComponent } from './produit-detail/produit-detail.component';
 import { DocumentsAutorisesComponent } from './documents-autorises/documents-autorises.component';
+import { PaiementRetourComponent } from './paiement-retour/paiement-retour.component';
 import { userGuard, adminGuard } from './guards/auth.guard';
 
 import { UserLayoutComponent } from './user/user-layout/user-layout.component';
@@ -37,6 +38,7 @@ const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'panier', component: PanierComponent },
+  { path: 'panier/paiement-retour', component: PaiementRetourComponent },
   { path: 'contact', component: ContactComponent },
   { path: 'documents-autorises', component: DocumentsAutorisesComponent },
   {

@@ -23,6 +23,7 @@ import { HomeComponent } from './home/home.component';
 import { BoutiqueComponent } from './boutique/boutique.component';
 import { ProduitDetailComponent } from './produit-detail/produit-detail.component';
 import { DocumentsAutorisesComponent } from './documents-autorises/documents-autorises.component';
+import { PaiementRetourComponent } from './paiement-retour/paiement-retour.component';
 import { ConfirmDialogComponent } from './shared/confirm-dialog/confirm-dialog.component';
 import { LottiePlayerComponent } from './shared/lottie-player/lottie-player.component';
 import { SearchableSelectComponent } from './shared/searchable-select/searchable-select.component';
@@ -64,6 +65,7 @@ import { AdminProfilComponent } from './admin/profil/admin-profil.component';
     BoutiqueComponent,
     ProduitDetailComponent,
     DocumentsAutorisesComponent,
+    PaiementRetourComponent,
     ConfirmDialogComponent,
     LottiePlayerComponent,
     SearchableSelectComponent,

@@ -1,0 +1,48 @@
+.pr-page { min-height: 60vh; display: flex; align-items: center; }
+
+.pr-card {
+  width: 100%;
+  max-width: 480px;
+  background: #fff;
+  border: 1px solid #ECEEF1;
+  border-radius: 20px;
+  padding: clamp(28px, 6vw, 48px) clamp(20px, 5vw, 36px);
+  text-align: center;
+  box-shadow: 0 12px 40px -24px rgba(0, 0, 0, .18);
+}
+
+.pr-icon {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+}
+.pr-icon-loading { background: #F4F6F8; color: var(--accent, #8C2433); }
+.pr-icon-succes  { background: #DCFCE7; color: #15803D; }
+.pr-icon-echec   { background: #FEE2E2; color: #DC2626; }
+.pr-icon-attente { background: #FEF3C7; color: #B45309; }
+
+.pr-title {
+  font-weight: 700;
+  font-size: clamp(19px, 4vw, 23px);
+  color: #1B2430;
+  margin-bottom: 10px;
+}
+
+.pr-text {
+  font-size: 14px;
+  color: #6B7480;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.pr-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}

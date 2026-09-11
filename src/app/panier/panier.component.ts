@@ -7,6 +7,7 @@ import { CartService, PanierItem } from '../services/cart.service';
 import { AuthService } from '../services/auth.service';
 import { UserService } from '../services/user.service';
 import { OrdersService } from '../services/orders.service';
+import { PaymentsService } from '../services/payments.service';
 import { GOUVERNORATS_TUNISIE, delegationsPourGouvernorat } from '../shared/tunisie-geo.data';
 
 type MoyenPaiement = 'livraison' | 'carte';
@@ -49,12 +50,9 @@ export class PanierComponent implements OnInit, OnDestroy {
 
   checkoutForm!: FormGroup;
 
-  // ── Carte bancaire interactive ──
-  carteFlipped = false;
-
-  /** Message affiché si l'utilisateur tente de choisir « Paiement en ligne » (non encore actif). */
-  paiementEnLigneMessage = '';
-  private paiementEnLigneTimer: ReturnType<typeof setTimeout> | undefined;
+  /** Paiement en ligne (Konnect) : redirection en cours vers la page de paiement hébergée —
+   *  distinct de `chargementCommande` (paiement à la livraison, enregistrement direct). */
+  redirectionKonnectEnCours = false;
 
   // ── Wizard de commande (Livraison → Paiement → Confirmation) ──
   etapeCheckout: EtapeCheckout = 'livraison';
@@ -80,6 +78,7 @@ export class PanierComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private userService: UserService,
     private ordersService: OrdersService,
+    private paymentsService: PaymentsService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
@@ -102,11 +101,6 @@ export class PanierComponent implements OnInit, OnDestroy {
       typeLivraison: ['domicile', Validators.required],
       moyenPaiement: ['livraison', Validators.required],
       commentaire:   ['', Validators.maxLength(500)],
-      /* ── Carte bancaire (validée uniquement si moyenPaiement === 'carte') ── */
-      carteNumero:     [''],
-      carteNom:        [''],
-      carteExpiration: [''],
-      carteCvv:        [''],
     });
 
     this.compteForm = this.fb.group({
@@ -120,19 +114,6 @@ export class PanierComponent implements OnInit, OnDestroy {
 
     this.formSubs.push(
       this.checkoutForm.get('typeLivraison')!.valueChanges.subscribe(val => this.majValidateursAdresse(val))
-    );
-    this.formSubs.push(
-      this.checkoutForm.get('moyenPaiement')!.valueChanges.subscribe(val => {
-        // Paiement en ligne pas encore actif : on prévient et on revient au paiement à la livraison.
-        if (val === 'carte') {
-          this.paiementEnLigneMessage = "Le paiement en ligne n'est pas encore activé. Votre commande sera réglée à la livraison.";
-          this.checkoutForm.get('moyenPaiement')!.setValue('livraison');
-          clearTimeout(this.paiementEnLigneTimer);
-          this.paiementEnLigneTimer = setTimeout(() => (this.paiementEnLigneMessage = ''), 6000);
-          return;
-        }
-        this.majValidateursCarte(val);
-      })
     );
     this.formSubs.push(
       this.checkoutForm.get('gouvernorat')!.valueChanges.subscribe(gouvernorat => {
@@ -154,7 +135,6 @@ export class PanierComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.cartSub?.unsubscribe();
     this.formSubs.forEach(s => s.unsubscribe());
-    clearTimeout(this.paiementEnLigneTimer);
     document.body.classList.remove('ub-no-scroll');
   }
 
@@ -229,7 +209,7 @@ export class PanierComponent implements OnInit, OnDestroy {
     this.orderSubmitted     = false;
     this.orderConfirmed     = false;
     this.erreurCommande     = '';
-    this.carteFlipped       = false;
+    this.redirectionKonnectEnCours = false;
     this.delegations        = [];
     this.pointsGagnes       = 0;
     this.chargerEstimationPoints();
@@ -511,78 +491,9 @@ export class PanierComponent implements OnInit, OnDestroy {
   get moyenPaiementLabel(): string {
     const labels: Record<MoyenPaiement, string> = {
       livraison: 'Paiement à la livraison',
-      carte: 'Paiement en ligne',
+      carte: 'Paiement en ligne (Konnect)',
     };
     return labels[this.moyenPaiement];
-  }
-
-  private majValidateursCarte(moyen: string): void {
-    const carteActive = moyen === 'carte';
-    const config: Record<string, ValidatorFn[]> = {
-      carteNumero: [Validators.required, Validators.pattern(/^(\d{4} ){3}\d{4}$/)],
-      carteNom: [Validators.required, Validators.minLength(3), Validators.maxLength(26), Validators.pattern(NOM_PATTERN)],
-      carteExpiration: [Validators.required, this.validerExpiration],
-      carteCvv: [Validators.required, Validators.pattern(/^\d{3}$/)],
-    };
-    for (const nom of Object.keys(config)) {
-      const ctrl = this.checkoutForm.get(nom);
-      if (!ctrl) continue;
-      ctrl.setValidators(carteActive ? config[nom] : []);
-      ctrl.updateValueAndValidity({ emitEvent: false });
-    }
-    if (!carteActive) this.carteFlipped = false;
-  }
-
-  private validerExpiration(control: AbstractControl): ValidationErrors | null {
-    const valeur: string = control.value || '';
-    const correspondance = /^(\d{2})\/(\d{2})$/.exec(valeur);
-    if (!correspondance) return { pattern: true };
-
-    const mois = parseInt(correspondance[1], 10);
-    const annee = 2000 + parseInt(correspondance[2], 10);
-    if (mois < 1 || mois > 12) return { pattern: true };
-
-    const maintenant = new Date();
-    const finValidite = new Date(annee, mois, 0);
-    if (finValidite < new Date(maintenant.getFullYear(), maintenant.getMonth(), 1)) {
-      return { expired: true };
-    }
-    return null;
-  }
-
-  /* ── Carte bancaire interactive : formatage en temps réel ────────── */
-
-  onCarteNumeroInput(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const chiffres = input.value.replace(/\D/g, '').slice(0, 16);
-    const formate = (chiffres.match(/.{1,4}/g) || []).join(' ');
-    this.checkoutForm.get('carteNumero')?.setValue(formate);
-    input.value = formate;
-  }
-
-  onCarteExpirationInput(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    let chiffres = input.value.replace(/\D/g, '').slice(0, 4);
-    if (chiffres.length >= 3) {
-      chiffres = chiffres.slice(0, 2) + '/' + chiffres.slice(2);
-    }
-    this.checkoutForm.get('carteExpiration')?.setValue(chiffres);
-    input.value = chiffres;
-  }
-
-  get carteMarque(): 'visa' | 'mastercard' | '' {
-    const numero = (this.checkoutForm?.get('carteNumero')?.value || '').replace(/\s/g, '');
-    if (numero.startsWith('4')) return 'visa';
-    if (/^5[1-5]/.test(numero)) return 'mastercard';
-    return '';
-  }
-
-  onCvvFocus(): void {
-    this.carteFlipped = true;
-  }
-
-  onCvvBlur(): void {
-    this.carteFlipped = false;
   }
 
   /* ── Helpers de validation ─────────────────────────────────── */
@@ -597,7 +508,6 @@ export class PanierComponent implements OnInit, OnDestroy {
     if (!ctrl?.errors) return '';
     if (ctrl.errors['required'])  return 'Ce champ est obligatoire.';
     if (ctrl.errors['email'])     return 'Adresse e-mail invalide.';
-    if (ctrl.errors['expired'])   return 'Cette carte est expirée.';
     if (ctrl.errors['minlength']) return `Minimum ${ctrl.errors['minlength'].requiredLength} caractères requis.`;
     if (ctrl.errors['maxlength']) return `Maximum ${ctrl.errors['maxlength'].requiredLength} caractères autorisés.`;
     if (ctrl.errors['pattern']) {
@@ -606,10 +516,6 @@ export class PanierComponent implements OnInit, OnDestroy {
         nom: 'Seules les lettres sont autorisées.',
         telephone: 'Numéro à 8 chiffres requis (ex : 22 345 678).',
         telephoneSecondaire: 'Numéro à 8 chiffres requis (ex : 22 345 678).',
-        carteNumero: 'Numéro de carte incomplet (16 chiffres requis).',
-        carteNom: 'Seules les lettres sont autorisées.',
-        carteExpiration: 'Format attendu : MM/AA.',
-        carteCvv: 'CVV à 3 chiffres requis.',
       };
       return msgs[name] ?? 'Format invalide.';
     }
@@ -649,16 +555,16 @@ export class PanierComponent implements OnInit, OnDestroy {
     }
 
     this.derniereCommandeContientDocuments = this.items.some(i => i.estDocument);
-    this.enregistrerCommande();
+    if (this.moyenPaiement === 'carte') {
+      this.initierPaiementEnLigne();
+    } else {
+      this.enregistrerCommande();
+    }
   }
 
-  /**
-   * Enregistre réellement la commande côté serveur, avec ou sans compte (l'API accepte
-   * désormais les deux — voir orders.controller.js#create). Un achat sans compte transmet
-   * les coordonnées saisies dans `invite` ; le backend recherche automatiquement un compte
-   * existant par e-mail avant de créer un accès invité.
-   */
-  private enregistrerCommande(): void {
+  /** Payload commun aux deux moyens de paiement (voir orders.controller.js#construireCommande,
+   *  partagé par POST /orders et POST /payments/konnect/initier). */
+  private payloadCommande() {
     const valeurs = this.checkoutForm.value;
     const adresseLivraison =
       valeurs.typeLivraison === 'retrait'
@@ -668,34 +574,67 @@ export class PanierComponent implements OnInit, OnDestroy {
               .map((v: string) => (v || '').trim()).filter(Boolean).join(', ')
           : '';
 
+    return {
+      items: this.itemsPayload(),
+      total: this.total,
+      paiement: this.moyenPaiementLabel,
+      adresseLivraison,
+      gouvernorat: this.commandeContientFournitures ? valeurs.gouvernorat : '',
+      delegation: this.commandeContientFournitures ? valeurs.delegation : '',
+      commentaire: (valeurs.commentaire || '').trim(),
+      invite: this.estConnecte ? undefined : {
+        nom: valeurs.nom, prenom: valeurs.prenom, telephone: valeurs.telephone, email: valeurs.email
+      }
+    };
+  }
+
+  /**
+   * Enregistre réellement la commande côté serveur, avec ou sans compte (l'API accepte
+   * désormais les deux — voir orders.controller.js#create). Un achat sans compte transmet
+   * les coordonnées saisies dans `invite` ; le backend recherche automatiquement un compte
+   * existant par e-mail avant de créer un accès invité.
+   *
+   * « Paiement en ligne » (Konnect) suit un chemin différent (initierPaiementEnLigne ci-dessous) :
+   * ici, uniquement le paiement à la livraison, où la commande est finalisée tout de suite.
+   */
+  private enregistrerCommande(): void {
+    const valeurs = this.checkoutForm.value;
     this.derniereCommandeEmail = valeurs.email || this.authService.currentUser?.email || '';
 
     this.chargementCommande = true;
-    this.ordersService
-      .create({
-        items: this.itemsPayload(),
-        total: this.total,
-        paiement: this.moyenPaiementLabel,
-        adresseLivraison,
-        gouvernorat: this.commandeContientFournitures ? valeurs.gouvernorat : '',
-        delegation: this.commandeContientFournitures ? valeurs.delegation : '',
-        commentaire: (valeurs.commentaire || '').trim(),
-        invite: this.estConnecte ? undefined : {
-          nom: valeurs.nom, prenom: valeurs.prenom, telephone: valeurs.telephone, email: valeurs.email
-        }
-      })
-      .subscribe({
-        next: res => {
-          this.chargementCommande = false;
-          this.montantCommande = this.total;
-          this.pointsGagnes = res.pointsFidelite || 0;
-          this.orderConfirmed = true;
-          this.cartService.vider();
-        },
-        error: err => {
-          this.chargementCommande = false;
-          this.erreurCommande = err.error?.message || "Erreur lors de l'enregistrement de la commande.";
-        }
-      });
+    this.ordersService.create(this.payloadCommande()).subscribe({
+      next: res => {
+        this.chargementCommande = false;
+        this.montantCommande = this.total;
+        this.pointsGagnes = res.pointsFidelite || 0;
+        this.orderConfirmed = true;
+        this.cartService.vider();
+      },
+      error: err => {
+        this.chargementCommande = false;
+        this.erreurCommande = err.error?.message || "Erreur lors de l'enregistrement de la commande.";
+      }
+    });
+  }
+
+  /**
+   * « Paiement en ligne » (Konnect) : la commande est enregistrée côté serveur (statut "En
+   * attente", non finalisée — voir payments.controller.js#initierKonnect) puis le navigateur est
+   * redirigé EN ENTIER vers la page de paiement hébergée Konnect (jamais un simple lien Angular :
+   * il s'agit d'un domaine externe). Le panier n'est vidé qu'après un paiement confirmé — voir
+   * PaiementRetourComponent, qui gère le retour succès/échec.
+   */
+  private initierPaiementEnLigne(): void {
+    this.chargementCommande = true;
+    this.paymentsService.initierKonnect(this.payloadCommande()).subscribe({
+      next: res => {
+        this.redirectionKonnectEnCours = true;
+        window.location.href = res.payUrl;
+      },
+      error: err => {
+        this.chargementCommande = false;
+        this.erreurCommande = err.error?.message || "Erreur lors de l'initialisation du paiement en ligne.";
+      }
+    });
   }
 }
