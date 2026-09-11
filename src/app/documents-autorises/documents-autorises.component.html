@@ -1,86 +1,106 @@
-<div class="p-4 p-lg-5">
-  <h1 class="font-spectral fw-bold mb-1" style="font-size:24px;">Documents autorisés</h1>
-  <p class="text-secondary mb-4" style="max-width:640px;">
-    Les ouvrages pour lesquels vous êtes autorisé·e à commander des photocopies.
-    L'autorisation est accordée en magasin par un membre de l'équipe.
-  </p>
+<section class="da-page">
+  <div class="container-xl px-4 py-4 py-lg-5">
 
-  <div class="d-flex flex-wrap gap-2 mb-3" *ngIf="!chargement && documents.length > 0">
-    <div class="input-group" style="max-width:340px;">
-      <span class="input-group-text bg-white border-end-0">
-        <i class="fa-solid fa-magnifying-glass text-secondary"></i>
-      </span>
-      <input type="text" class="form-control border-start-0 ps-0"
-             placeholder="Rechercher un ouvrage…" [(ngModel)]="recherche">
-    </div>
-  </div>
-
-  <!-- Chargement -->
-  <div class="d-flex justify-content-center py-5" *ngIf="chargement">
-    <i class="fa-solid fa-spinner fa-spin fa-2x" style="color:var(--accent)"></i>
-  </div>
-
-  <!-- Erreur -->
-  <div class="alert alert-danger" *ngIf="erreur && !chargement">{{ erreur }}</div>
-
-  <ng-container *ngIf="!chargement && !erreur">
-
-    <!-- Vide -->
-    <div class="da-empty" *ngIf="documents.length === 0">
-      <div class="da-empty-icon"><i class="fa-solid fa-shield-halved"></i></div>
-      <div class="da-empty-title">Aucune autorisation pour le moment</div>
-      <div class="da-empty-sub">
-        Dès qu'un ouvrage vous sera autorisé à la photocopie, il apparaîtra ici.
+    <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-1">
+      <div class="da-heading">
+        <h1 class="font-spectral fw-bold mb-1">
+          <i class="fa-solid fa-shield-halved me-2" style="color:var(--accent)"></i>Documents autorisés
+        </h1>
+        <p class="text-secondary mb-0 da-sub">
+          Les ouvrages pour lesquels vous êtes autorisé·e à commander des photocopies.
+          L'autorisation est accordée en magasin par un membre de l'équipe.
+        </p>
       </div>
+      <span class="da-count-pill" *ngIf="!chargement && documents.length > 0">
+        <i class="fa-solid fa-book"></i>{{ documents.length }} ouvrage{{ documents.length > 1 ? 's' : '' }}
+      </span>
     </div>
 
-    <!-- Tableau -->
-    <div class="da-table-wrap" *ngIf="documents.length > 0">
-      <table class="da-table">
-        <thead>
-          <tr>
-            <th class="da-col-titre">Ouvrage</th>
-            <th class="da-col-cat">Catégorie</th>
-            <th class="da-col-prix">Prix</th>
-            <th class="da-col-action"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let d of documentsFiltres; trackBy: trackById">
-            <td class="da-col-titre">
-              <div class="da-titre-cell">
-                <span class="da-thumb">
-                  <img *ngIf="d.image" [src]="d.image" [alt]="d.titre">
-                  <i *ngIf="!d.image" class="fa-solid fa-book"></i>
-                </span>
-                <div class="da-titre-txt">
-                  <span class="da-nom" [title]="d.titre">{{ d.titre }}</span>
-                  <span class="da-badge"><i class="fa-solid fa-circle-check me-1"></i>Autorisé</span>
+    <div class="d-flex flex-wrap align-items-center gap-2 my-3" *ngIf="!chargement && documents.length > 0">
+      <div class="input-group da-search">
+        <span class="input-group-text bg-white border-end-0">
+          <i class="fa-solid fa-magnifying-glass text-secondary"></i>
+        </span>
+        <input type="text" class="form-control border-start-0 ps-0"
+               placeholder="Rechercher un ouvrage…" [(ngModel)]="recherche">
+      </div>
+      <span class="small text-secondary" *ngIf="recherche.trim()">
+        {{ documentsFiltres.length }} résultat{{ documentsFiltres.length > 1 ? 's' : '' }}
+      </span>
+    </div>
+
+    <!-- Chargement -->
+    <div class="d-flex justify-content-center py-5" *ngIf="chargement">
+      <i class="fa-solid fa-spinner fa-spin fa-2x" style="color:var(--accent)"></i>
+    </div>
+
+    <!-- Erreur -->
+    <div class="alert alert-danger" *ngIf="erreur && !chargement">{{ erreur }}</div>
+
+    <ng-container *ngIf="!chargement && !erreur">
+
+      <!-- Vide -->
+      <div class="da-empty" *ngIf="documents.length === 0">
+        <div class="da-empty-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <div class="da-empty-title">Aucune autorisation pour le moment</div>
+        <div class="da-empty-sub">
+          Dès qu'un ouvrage vous sera autorisé à la photocopie, il apparaîtra ici.
+        </div>
+      </div>
+
+      <!-- Tableau (≥ 768px) / cartes empilées (< 768px) — même balisage, bascule en CSS pur
+           (voir documents-autorises.component.css) pour éviter toute duplication de template. -->
+      <div class="da-table-wrap" *ngIf="documents.length > 0">
+        <table class="da-table">
+          <thead>
+            <tr>
+              <th class="da-col-titre">Ouvrage</th>
+              <th class="da-col-cat">Catégorie</th>
+              <th class="da-col-prix">Prix</th>
+              <th class="da-col-action"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of documentsFiltres; trackBy: trackById">
+              <td class="da-col-titre">
+                <div class="da-titre-cell">
+                  <span class="da-thumb">
+                    <img *ngIf="d.image" [src]="d.image" [alt]="d.titre">
+                    <i *ngIf="!d.image" class="fa-solid fa-book"></i>
+                  </span>
+                  <div class="da-titre-txt">
+                    <span class="da-nom" [title]="d.titre">{{ d.titre }}</span>
+                    <span class="da-badge"><i class="fa-solid fa-circle-check me-1"></i>Autorisé</span>
+                  </div>
                 </div>
-              </div>
-            </td>
-            <td class="da-col-cat">
-              <span class="da-tag" *ngIf="d.categorie">{{ d.categorie }}</span>
-              <span class="da-tag da-tag-sub" *ngIf="d.sousCategorie">{{ d.sousCategorie }}</span>
-            </td>
-            <td class="da-col-prix">
-              <span class="da-prix">{{ formatPrix(d.prix) }}</span>
-              <span class="da-prix-old" *ngIf="d.enPromo && d.prixNormal">{{ formatPrix(d.prixNormal) }}</span>
-            </td>
-            <td class="da-col-action">
-              <button class="da-btn-add" [class.added]="ajouteId === d.id" (click)="ajouterPanier(d)">
-                <i class="fa-solid" [class.fa-cart-plus]="ajouteId !== d.id" [class.fa-check]="ajouteId === d.id"></i>
-                {{ ajouteId === d.id ? 'Ajouté' : 'Ajouter au panier' }}
-              </button>
-            </td>
-          </tr>
+              </td>
+              <td class="da-col-cat">
+                <span class="da-cell-val">
+                  <span class="da-tag" *ngIf="d.categorie">{{ d.categorie }}</span>
+                  <span class="da-tag da-tag-sub" *ngIf="d.sousCategorie">{{ d.sousCategorie }}</span>
+                </span>
+              </td>
+              <td class="da-col-prix">
+                <span class="da-cell-val">
+                  <span class="da-prix">{{ formatPrix(d.prix) }}</span>
+                  <span class="da-prix-old" *ngIf="d.enPromo && d.prixNormal">{{ formatPrix(d.prixNormal) }}</span>
+                </span>
+              </td>
+              <td class="da-col-action">
+                <button class="da-btn-add" [class.added]="ajouteId === d.id" (click)="ajouterPanier(d)">
+                  <i class="fa-solid" [class.fa-cart-plus]="ajouteId !== d.id" [class.fa-check]="ajouteId === d.id"></i>
+                  {{ ajouteId === d.id ? 'Ajouté' : 'Ajouter au panier' }}
+                </button>
+              </td>
+            </tr>
 
-          <tr *ngIf="documentsFiltres.length === 0">
-            <td colspan="4" class="da-no-result">Aucun ouvrage ne correspond à votre recherche.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+            <tr *ngIf="documentsFiltres.length === 0">
+              <td colspan="4" class="da-no-result">Aucun ouvrage ne correspond à votre recherche.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-  </ng-container>
-</div>
+    </ng-container>
+  </div>
+</section>

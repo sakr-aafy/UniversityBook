@@ -494,6 +494,12 @@
     <a routerLink="/boutique" [queryParams]="{domaine:'documents', gratuit:'1'}" (click)="closeMenu()" class="d-block py-3 fw-semibold border-bottom">
       <i class="fa-solid fa-file me-2" style="color:var(--accent)"></i>{{ 'header.nav.freeDocs' | translate }}
     </a>
+    <!-- Visible uniquement pour un compte connecté ayant au moins une autorisation de photocopie
+         (même condition que le lien desktop). -->
+    <a *ngIf="currentUser && aDocumentsAutorises" routerLink="/documents-autorises" (click)="closeMenu()"
+       class="d-block py-3 fw-semibold border-bottom">
+      <i class="fa-solid fa-shield-halved me-2" style="color:var(--accent)"></i>{{ 'header.nav.authorizedDocs' | translate }}
+    </a>
     <a routerLink="/contact" (click)="closeMenu()" class="d-block py-3 fw-semibold">
       <i class="fa-solid fa-envelope me-2" style="color:var(--accent)"></i>{{ 'header.nav.contact' | translate }}
     </a>
