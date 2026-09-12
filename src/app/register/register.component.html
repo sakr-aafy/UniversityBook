@@ -67,53 +67,62 @@
               <!-- Nom complet -->
               <div class="col-12">
                 <label class="form-label ub-label">Nom complet *</label>
-                <div class="input-group-ub">
+                <div class="input-group-ub" [class.ub-input-err]="nomErreur">
                   <i class="fa-regular fa-user input-icon-ub" style="color:#9AA0A8"></i>
                   <input type="text"
                          class="form-control ub-input"
                          placeholder="Ex. Ahmed Ben Salah"
                          [(ngModel)]="nom"
+                         (blur)="onNomBlur()"
                          name="nom"
                          required>
                 </div>
+                <p class="small mt-1 mb-0" style="color:#DC2626;" *ngIf="nomErreur">{{ nomErreur }}</p>
               </div>
 
               <!-- Email -->
               <div class="col-12 col-md-6">
                 <label class="form-label ub-label">Adresse e-mail *</label>
-                <div class="input-group-ub">
+                <div class="input-group-ub" [class.ub-input-err]="emailErreur">
                   <i class="fa-regular fa-envelope input-icon-ub" style="color:#9AA0A8"></i>
                   <input type="email"
                          class="form-control ub-input"
                          placeholder="votre@email.com"
                          [(ngModel)]="email"
+                         (blur)="onEmailBlur()"
                          name="email"
                          required>
                 </div>
+                <p class="small mt-1 mb-0" style="color:#DC2626;" *ngIf="emailErreur">{{ emailErreur }}</p>
               </div>
 
               <!-- Téléphone -->
               <div class="col-12 col-md-6">
-                <label class="form-label ub-label">Téléphone</label>
-                <div class="input-group-ub">
+                <label class="form-label ub-label">Téléphone *</label>
+                <div class="input-group-ub" [class.ub-input-err]="telephoneErreur">
                   <i class="fa-solid fa-phone input-icon-ub" style="color:#9AA0A8"></i>
-                  <input type="tel"
+                  <input type="tel" inputmode="numeric" maxlength="8"
                          class="form-control ub-input"
-                         placeholder="+216 XX XXX XXX"
+                         placeholder="22 345 678"
                          [(ngModel)]="telephone"
-                         name="telephone">
+                         (input)="onTelephoneInput($event)"
+                         (blur)="onTelephoneBlur()"
+                         name="telephone"
+                         required>
                 </div>
+                <p class="small mt-1 mb-0" style="color:#DC2626;" *ngIf="telephoneErreur">{{ telephoneErreur }}</p>
               </div>
 
               <!-- Mot de passe -->
               <div class="col-12">
                 <label class="form-label ub-label">Mot de passe *</label>
-                <div class="input-group-ub">
+                <div class="input-group-ub" [class.ub-input-err]="motDePasseErreur">
                   <i class="fa-solid fa-lock input-icon-ub" style="color:#9AA0A8"></i>
                   <input [type]="showPassword ? 'text' : 'password'"
                          class="form-control ub-input"
-                         placeholder="Min. 8 caractères"
+                         placeholder="Min. 6 caractères"
                          [(ngModel)]="motDePasse"
+                         (blur)="onMotDePasseBlur()"
                          name="motDePasse"
                          required>
                   <button type="button"
@@ -124,6 +133,7 @@
                        style="color:#9AA0A8;"></i>
                   </button>
                 </div>
+                <p class="small mt-1 mb-0" style="color:#DC2626;" *ngIf="motDePasseErreur">{{ motDePasseErreur }}</p>
                 <!-- Indicateur force -->
                 <div class="d-flex gap-1 mt-2" *ngIf="motDePasse.length > 0">
                   <div class="flex-grow-1 rounded-pill" style="height:3px;"
@@ -140,12 +150,13 @@
                 <label class="form-label ub-label">Confirmer le mot de passe *</label>
                 <div class="input-group-ub"
                      [class.ub-input-ok]="passwordsMatch"
-                     [class.ub-input-err]="confirmation.length > 0 && !passwordsMatch">
+                     [class.ub-input-err]="confirmationErreur">
                   <i class="fa-solid fa-lock-open input-icon-ub" style="color:#9AA0A8"></i>
                   <input [type]="showConfirmation ? 'text' : 'password'"
                          class="form-control ub-input"
                          placeholder="Répétez votre mot de passe"
                          [(ngModel)]="confirmation"
+                         (blur)="onConfirmationBlur()"
                          name="confirmation"
                          required>
                   <button type="button"
@@ -160,6 +171,7 @@
                     <i *ngIf="!passwordsMatch" class="fa-solid fa-circle-xmark" style="color:#EF4444;font-size:14px;"></i>
                   </div>
                 </div>
+                <p class="small mt-1 mb-0" style="color:#DC2626;" *ngIf="confirmationErreur">{{ confirmationErreur }}</p>
               </div>
 
               <!-- Conditions -->

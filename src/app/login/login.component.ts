@@ -2,6 +2,7 @@ import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../services/auth.service';
+import { UserService } from '../services/user.service';
 import { environment } from '../../environments/environment';
 
 // Widget chargé globalement via <script> dans index.html (async/defer) — voir initGoogle().
@@ -75,7 +76,25 @@ export class LoginComponent implements AfterViewInit {
   readonly googleDisponible = !!environment.googleClientId;
   private googleChargementTentatives = 0;
 
-  constructor(private authService: AuthService, private router: Router, route: ActivatedRoute) {
+  // ── Complétion obligatoire du numéro de téléphone après "Continuer avec Google" ──
+  // Google (Identity Services, simple bouton de connexion) ne transmet jamais de numéro de
+  // téléphone dans son jeton d'identité (seulement nom/e-mail/photo) — contrairement à
+  // l'inscription classique (register.component.ts) où il est désormais obligatoire. On le
+  // demande donc ici juste après une connexion Google réussie si le compte n'en a pas encore un,
+  // avant de rediriger — qu'il s'agisse d'un compte tout juste créé ou d'un compte Google plus
+  // ancien, d'avant cette exigence.
+  googlePhoneModalOuvert = false;
+  googlePhoneValue = '';
+  googlePhoneTouched = false;
+  googlePhoneChargement = false;
+  googlePhoneErreur = '';
+
+  constructor(
+    private authService: AuthService,
+    private userService: UserService,
+    private router: Router,
+    route: ActivatedRoute
+  ) {
     // Redirection déclenchée par l'intercepteur HTTP quand le jeton stocké a été rejeté (401) —
     // voir auth.interceptor.ts. On informe l'utilisateur plutôt que de le renvoyer ici sans
     // explication.
@@ -131,6 +150,13 @@ export class LoginComponent implements AfterViewInit {
     this.authService.loginWithGoogle(response.credential).subscribe({
       next: () => {
         this.chargement = false;
+        // Numéro obligatoire (voir register.component.ts) mais jamais fourni par Google : on le
+        // demande avant de laisser entrer, plutôt qu'après — sinon rien ne garantit qu'un compte
+        // Google finisse un jour par en avoir un.
+        if (!this.authService.currentUser?.telephone) {
+          this.ouvrirCompletionTelephoneGoogle();
+          return;
+        }
         this.redirigerApresConnexion();
       },
       error: (err: HttpErrorResponse) => {
@@ -465,5 +491,71 @@ export class LoginComponent implements AfterViewInit {
       this.forgotCooldownInterval = null;
     }
     this.forgotOtpResendCooldown = 0;
+  }
+
+  // ═══════════════════════════════════
+  // COMPLÉTION DU TÉLÉPHONE APRÈS "CONTINUER AVEC GOOGLE"
+  // ═══════════════════════════════════
+
+  private ouvrirCompletionTelephoneGoogle(): void {
+    this.googlePhoneModalOuvert = true;
+    this.googlePhoneValue = '';
+    this.googlePhoneTouched = false;
+    this.googlePhoneErreur = '';
+  }
+
+  get googlePhoneErreurAffichee(): string {
+    if (!this.googlePhoneTouched) return '';
+    if (!this.googlePhoneValue.trim()) return 'Le numéro de téléphone est obligatoire.';
+    if (!/^[0-9]{8}$/.test(this.googlePhoneValue.trim())) return 'Numéro à 8 chiffres requis (ex : 22 345 678).';
+    return '';
+  }
+
+  onGooglePhoneBlur(): void { this.googlePhoneTouched = true; }
+
+  onGooglePhoneInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const chiffres = input.value.replace(/\D/g, '').slice(0, 8);
+    this.googlePhoneValue = chiffres;
+    input.value = chiffres;
+  }
+
+  /** Enregistre le numéro saisi via le profil (PUT /api/users/me, réutilisé tel quel avec le
+   *  nom/e-mail déjà connus du compte Google) puis rejoint enfin l'espace demandé. */
+  confirmerTelephoneGoogle(): void {
+    this.googlePhoneTouched = true;
+    this.googlePhoneErreur = '';
+    if (this.googlePhoneErreurAffichee) return;
+
+    const utilisateur = this.authService.currentUser;
+    if (!utilisateur) return;
+
+    this.googlePhoneChargement = true;
+    this.userService
+      .updateProfile({
+        nom: utilisateur.nom,
+        prenom: utilisateur.prenom || '',
+        email: utilisateur.email,
+        telephone: this.googlePhoneValue.trim()
+      })
+      .subscribe({
+        next: () => {
+          this.googlePhoneChargement = false;
+          this.googlePhoneModalOuvert = false;
+          this.authService.patchCurrentUser({ telephone: this.googlePhoneValue.trim() });
+          this.redirigerApresConnexion();
+        },
+        error: (err: HttpErrorResponse) => {
+          this.googlePhoneChargement = false;
+          this.googlePhoneErreur = err.error?.message || "Erreur lors de l'enregistrement du numéro.";
+        }
+      });
+  }
+
+  /** Échappatoire : le compte Google est déjà créé/connecté à ce stade (jeton stocké) — annuler
+   *  ici déconnecte proprement plutôt que de laisser une session à moitié complétée. */
+  annulerCompletionTelephoneGoogle(): void {
+    this.googlePhoneModalOuvert = false;
+    this.authService.logout();
   }
 }

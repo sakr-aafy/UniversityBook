@@ -380,3 +380,58 @@
 
   </div>
 </div>
+
+<!-- ══════════════════════════════════════════════════════
+     MODALE : NUMÉRO DE TÉLÉPHONE OBLIGATOIRE APRÈS "CONTINUER AVEC GOOGLE"
+     Google ne transmet jamais de téléphone — jamais fermable en cliquant en dehors ni via une
+     croix (voir ouvrirCompletionTelephoneGoogle) : seule l'option explicite "Annuler et se
+     déconnecter" permet de sortir sans le renseigner.
+══════════════════════════════════════════════════════ -->
+<div class="ub-modal-backdrop" *ngIf="googlePhoneModalOuvert" role="dialog" aria-modal="true"
+     aria-labelledby="google-phone-modal-title">
+  <div class="ub-modal-box">
+
+    <div class="ub-modal-header">
+      <div class="ub-modal-back-placeholder"></div>
+      <h2 class="ub-modal-title" id="google-phone-modal-title">Complétez votre profil</h2>
+      <div class="ub-modal-back-placeholder"></div>
+    </div>
+
+    <div class="ub-modal-body">
+      <p class="mb-4" style="font-size:14px;color:#6B7480;">
+        Un numéro de téléphone est obligatoire sur University Book. Il ne nous a pas été transmis
+        par Google — merci de le renseigner pour finaliser votre connexion.
+      </p>
+
+      <div class="mb-3">
+        <div class="input-group-ub" [class.ub-input-err]="googlePhoneErreurAffichee">
+          <i class="fa-solid fa-phone input-icon-ub" style="color:#9AA0A8"></i>
+          <input type="tel" inputmode="numeric" maxlength="8" class="form-control ub-input"
+                 placeholder="22 345 678" [(ngModel)]="googlePhoneValue"
+                 (input)="onGooglePhoneInput($event)" (blur)="onGooglePhoneBlur()"
+                 name="googlePhone" autocomplete="tel">
+        </div>
+        <p class="small mt-1 mb-0" style="color:#DC2626;" *ngIf="googlePhoneErreurAffichee">{{ googlePhoneErreurAffichee }}</p>
+      </div>
+
+      <div class="mb-3" *ngIf="googlePhoneErreur">
+        <div class="alert alert-danger py-2 px-3 mb-0" style="font-size:14px;border-radius:12px;">
+          <i class="fa-solid fa-circle-exclamation me-2"></i>{{ googlePhoneErreur }}
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-accent w-100 py-3 rounded-pill fw-semibold"
+              style="font-size:16px;" [disabled]="googlePhoneChargement" (click)="confirmerTelephoneGoogle()">
+        <span *ngIf="!googlePhoneChargement"><i class="fa-solid fa-circle-check me-2"></i>Continuer</span>
+        <span *ngIf="googlePhoneChargement"><i class="fa-solid fa-spinner fa-spin me-2"></i>Enregistrement...</span>
+      </button>
+
+      <p class="text-center mt-3 mb-0">
+        <a href="javascript:void(0)" class="small" style="color:#9AA0A8;" (click)="annulerCompletionTelephoneGoogle()">
+          Annuler et se déconnecter
+        </a>
+      </p>
+    </div>
+
+  </div>
+</div>
