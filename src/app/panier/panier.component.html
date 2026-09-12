@@ -278,11 +278,11 @@
               <i class="fa-solid fa-spinner fa-spin" *ngIf="oauthChargement === 'google'"></i>
               Continuer avec Google
             </button>
-            <button type="button" class="ck-btn-compte ck-btn-compte--facebook" (click)="connexionFacebook()" [disabled]="oauthChargement !== null">
+            <!--button type="button" class="ck-btn-compte ck-btn-compte--facebook" (click)="connexionFacebook()" [disabled]="oauthChargement !== null">
               <i class="fab fa-facebook-f" *ngIf="oauthChargement !== 'facebook'"></i>
               <i class="fa-solid fa-spinner fa-spin" *ngIf="oauthChargement === 'facebook'"></i>
               Continuer avec Facebook
-            </button>
+            </button-->
           </div>
 
           <div class="alert py-2 px-3 mt-3 mb-0" *ngIf="oauthErreur" style="background:#FFFBEB;color:#92400E;border:none;">
