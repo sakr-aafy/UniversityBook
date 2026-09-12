@@ -4,15 +4,14 @@
     <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-1">
       <div class="da-heading">
         <h1 class="font-spectral fw-bold mb-1">
-          <i class="fa-solid fa-shield-halved me-2" style="color:var(--accent)"></i>Documents autorisés
+          <i class="fa-solid fa-shield-halved me-2" style="color:var(--accent)"></i>{{ 'documentsAutorises.title' | translate }}
         </h1>
         <p class="text-secondary mb-0 da-sub">
-          Les ouvrages pour lesquels vous êtes autorisé·e à commander des photocopies.
-          L'autorisation est accordée en magasin par un membre de l'équipe.
+          {{ 'documentsAutorises.subtitle' | translate }}
         </p>
       </div>
       <span class="da-count-pill" *ngIf="!chargement && documents.length > 0">
-        <i class="fa-solid fa-book"></i>{{ documents.length }} ouvrage{{ documents.length > 1 ? 's' : '' }}
+        <i class="fa-solid fa-book"></i>{{ documents.length }} {{ (documents.length > 1 ? 'documentsAutorises.countPlural' : 'documentsAutorises.countSingular') | translate }}
       </span>
     </div>
 
@@ -22,10 +21,10 @@
           <i class="fa-solid fa-magnifying-glass text-secondary"></i>
         </span>
         <input type="text" class="form-control border-start-0 ps-0"
-               placeholder="Rechercher un ouvrage…" [(ngModel)]="recherche">
+               [placeholder]="'documentsAutorises.searchPlaceholder' | translate" [(ngModel)]="recherche">
       </div>
       <span class="small text-secondary" *ngIf="recherche.trim()">
-        {{ documentsFiltres.length }} résultat{{ documentsFiltres.length > 1 ? 's' : '' }}
+        {{ documentsFiltres.length }} {{ (documentsFiltres.length > 1 ? 'documentsAutorises.resultPlural' : 'documentsAutorises.resultSingular') | translate }}
       </span>
     </div>
 
@@ -42,9 +41,9 @@
       <!-- Vide -->
       <div class="da-empty" *ngIf="documents.length === 0">
         <div class="da-empty-icon"><i class="fa-solid fa-shield-halved"></i></div>
-        <div class="da-empty-title">Aucune autorisation pour le moment</div>
+        <div class="da-empty-title">{{ 'documentsAutorises.emptyTitle' | translate }}</div>
         <div class="da-empty-sub">
-          Dès qu'un ouvrage vous sera autorisé à la photocopie, il apparaîtra ici.
+          {{ 'documentsAutorises.emptySub' | translate }}
         </div>
       </div>
 
@@ -54,9 +53,9 @@
         <table class="da-table">
           <thead>
             <tr>
-              <th class="da-col-titre">Ouvrage</th>
-              <th class="da-col-cat">Catégorie</th>
-              <th class="da-col-prix">Prix</th>
+              <th class="da-col-titre">{{ 'documentsAutorises.colTitle' | translate }}</th>
+              <th class="da-col-cat">{{ 'documentsAutorises.colCategory' | translate }}</th>
+              <th class="da-col-prix">{{ 'documentsAutorises.colPrice' | translate }}</th>
               <th class="da-col-action"></th>
             </tr>
           </thead>
@@ -70,7 +69,7 @@
                   </span>
                   <div class="da-titre-txt">
                     <span class="da-nom" [title]="d.titre">{{ d.titre }}</span>
-                    <span class="da-badge"><i class="fa-solid fa-circle-check me-1"></i>Autorisé</span>
+                    <span class="da-badge"><i class="fa-solid fa-circle-check me-1"></i>{{ 'documentsAutorises.authorized' | translate }}</span>
                   </div>
                 </div>
               </td>
@@ -89,13 +88,13 @@
               <td class="da-col-action">
                 <button class="da-btn-add" [class.added]="ajouteId === d.id" (click)="ajouterPanier(d)">
                   <i class="fa-solid" [class.fa-cart-plus]="ajouteId !== d.id" [class.fa-check]="ajouteId === d.id"></i>
-                  {{ ajouteId === d.id ? 'Ajouté' : 'Ajouter au panier' }}
+                  {{ (ajouteId === d.id ? 'documentsAutorises.added' : 'documentsAutorises.addToCart') | translate }}
                 </button>
               </td>
             </tr>
 
             <tr *ngIf="documentsFiltres.length === 0">
-              <td colspan="4" class="da-no-result">Aucun ouvrage ne correspond à votre recherche.</td>
+              <td colspan="4" class="da-no-result">{{ 'documentsAutorises.noResult' | translate }}</td>
             </tr>
           </tbody>
         </table>

@@ -5,26 +5,25 @@
       <!-- Vérification en cours -->
       <ng-container *ngIf="etat === 'verification'">
         <div class="pr-icon pr-icon-loading"><i class="fa-solid fa-spinner fa-spin"></i></div>
-        <h1 class="pr-title font-spectral">Vérification du paiement…</h1>
+        <h1 class="pr-title font-spectral">{{ 'paiementRetour.verifying.title' | translate }}</h1>
         <p class="pr-text">
-          Merci de patienter quelques instants, nous confirmons votre paiement auprès de Konnect.
+          {{ 'paiementRetour.verifying.text' | translate }}
         </p>
       </ng-container>
 
       <!-- Succès -->
       <ng-container *ngIf="etat === 'succes'">
         <div class="pr-icon pr-icon-succes"><i class="fa-solid fa-circle-check"></i></div>
-        <h1 class="pr-title font-spectral">Paiement confirmé !</h1>
+        <h1 class="pr-title font-spectral">{{ 'paiementRetour.success.title' | translate }}</h1>
         <p class="pr-text">
-          Votre commande <strong>{{ numero }}</strong> ({{ formatPrix(total) }}) a bien été payée.
-          Un e-mail de confirmation avec votre facture vous a été envoyé.
+          {{ 'paiementRetour.success.text' | translate:{ numero: numero, montant: formatPrix(total) } }}
         </p>
         <div class="pr-actions">
           <button type="button" class="btn btn-accent rounded-pill px-4 py-2 fw-semibold" (click)="allerAccueil()">
-            Retour à l'accueil
+            {{ 'paiementRetour.success.backHome' | translate }}
           </button>
           <button type="button" class="btn btn-outline-dark-ub rounded-pill px-4 py-2 fw-semibold" (click)="allerBoutique()">
-            Continuer mes achats
+            {{ 'paiementRetour.success.continueShopping' | translate }}
           </button>
         </div>
       </ng-container>
@@ -32,17 +31,16 @@
       <!-- Échec -->
       <ng-container *ngIf="etat === 'echec'">
         <div class="pr-icon pr-icon-echec"><i class="fa-solid fa-circle-xmark"></i></div>
-        <h1 class="pr-title font-spectral">Paiement non abouti</h1>
+        <h1 class="pr-title font-spectral">{{ 'paiementRetour.failure.title' | translate }}</h1>
         <p class="pr-text">
-          Le paiement de la commande <strong>{{ numero }}</strong> n'a pas pu être finalisé
-          (annulé ou refusé). Votre panier est toujours disponible, vous pouvez réessayer.
+          {{ 'paiementRetour.failure.text' | translate:{ numero: numero } }}
         </p>
         <div class="pr-actions">
           <button type="button" class="btn btn-accent rounded-pill px-4 py-2 fw-semibold" (click)="reessayerPaiement()">
-            Réessayer le paiement
+            {{ 'paiementRetour.failure.retry' | translate }}
           </button>
           <button type="button" class="btn btn-outline-dark-ub rounded-pill px-4 py-2 fw-semibold" (click)="allerAccueil()">
-            Retour à l'accueil
+            {{ 'paiementRetour.failure.backHome' | translate }}
           </button>
         </div>
       </ng-container>
@@ -50,15 +48,13 @@
       <!-- Confirmation qui tarde -->
       <ng-container *ngIf="etat === 'attente_prolongee'">
         <div class="pr-icon pr-icon-attente"><i class="fa-regular fa-clock"></i></div>
-        <h1 class="pr-title font-spectral">Confirmation en cours</h1>
+        <h1 class="pr-title font-spectral">{{ 'paiementRetour.pending.title' | translate }}</h1>
         <p class="pr-text">
-          Le paiement de la commande <strong>{{ numero }}</strong> est en cours de traitement par
-          Konnect — cela peut prendre quelques minutes. Vous recevrez un e-mail de confirmation
-          dès que le paiement sera validé.
+          {{ 'paiementRetour.pending.text' | translate:{ numero: numero } }}
         </p>
         <div class="pr-actions">
           <button type="button" class="btn btn-accent rounded-pill px-4 py-2 fw-semibold" (click)="allerAccueil()">
-            Retour à l'accueil
+            {{ 'paiementRetour.pending.backHome' | translate }}
           </button>
         </div>
       </ng-container>
@@ -66,11 +62,11 @@
       <!-- Erreur (lien invalide / commande introuvable) -->
       <ng-container *ngIf="etat === 'erreur'">
         <div class="pr-icon pr-icon-echec"><i class="fa-solid fa-triangle-exclamation"></i></div>
-        <h1 class="pr-title font-spectral">Impossible de vérifier ce paiement</h1>
+        <h1 class="pr-title font-spectral">{{ 'paiementRetour.error.title' | translate }}</h1>
         <p class="pr-text">{{ erreur }}</p>
         <div class="pr-actions">
           <button type="button" class="btn btn-accent rounded-pill px-4 py-2 fw-semibold" (click)="allerAccueil()">
-            Retour à l'accueil
+            {{ 'paiementRetour.error.backHome' | translate }}
           </button>
         </div>
       </ng-container>

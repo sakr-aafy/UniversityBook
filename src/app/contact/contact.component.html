@@ -6,10 +6,10 @@
     <!-- ─── COLONNE GAUCHE : Informations ─── -->
     <div class="col-12 col-lg-5">
       <h2 class="font-spectral fw-semibold mb-2" style="font-size:26px; color:#1B2430;">
-        Informations de contact
+        {{ 'contact.info.title' | translate }}
       </h2>
       <p class="mb-4" style="font-size:15px; line-height:1.6; color:#6B7480;">
-        Plusieurs moyens de nous joindre, choisissez celui qui vous convient.
+        {{ 'contact.info.subtitle' | translate }}
       </p>
 
       <!-- Cartes infos -->
@@ -22,7 +22,7 @@
             <i class="fa-regular fa-envelope" style="color:#8C2433; font-size:17px;"></i>
           </div>
           <div>
-            <div class="info-label mb-1">E-mail</div>
+            <div class="info-label mb-1">{{ 'contact.info.email' | translate }}</div>
             <a href="mailto:contact@universitybook.tn"
                style="font-size:16px; font-weight:600; color:#1B2430; text-decoration:none;">
               contact@universitybook.tn
@@ -37,7 +37,7 @@
             <i class="fa-solid fa-phone" style="color:#8C2433; font-size:17px;"></i>
           </div>
           <div>
-            <div class="info-label mb-1">Téléphone</div>
+            <div class="info-label mb-1">{{ 'contact.info.phone' | translate }}</div>
             <a href="tel:+21621717222"
                style="font-size:16px; font-weight:600; color:#1B2430; text-decoration:none;">
               +216 21 717 222
@@ -52,9 +52,9 @@
             <i class="fa-solid fa-location-dot" style="color:#8C2433; font-size:17px;"></i>
           </div>
           <div>
-            <div class="info-label mb-1">Adresse</div>
+            <div class="info-label mb-1">{{ 'contact.info.address' | translate }}</div>
             <div style="font-size:16px; font-weight:600; color:#1B2430;">
-              Avenue de l'Université, Tunis 1002, Tunisie
+              {{ 'contact.info.addressValue' | translate }}
             </div>
           </div>
         </div>
@@ -66,9 +66,9 @@
             <i class="fa-regular fa-clock" style="color:#8C2433; font-size:17px;"></i>
           </div>
           <div>
-            <div class="info-label mb-1">Horaires d'ouverture</div>
-            <div style="font-size:16px; font-weight:600; color:#1B2430;">Lundi – Samedi · 8h00 – 18h00</div>
-            <div style="font-size:14px; color:#8A929C; margin-top:2px;">Dimanche fermé</div>
+            <div class="info-label mb-1">{{ 'contact.info.hours' | translate }}</div>
+            <div style="font-size:16px; font-weight:600; color:#1B2430;">{{ 'contact.info.hoursValue' | translate }}</div>
+            <div style="font-size:14px; color:#8A929C; margin-top:2px;">{{ 'contact.info.closedSunday' | translate }}</div>
           </div>
         </div>
 
@@ -76,7 +76,7 @@
 
       <!-- Réseaux sociaux -->
       <div class="d-flex align-items-center gap-3">
-        <span style="font-size:14px; font-weight:600; color:#6B7480;">Suivez-nous</span>
+        <span style="font-size:14px; font-weight:600; color:#6B7480;">{{ 'contact.info.followUs' | translate }}</span>
         <div class="d-flex gap-2">
           <a href="#" aria-label="Facebook" class="social-contact-btn">
             <i class="fab fa-facebook-f" style="font-size:14px;"></i>
@@ -97,10 +97,10 @@
            style="border:1px solid #ECEDEF; border-radius:24px; box-shadow:0 24px 50px -30px rgba(27,36,48,.28);">
 
         <h2 class="font-spectral fw-semibold mb-1" style="font-size:26px; color:#1B2430;">
-          Envoyez-nous un message
+          {{ 'contact.form.title' | translate }}
         </h2>
         <p class="mb-4" style="font-size:15px; line-height:1.6; color:#6B7480;">
-          Remplissez le formulaire ci-dessous, nous reviendrons vers vous rapidement.
+          {{ 'contact.form.subtitle' | translate }}
         </p>
 
         <!-- Bannière succès -->
@@ -109,7 +109,7 @@
              style="background:#EAF3EC; border:1px solid #CBE4D3; border-radius:14px;">
           <i class="fa-solid fa-circle-check" style="color:#2E7D50; font-size:20px; flex-shrink:0;"></i>
           <div style="font-size:14.5px; font-weight:600; color:#23633F;">
-            Merci&nbsp;! Votre message a bien été envoyé.
+            {{ 'contact.form.success' | translate }}
           </div>
         </div>
 
@@ -117,12 +117,12 @@
 
           <!-- Nom complet -->
           <div>
-            <label class="ub-form-label">Nom complet</label>
+            <label class="ub-form-label">{{ 'contact.form.name' | translate }}</label>
             <div class="ub-field">
               <i class="fa-regular fa-user ub-field-icon"></i>
               <input type="text"
                      class="ub-field-input"
-                     placeholder="Votre nom et prénom"
+                     [placeholder]="'contact.form.namePlaceholder' | translate"
                      [(ngModel)]="form.nom"
                      name="nom">
             </div>
@@ -130,12 +130,12 @@
 
           <!-- Email -->
           <div>
-            <label class="ub-form-label">Adresse e-mail</label>
+            <label class="ub-form-label">{{ 'contact.form.email' | translate }}</label>
             <div class="ub-field">
               <i class="fa-regular fa-envelope ub-field-icon"></i>
               <input type="email"
                      class="ub-field-input"
-                     placeholder="vous@exemple.com"
+                     [placeholder]="'contact.form.emailPlaceholder' | translate"
                      [(ngModel)]="form.email"
                      name="email">
             </div>
@@ -143,12 +143,12 @@
 
           <!-- Sujet -->
           <div>
-            <label class="ub-form-label">Sujet</label>
+            <label class="ub-form-label">{{ 'contact.form.subject' | translate }}</label>
             <div class="ub-field">
               <i class="fa-solid fa-tag ub-field-icon"></i>
               <input type="text"
                      class="ub-field-input"
-                     placeholder="Objet de votre message"
+                     [placeholder]="'contact.form.subjectPlaceholder' | translate"
                      [(ngModel)]="form.sujet"
                      name="sujet">
             </div>
@@ -156,11 +156,11 @@
 
           <!-- Message -->
           <div>
-            <label class="ub-form-label">Message</label>
+            <label class="ub-form-label">{{ 'contact.form.message' | translate }}</label>
             <div class="ub-field ub-field-textarea">
               <textarea class="ub-field-input"
                         rows="5"
-                        placeholder="Écrivez votre message ici…"
+                        [placeholder]="'contact.form.messagePlaceholder' | translate"
                         [(ngModel)]="form.message"
                         name="message"
                         style="resize:vertical; padding-top:14px; padding-bottom:14px;"></textarea>
@@ -172,7 +172,7 @@
             <button type="submit"
                     class="btn btn-accent d-inline-flex align-items-center gap-2 px-5 py-3 rounded-pill fw-semibold"
                     style="font-size:16px;">
-              Envoyer le message
+              {{ 'contact.form.submit' | translate }}
               <i class="fa-solid fa-paper-plane"></i>
             </button>
           </div>
@@ -216,11 +216,11 @@
           University Book
         </div>
         <div class="small mb-3" style="color:#6B7480; line-height:1.5;">
-          Avenue de l'Université, Tunis 1002, Tunisie
+          {{ 'contact.info.addressValue' | translate }}
         </div>
         <a href="#" class="d-inline-flex align-items-center gap-2 fw-semibold"
            style="font-size:13.5px; color:#8C2433; text-decoration:none;">
-          Voir sur Google Maps
+          {{ 'contact.map.viewOnMaps' | translate }}
           <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:11px;"></i>
         </a>
       </div>

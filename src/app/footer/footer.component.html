@@ -12,13 +12,12 @@
           <div>
             <div class="font-spectral fw-bold text-white fs-5">University Book</div>
             <div class="text-uppercase" style="font-size:9px;letter-spacing:2.4px;color:#76808B;">
-              Portail Académique
+              {{ 'footer.tagline' | translate }}
             </div>
           </div>
         </div>
         <p class="small mb-4" style="color:#8A939D;line-height:1.65;max-width:300px;">
-          Le portail de référence pour accéder aux ressources, documents
-          et services universitaires en Tunisie.
+          {{ 'footer.description' | translate }}
         </p>
         <div class="d-flex gap-2">
           <a href="#" aria-label="Facebook" class="ub-footer-social">
@@ -35,48 +34,48 @@
 
       <!-- Colonne 2 : Navigation -->
       <div class="col-6 col-md-3 col-lg-2">
-        <div class="fw-bold text-white mb-3 small" style="letter-spacing:.3px;">Navigation</div>
+        <div class="fw-bold text-white mb-3 small" style="letter-spacing:.3px;">{{ 'footer.nav.title' | translate }}</div>
         <div class="d-flex flex-column gap-3 small">
           <a routerLink="/" class="ub-footer-link">
-            <i class="fa-solid fa-house me-2" style="color:var(--accent);font-size:11px"></i>Accueil
+            <i class="fa-solid fa-house me-2" style="color:var(--accent);font-size:11px"></i>{{ 'footer.nav.home' | translate }}
           </a>
           <a routerLink="/boutique" class="ub-footer-link">
-            <i class="fa-solid fa-shop me-2" style="color:var(--accent);font-size:11px"></i>Boutique
+            <i class="fa-solid fa-shop me-2" style="color:var(--accent);font-size:11px"></i>{{ 'footer.nav.shop' | translate }}
           </a>
           <a routerLink="/boutique" class="ub-footer-link">
-            <i class="fa-solid fa-file-invoice me-2" style="color:var(--accent);font-size:11px"></i>Document payant
+            <i class="fa-solid fa-file-invoice me-2" style="color:var(--accent);font-size:11px"></i>{{ 'footer.nav.paidDocs' | translate }}
           </a>
           <a routerLink="/contact" class="ub-footer-link">
-            <i class="fa-solid fa-file me-2" style="color:var(--accent);font-size:11px"></i>Documents gratuits
+            <i class="fa-solid fa-file me-2" style="color:var(--accent);font-size:11px"></i>{{ 'footer.nav.freeDocs' | translate }}
           </a>
           <a routerLink="/contact" class="ub-footer-link">
-            <i class="fa-solid fa-newspaper me-2" style="color:var(--accent);font-size:11px"></i>Actualités
+            <i class="fa-solid fa-newspaper me-2" style="color:var(--accent);font-size:11px"></i>{{ 'footer.nav.news' | translate }}
           </a>
         </div>
       </div>
 
       <!-- Colonne 3 : Ressources -->
       <div class="col-6 col-md-3 col-lg-2">
-        <div class="fw-bold text-white mb-3 small" style="letter-spacing:.3px;">Ressources</div>
+        <div class="fw-bold text-white mb-3 small" style="letter-spacing:.3px;">{{ 'footer.resources.title' | translate }}</div>
         <div class="d-flex flex-column gap-3 small">
-          <a routerLink="/user/dashboard" class="ub-footer-link">Mon compte</a>
-          <a routerLink="/panier" class="ub-footer-link">Panier</a>
-          <a routerLink="/contact" class="ub-footer-link">Aide &amp; FAQ</a>
-          <a routerLink="/contact" class="ub-footer-link">Assistance</a>
-          <a href="#" class="ub-footer-link">Mentions légales</a>
+          <a routerLink="/user/dashboard" class="ub-footer-link">{{ 'footer.resources.account' | translate }}</a>
+          <a routerLink="/panier" class="ub-footer-link">{{ 'footer.resources.cart' | translate }}</a>
+          <a routerLink="/contact" class="ub-footer-link">{{ 'footer.resources.faq' | translate }}</a>
+          <a routerLink="/contact" class="ub-footer-link">{{ 'footer.resources.support' | translate }}</a>
+          <a href="#" class="ub-footer-link">{{ 'footer.resources.legal' | translate }}</a>
         </div>
       </div>
 
       <!-- Colonne 4 : Newsletter + Contact -->
       <div class="col-12 col-md-6 col-lg-4">
-        <div class="fw-bold text-white mb-3 small" style="letter-spacing:.3px;">Restez informé</div>
+        <div class="fw-bold text-white mb-3 small" style="letter-spacing:.3px;">{{ 'footer.newsletter.title' | translate }}</div>
         <p class="small mb-3" style="color:#8A939D;line-height:1.6;">
-          Recevez les actualités et nouveautés du portail.
+          {{ 'footer.newsletter.description' | translate }}
         </p>
         <div class="input-group mb-4">
           <input type="email"
                  class="form-control border-0 small ub-footer-newsletter-input"
-                 placeholder="Votre e-mail">
+                 [placeholder]="'footer.newsletter.placeholder' | translate">
           <button class="btn btn-accent px-3 ub-ripple" style="border-radius:0 11px 11px 0;">
             <i class="fa-solid fa-arrow-right"></i>
           </button>
@@ -101,19 +100,19 @@
 
     <!-- Moyens de paiement -->
     <div class="ub-footer-payments d-flex align-items-center flex-wrap gap-3 pt-4 mt-4">
-      <span class="small fw-semibold" style="color:#76808B;">Moyens de paiement :</span>
+      <span class="small fw-semibold" style="color:#76808B;">{{ 'footer.payments.title' | translate }}</span>
       <span class="ub-payment-chip"><i class="fa-brands fa-cc-visa"></i></span>
       <span class="ub-payment-chip"><i class="fa-brands fa-cc-mastercard"></i></span>
-      <span class="ub-payment-chip"><i class="fa-solid fa-money-bill-wave"></i> À la livraison</span>
+      <span class="ub-payment-chip"><i class="fa-solid fa-money-bill-wave"></i> {{ 'footer.payments.cod' | translate }}</span>
     </div>
 
     <!-- Bas footer -->
     <div class="ub-footer-bottom d-flex align-items-center justify-content-between flex-wrap gap-3 py-4 mt-3">
-      <span>© 2026 University Book. Tous droits réservés.</span>
+      <span>{{ 'footer.bottom.rights' | translate }}</span>
       <div class="d-flex gap-4">
-        <a href="#" class="ub-footer-legal">Confidentialité</a>
-        <a href="#" class="ub-footer-legal">Conditions d'utilisation</a>
-        <a href="#" class="ub-footer-legal">Cookies</a>
+        <a href="#" class="ub-footer-legal">{{ 'footer.bottom.privacy' | translate }}</a>
+        <a href="#" class="ub-footer-legal">{{ 'footer.bottom.terms' | translate }}</a>
+        <a href="#" class="ub-footer-legal">{{ 'footer.bottom.cookies' | translate }}</a>
       </div>
     </div>
   </div>

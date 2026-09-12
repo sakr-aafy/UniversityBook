@@ -57,5 +57,202 @@
     "mobile": {
       "cart": "Cart"
     }
+  },
+  "footer": {
+    "tagline": "Academic Portal",
+    "description": "The go-to portal for university resources, documents and services in Tunisia.",
+    "nav": {
+      "title": "Navigation",
+      "home": "Home",
+      "shop": "Shop",
+      "paidDocs": "Paid document",
+      "freeDocs": "Free documents",
+      "news": "News"
+    },
+    "resources": {
+      "title": "Resources",
+      "account": "My account",
+      "cart": "Cart",
+      "faq": "Help & FAQ",
+      "support": "Support",
+      "legal": "Legal notice"
+    },
+    "newsletter": {
+      "title": "Stay informed",
+      "description": "Get the latest news and updates from the portal.",
+      "placeholder": "Your e-mail"
+    },
+    "payments": {
+      "title": "Payment methods:",
+      "cod": "Cash on delivery"
+    },
+    "bottom": {
+      "rights": "© 2026 University Book. All rights reserved.",
+      "privacy": "Privacy",
+      "terms": "Terms of use",
+      "cookies": "Cookies"
+    }
+  },
+  "contact": {
+    "info": {
+      "title": "Contact information",
+      "subtitle": "Several ways to reach us — pick whichever suits you.",
+      "email": "E-mail",
+      "phone": "Phone",
+      "address": "Address",
+      "addressValue": "University Avenue, Tunis 1002, Tunisia",
+      "hours": "Opening hours",
+      "hoursValue": "Monday – Saturday · 8:00 am – 6:00 pm",
+      "closedSunday": "Closed on Sunday",
+      "followUs": "Follow us"
+    },
+    "form": {
+      "title": "Send us a message",
+      "subtitle": "Fill in the form below, we'll get back to you shortly.",
+      "success": "Thank you! Your message has been sent.",
+      "name": "Full name",
+      "namePlaceholder": "Your first and last name",
+      "email": "E-mail address",
+      "emailPlaceholder": "you@example.com",
+      "subject": "Subject",
+      "subjectPlaceholder": "Subject of your message",
+      "message": "Message",
+      "messagePlaceholder": "Write your message here…",
+      "submit": "Send message"
+    },
+    "map": {
+      "viewOnMaps": "View on Google Maps"
+    }
+  },
+  "login": {
+    "title": "Welcome back",
+    "subtitle": "Sign in to access your resources and orders.",
+    "form": {
+      "identifiant": "Email or phone",
+      "identifiantPlaceholder": "your@email.com or 12 345 678",
+      "password": "Password",
+      "passwordPlaceholder": "Your password",
+      "forgotPassword": "Forgot password?",
+      "remember": "Remember me for 30 days",
+      "submit": "Sign in",
+      "submitLoading": "Signing in...",
+      "orContinueWith": "or continue with",
+      "noAccount": "Don't have an account yet?",
+      "createAccount": "Create a free account",
+      "backHome": "Back to home"
+    },
+    "otp": {
+      "sentTo": "A 6-digit verification code was sent to",
+      "code": "Verification code",
+      "resendIn": "Resend code in",
+      "notReceived": "Didn't receive the code?",
+      "resend": "Resend",
+      "verify": "Verify code",
+      "verifying": "Verifying...",
+      "back": "Back"
+    },
+    "forgotModal": {
+      "step1Title": "Forgot password",
+      "step2Title": "Verification",
+      "step3Title": "New password",
+      "successTitle": "Password changed!",
+      "step1Intro": "Enter the email or WhatsApp number linked to your account.",
+      "step1Intro2": "We'll send you a 6-digit verification code by email or WhatsApp depending on your choice.",
+      "identifiantPlaceholder": "Email or WhatsApp number",
+      "sendCode": "Send code",
+      "sending": "Sending...",
+      "sentByEmail": "A 6-digit code was sent by email to",
+      "sentByWhatsapp": "A 6-digit code was sent by WhatsApp to",
+      "identityConfirmed": "Identity confirmed. Choose your new password.",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm password",
+      "resetPassword": "Reset password",
+      "saving": "Saving...",
+      "successMessage": "Your new password is active.",
+      "successMessage2": "You can sign in right now.",
+      "autoClosing": "This window closes automatically…"
+    },
+    "googlePhoneModal": {
+      "title": "Complete your profile",
+      "intro": "A phone number is required on University Book. Google didn't provide one — please enter it to finish signing in.",
+      "continue": "Continue",
+      "saving": "Saving...",
+      "cancel": "Cancel and sign out"
+    }
+  },
+  "register": {
+    "title": "Create your account",
+    "subtitle": "Join +8,500 students and access all university resources.",
+    "badges": {
+      "instant": "Instant access",
+      "free": "Free",
+      "protected": "Protected data"
+    },
+    "form": {
+      "name": "Full name",
+      "namePlaceholder": "E.g. Ahmed Ben Salah",
+      "email": "E-mail address",
+      "emailPlaceholder": "your@email.com",
+      "phone": "Phone",
+      "password": "Password",
+      "passwordPlaceholder": "Min. 6 characters",
+      "confirmPassword": "Confirm password",
+      "confirmPasswordPlaceholder": "Repeat your password",
+      "acceptTerms1": "I agree to the",
+      "acceptTermsLink1": "terms of use",
+      "acceptTerms2": "and the",
+      "acceptTermsLink2": "privacy policy",
+      "acceptTerms3": "of the University Book portal.",
+      "submit": "Create my account",
+      "submitLoading": "Creating...",
+      "alreadyRegistered": "Already registered?",
+      "signIn": "Sign in",
+      "backHome": "Back to home"
+    }
+  },
+  "documentsAutorises": {
+    "title": "Authorized documents",
+    "subtitle": "The books you are authorized to order photocopies of. Authorization is granted in-store by a staff member.",
+    "countSingular": "book",
+    "countPlural": "books",
+    "searchPlaceholder": "Search for a book…",
+    "resultSingular": "result",
+    "resultPlural": "results",
+    "emptyTitle": "No authorization yet",
+    "emptySub": "As soon as a book is authorized for you, it will appear here.",
+    "colTitle": "Book",
+    "colCategory": "Category",
+    "colPrice": "Price",
+    "authorized": "Authorized",
+    "addToCart": "Add to cart",
+    "added": "Added",
+    "noResult": "No book matches your search."
+  },
+  "paiementRetour": {
+    "verifying": {
+      "title": "Verifying payment…",
+      "text": "Please wait a moment while we confirm your payment with Konnect."
+    },
+    "success": {
+      "title": "Payment confirmed!",
+      "text": "Your order {{numero}} ({{montant}}) has been paid. A confirmation e-mail with your invoice has been sent to you.",
+      "backHome": "Back to home",
+      "continueShopping": "Continue shopping"
+    },
+    "failure": {
+      "title": "Payment unsuccessful",
+      "text": "The payment for order {{numero}} could not be completed (cancelled or declined). Your cart is still available, you can try again.",
+      "retry": "Retry payment",
+      "backHome": "Back to home"
+    },
+    "pending": {
+      "title": "Confirmation in progress",
+      "text": "The payment for order {{numero}} is being processed by Konnect — this can take a few minutes. You'll receive a confirmation e-mail once the payment is validated.",
+      "backHome": "Back to home"
+    },
+    "error": {
+      "title": "Unable to verify this payment",
+      "backHome": "Back to home"
+    }
   }
 }

@@ -57,5 +57,202 @@
     "mobile": {
       "cart": "Panier"
     }
+  },
+  "footer": {
+    "tagline": "Portail Académique",
+    "description": "Le portail de référence pour accéder aux ressources, documents et services universitaires en Tunisie.",
+    "nav": {
+      "title": "Navigation",
+      "home": "Accueil",
+      "shop": "Boutique",
+      "paidDocs": "Document payant",
+      "freeDocs": "Documents gratuits",
+      "news": "Actualités"
+    },
+    "resources": {
+      "title": "Ressources",
+      "account": "Mon compte",
+      "cart": "Panier",
+      "faq": "Aide & FAQ",
+      "support": "Assistance",
+      "legal": "Mentions légales"
+    },
+    "newsletter": {
+      "title": "Restez informé",
+      "description": "Recevez les actualités et nouveautés du portail.",
+      "placeholder": "Votre e-mail"
+    },
+    "payments": {
+      "title": "Moyens de paiement :",
+      "cod": "À la livraison"
+    },
+    "bottom": {
+      "rights": "© 2026 University Book. Tous droits réservés.",
+      "privacy": "Confidentialité",
+      "terms": "Conditions d'utilisation",
+      "cookies": "Cookies"
+    }
+  },
+  "contact": {
+    "info": {
+      "title": "Informations de contact",
+      "subtitle": "Plusieurs moyens de nous joindre, choisissez celui qui vous convient.",
+      "email": "E-mail",
+      "phone": "Téléphone",
+      "address": "Adresse",
+      "addressValue": "Avenue de l'Université, Tunis 1002, Tunisie",
+      "hours": "Horaires d'ouverture",
+      "hoursValue": "Lundi – Samedi · 8h00 – 18h00",
+      "closedSunday": "Dimanche fermé",
+      "followUs": "Suivez-nous"
+    },
+    "form": {
+      "title": "Envoyez-nous un message",
+      "subtitle": "Remplissez le formulaire ci-dessous, nous reviendrons vers vous rapidement.",
+      "success": "Merci ! Votre message a bien été envoyé.",
+      "name": "Nom complet",
+      "namePlaceholder": "Votre nom et prénom",
+      "email": "Adresse e-mail",
+      "emailPlaceholder": "vous@exemple.com",
+      "subject": "Sujet",
+      "subjectPlaceholder": "Objet de votre message",
+      "message": "Message",
+      "messagePlaceholder": "Écrivez votre message ici…",
+      "submit": "Envoyer le message"
+    },
+    "map": {
+      "viewOnMaps": "Voir sur Google Maps"
+    }
+  },
+  "login": {
+    "title": "Bon retour parmi nous",
+    "subtitle": "Connectez-vous pour accéder à vos ressources et commandes.",
+    "form": {
+      "identifiant": "Email ou téléphone",
+      "identifiantPlaceholder": "votre@email.com ou 12 345 678",
+      "password": "Mot de passe",
+      "passwordPlaceholder": "Votre mot de passe",
+      "forgotPassword": "Mot de passe oublié ?",
+      "remember": "Se souvenir de moi pendant 30 jours",
+      "submit": "Se connecter",
+      "submitLoading": "Connexion en cours...",
+      "orContinueWith": "ou continuer avec",
+      "noAccount": "Pas encore de compte ?",
+      "createAccount": "Créer un compte gratuit",
+      "backHome": "Retour à l'accueil"
+    },
+    "otp": {
+      "sentTo": "Un code de vérification à 6 chiffres a été envoyé à",
+      "code": "Code de vérification",
+      "resendIn": "Renvoyer le code dans",
+      "notReceived": "Vous n'avez pas reçu le code ?",
+      "resend": "Renvoyer",
+      "verify": "Vérifier le code",
+      "verifying": "Vérification...",
+      "back": "Retour"
+    },
+    "forgotModal": {
+      "step1Title": "Mot de passe oublié",
+      "step2Title": "Vérification",
+      "step3Title": "Nouveau mot de passe",
+      "successTitle": "Mot de passe modifié !",
+      "step1Intro": "Saisissez l'email ou le numéro WhatsApp associé à votre compte.",
+      "step1Intro2": "Nous vous enverrons un code de vérification à 6 chiffres par email ou par WhatsApp selon votre choix.",
+      "identifiantPlaceholder": "Email ou numéro WhatsApp",
+      "sendCode": "Envoyer le code",
+      "sending": "Envoi en cours...",
+      "sentByEmail": "Un code à 6 chiffres a été envoyé par email à",
+      "sentByWhatsapp": "Un code à 6 chiffres a été envoyé par WhatsApp au",
+      "identityConfirmed": "Identité confirmée. Choisissez votre nouveau mot de passe.",
+      "newPassword": "Nouveau mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "resetPassword": "Réinitialiser le mot de passe",
+      "saving": "Enregistrement...",
+      "successMessage": "Votre nouveau mot de passe est actif.",
+      "successMessage2": "Vous pouvez vous connecter dès maintenant.",
+      "autoClosing": "La fenêtre se ferme automatiquement…"
+    },
+    "googlePhoneModal": {
+      "title": "Complétez votre profil",
+      "intro": "Un numéro de téléphone est obligatoire sur University Book. Il ne nous a pas été transmis par Google — merci de le renseigner pour finaliser votre connexion.",
+      "continue": "Continuer",
+      "saving": "Enregistrement...",
+      "cancel": "Annuler et se déconnecter"
+    }
+  },
+  "register": {
+    "title": "Créez votre compte",
+    "subtitle": "Rejoignez +8 500 étudiants et accédez à toutes les ressources universitaires.",
+    "badges": {
+      "instant": "Accès immédiat",
+      "free": "Gratuit",
+      "protected": "Données protégées"
+    },
+    "form": {
+      "name": "Nom complet",
+      "namePlaceholder": "Ex. Ahmed Ben Salah",
+      "email": "Adresse e-mail",
+      "emailPlaceholder": "votre@email.com",
+      "phone": "Téléphone",
+      "password": "Mot de passe",
+      "passwordPlaceholder": "Min. 6 caractères",
+      "confirmPassword": "Confirmer le mot de passe",
+      "confirmPasswordPlaceholder": "Répétez votre mot de passe",
+      "acceptTerms1": "J'accepte les",
+      "acceptTermsLink1": "conditions d'utilisation",
+      "acceptTerms2": "et la",
+      "acceptTermsLink2": "politique de confidentialité",
+      "acceptTerms3": "du portail University Book.",
+      "submit": "Créer mon compte",
+      "submitLoading": "Création en cours...",
+      "alreadyRegistered": "Déjà inscrit ?",
+      "signIn": "Se connecter",
+      "backHome": "Retour à l'accueil"
+    }
+  },
+  "documentsAutorises": {
+    "title": "Documents autorisés",
+    "subtitle": "Les ouvrages pour lesquels vous êtes autorisé·e à commander des photocopies. L'autorisation est accordée en magasin par un membre de l'équipe.",
+    "countSingular": "ouvrage",
+    "countPlural": "ouvrages",
+    "searchPlaceholder": "Rechercher un ouvrage…",
+    "resultSingular": "résultat",
+    "resultPlural": "résultats",
+    "emptyTitle": "Aucune autorisation pour le moment",
+    "emptySub": "Dès qu'un ouvrage vous sera autorisé à la photocopie, il apparaîtra ici.",
+    "colTitle": "Ouvrage",
+    "colCategory": "Catégorie",
+    "colPrice": "Prix",
+    "authorized": "Autorisé",
+    "addToCart": "Ajouter au panier",
+    "added": "Ajouté",
+    "noResult": "Aucun ouvrage ne correspond à votre recherche."
+  },
+  "paiementRetour": {
+    "verifying": {
+      "title": "Vérification du paiement…",
+      "text": "Merci de patienter quelques instants, nous confirmons votre paiement auprès de Konnect."
+    },
+    "success": {
+      "title": "Paiement confirmé !",
+      "text": "Votre commande {{numero}} ({{montant}}) a bien été payée. Un e-mail de confirmation avec votre facture vous a été envoyé.",
+      "backHome": "Retour à l'accueil",
+      "continueShopping": "Continuer mes achats"
+    },
+    "failure": {
+      "title": "Paiement non abouti",
+      "text": "Le paiement de la commande {{numero}} n'a pas pu être finalisé (annulé ou refusé). Votre panier est toujours disponible, vous pouvez réessayer.",
+      "retry": "Réessayer le paiement",
+      "backHome": "Retour à l'accueil"
+    },
+    "pending": {
+      "title": "Confirmation en cours",
+      "text": "Le paiement de la commande {{numero}} est en cours de traitement par Konnect — cela peut prendre quelques minutes. Vous recevrez un e-mail de confirmation dès que le paiement sera validé.",
+      "backHome": "Retour à l'accueil"
+    },
+    "error": {
+      "title": "Impossible de vérifier ce paiement",
+      "backHome": "Retour à l'accueil"
+    }
   }
 }
