@@ -11,29 +11,28 @@
       <div class="hero-col-texte">
         <span class="hero-badge ub-anim-hero-in" style="animation-delay:.05s">
           <i class="fa-solid fa-shop"></i>
-          Boutique en ligne
+          {{ 'home.hero.badge' | translate }}
         </span>
 
         <h1 class="hero-titre ub-anim-hero-in" style="animation-delay:.15s">
-          Tout ce dont vous avez besoin pour <span class="hero-titre-accent">réussir vos études</span>
+          {{ 'home.hero.titleLine' | translate }} <span class="hero-titre-accent">{{ 'home.hero.titleAccent' | translate }}</span>
         </h1>
 
         <p class="hero-description ub-anim-hero-in" style="animation-delay:.25s">
-          Découvrez notre collection de fournitures scolaires et de documents numériques de qualité.
-          Commandez facilement et profitez d'une expérience d'achat rapide, moderne et sécurisée.
+          {{ 'home.hero.description' | translate }}
         </p>
 
         <div class="hero-boutons ub-anim-hero-in" style="animation-delay:.35s">
           <a routerLink="/boutique"
             class="btn btn-accent px-4 py-3 d-flex align-items-center gap-2 fs-6 ub-ripple hero-btn-principal">
             <i class="fa-solid fa-cart-shopping"></i>
-            Découvrir la boutique
+            {{ 'home.hero.ctaShop' | translate }}
             <i class="fa-solid fa-arrow-right hero-btn-arrow"></i>
           </a>
           <a routerLink="/boutique"
             class="btn btn-outline-dark-ub px-4 py-3 d-flex align-items-center gap-2 fs-6 hero-btn-secondaire ub-ripple">
             <i class="fa-solid fa-file-lines" style="color:var(--accent)"></i>
-            Explorer les documents
+            {{ 'home.hero.ctaDocs' | translate }}
           </a>
         </div>
 
@@ -42,7 +41,7 @@
             <span class="hero-stat-emoji">{{ s.emoji }}</span>
             <div>
               <div class="hero-stat-valeur">{{ s.valeur }}</div>
-              <div class="hero-stat-label">{{ s.label }}</div>
+              <div class="hero-stat-label">{{ s.label | translate }}</div>
             </div>
           </div>
         </div>
@@ -67,7 +66,7 @@
           <!-- Image principale -->
           <div class="hero-gallery-img hero-gallery-img--main"
             [style.background-image]="'url(' + heroGalleryImages[heroImgActif].image + '), ' + heroGalleryImages[heroImgActif].gradient">
-            <span class="hero-gallery-label">{{ heroGalleryImages[heroImgActif].label }}</span>
+            <span class="hero-gallery-label">{{ heroGalleryImages[heroImgActif].label | translate }}</span>
           </div>
         </div>
 
@@ -114,11 +113,11 @@
                gauche, contenu à droite — voir @media dans le CSS), ce conteneur garde ces trois
                éléments empilés verticalement dans les deux mises en page. -->
           <div class="cat-card-lottie-content">
-            <h3 class="cat-card-lottie-titre">{{ cat.titre }}</h3>
-            <p class="cat-card-lottie-desc">{{ cat.description }}</p>
+            <h3 class="cat-card-lottie-titre">{{ cat.titre | translate }}</h3>
+            <p class="cat-card-lottie-desc">{{ cat.description | translate }}</p>
 
             <span class="cat-card-lottie-btn">
-              {{ cat.ctaLabel }}
+              {{ cat.ctaLabel | translate }}
               <i class="fa-solid fa-arrow-right"></i>
             </span>
           </div>
@@ -128,11 +127,11 @@
       <!-- Carrousel produits (droite) — masqué sur mobile -->
       <div class="col-12 col-lg-8 d-none d-md-block">
         <div class="d-flex align-items-center justify-content-between mb-3">
-          <h4 class="fw-bold mb-0" style="font-size:19px;color:#1B2430;">{{ cat.carouselTitre }}</h4>
+          <h4 class="fw-bold mb-0" style="font-size:19px;color:#1B2430;">{{ cat.carouselTitre | translate }}</h4>
           <div class="d-flex align-items-center gap-3">
             <a [routerLink]="cat.lien" [queryParams]="cat.queryParams"
               class="small fw-semibold d-none d-lg-inline-flex align-items-center gap-1" style="color:var(--accent);">
-              Voir tout
+              {{ 'home.sectionCommon.seeAll' | translate }}
               <i class="fa-solid fa-arrow-right" style="font-size:11px;"></i>
             </a>
             <div class="d-flex gap-2" *ngIf="produitsDe(cat).length > 3">
@@ -150,7 +149,7 @@
           <!-- Aucun produit publié pour cette catégorie : message plutôt qu'un carrousel vide. -->
           <div class="cat-carousel-empty" *ngIf="!produitsDe(cat).length">
             <i class="fa-solid fa-box-open"></i>
-            <span>Bientôt de nouveaux produits dans cette catégorie.</span>
+            <span>{{ 'home.sectionCommon.emptyCarousel' | translate }}</span>
           </div>
           <div class="cat-carousel-card" *ngFor="let p of produitsDe(cat); trackBy: trackById"
             (click)="ouvrirCategorie(cat.queryParams)">
@@ -160,7 +159,7 @@
                 {{ p.badge }}
               </span>
               <button class="cat-carousel-checkbox" [class.checked]="estDansComparateur(p.id)"
-                (click)="toggleComparaison(p, cat.titre, $event)" aria-label="Ajouter au comparateur">
+                (click)="toggleComparaison(p, traduire(cat.titre), $event)" aria-label="Ajouter au comparateur">
                 <i class="fa-solid fa-check" *ngIf="estDansComparateur(p.id)"></i>
               </button>
               <img *ngIf="p.images && p.images.length > 0" [src]="p.images[0]" [alt]="p.titre" class="cat-carousel-img">
@@ -173,13 +172,13 @@
                 <span *ngIf="p.ancienPrix" class="cat-carousel-old-prix">{{ formatPrix(p.ancienPrix) }}</span>
               </div>
               <span *ngIf="p.ancienPrix && p.ancienPrix > p.prix" class="cat-carousel-economie">
-                Économisez {{ formatPrix(p.ancienPrix - p.prix) }}
+                {{ 'home.sectionCommon.savings' | translate }} {{ formatPrix(p.ancienPrix - p.prix) }}
               </span>
               <div class="d-flex align-items-center justify-content-end mt-2">
-                <button class="cat-carousel-add" (click)="ajouterPanier(p, cat.titre); $event.stopPropagation()"
+                <button class="cat-carousel-add" (click)="ajouterPanier(p, traduire(cat.titre)); $event.stopPropagation()"
                   aria-label="Ajouter au panier">
                   <i class="fa-solid fa-cart-plus"></i>
-                  Ajouter
+                  {{ 'home.sectionCommon.addToCart' | translate }}
                 </button>
               </div>
             </div>
@@ -201,19 +200,18 @@
       <!-- Texte + avantages -->
       <div class="col-12 col-lg-6">
         <h2 class="fw-bold mb-3" style="font-size:clamp(26px,3vw,34px);">
-          Pourquoi choisir <span style="color:var(--accent)">University Book</span> ?
+          {{ 'home.why.titleLine' | translate }} <span style="color:var(--accent)">{{ 'home.why.titleAccent' | translate }}</span> ?
         </h2>
         <p class="mb-4" style="color:#5A626C;font-size:15.5px;line-height:1.75;max-width:480px;">
-          Nous accompagnons les étudiants tunisiens avec une sélection rigoureuse de fournitures et de documents
-          numériques, une plateforme rapide et un service de confiance, du premier clic à la réception.
+          {{ 'home.why.description' | translate }}
         </p>
 
         <div class="d-flex flex-column gap-3">
           <div class="ub-why-item" *ngFor="let a of pourquoiNous">
             <span class="ub-why-icon"><i class="fa-solid {{ a.icone }}"></i></span>
             <div>
-              <p class="fw-bold mb-1" style="font-size:15px;">{{ a.titre }}</p>
-              <p class="mb-0 small" style="color:#6B7480;">{{ a.description }}</p>
+              <p class="fw-bold mb-1" style="font-size:15px;">{{ a.titre | translate }}</p>
+              <p class="mb-0 small" style="color:#6B7480;">{{ a.description | translate }}</p>
             </div>
           </div>
         </div>
@@ -239,7 +237,7 @@
     <div class="row g-4 align-items-stretch">
       <div class="text-center mb-5">
         <h2 class="fw-bold mb-3" style="font-size:clamp(26px,3vw,34px);">
-          Nos <span style="color:var(--accent)">Promos</span>
+          {{ 'home.promo.titleLine' | translate }} <span style="color:var(--accent)">{{ 'home.promo.titleAccent' | translate }}</span>
         </h2>
         <div class="avantages-underline">
           <span class="seg-1"></span><span class="seg-2"></span>
@@ -256,17 +254,17 @@
                 <span class="badge rounded-pill px-3 py-2 mb-3 d-inline-flex align-items-center gap-2"
                   style="background:rgba(255,255,255,.15);color:#fff;font-size:13px;font-weight:600;width:fit-content;">
                   <i class="fa-solid fa-stopwatch"></i>
-                  Offre limitée
+                  {{ 'home.promo.badge' | translate }}
                 </span>
                 <h2 class="fw-bold text-white mb-3" style="font-size:clamp(24px,2.8vw,32px);line-height:1.25;">
-                  Offres spéciales sur les fournitures scolaires
+                  {{ 'home.promo.title' | translate }}
                 </h2>
                 <p class="mb-4" style="color:rgba(255,255,255,.85);font-size:15.5px;line-height:1.7;max-width:400px;">
-                  Profitez de réductions exclusives sur une sélection de produits.
+                  {{ 'home.promo.description' | translate }}
                 </p>
                 <a routerLink="/boutique" class="promo-cta-btn">
                   <i class="fa-solid fa-tag"></i>
-                  Profiter des offres
+                  {{ 'home.promo.cta' | translate }}
                   <i class="fa-solid fa-arrow-right"></i>
                 </a>
               </div>
@@ -279,7 +277,7 @@
                   class="promo-visual-image">
                 <span class="promo-mini-tag">-30%</span>
                 <span class="promo-discount-circle">
-                  <small>Jusqu'à</small>
+                  <small>{{ 'home.promo.upTo' | translate }}</small>
                   <strong>-30%</strong>
                 </span>
               </div>
@@ -294,13 +292,13 @@
         <div class="cta-card h-100">
           <span class="cta-badge">
             <i class="fa-solid fa-user"></i>
-            Nouveau ici ?
+            {{ 'home.cta.badge' | translate }}
           </span>
           <h2 class="fw-bold mb-3" style="font-size:clamp(24px,2.6vw,30px);line-height:1.25;">
-            Prêt à <span style="color:var(--accent)">commencer</span> ?
+            {{ 'home.cta.titleLine' | translate }} <span style="color:var(--accent)">{{ 'home.cta.titleAccent' | translate }}</span> ?
           </h2>
           <p class="mb-4" style="color:#6B7480;font-size:15px;line-height:1.65;">
-            Créez votre compte maintenant pour un accès rapide à vos favoris et une meilleure expérience d'achat.
+            {{ 'home.cta.description' | translate }}
           </p>
 
           <div class="cta-illustration">
@@ -320,13 +318,13 @@
             <a routerLink="/register" class="btn btn-accent d-flex align-items-center justify-content-center gap-2 py-3"
               style="border-radius:12px;">
               <i class="fa-solid fa-user-plus"></i>
-              Créer un compte
+              {{ 'home.cta.createAccount' | translate }}
               <i class="fa-solid fa-arrow-right ms-auto"></i>
             </a>
             <a routerLink="/login"
               class="btn-outline-accent d-flex align-items-center justify-content-center gap-2 py-3">
               <i class="fa-solid fa-right-to-bracket"></i>
-              Se connecter
+              {{ 'home.cta.login' | translate }}
               <i class="fa-solid fa-arrow-right ms-auto"></i>
             </a>
           </div>
@@ -345,7 +343,7 @@
 
       <div class="text-center mb-5">
         <h2 class="fw-bold mb-3" style="font-size:clamp(26px,3vw,34px);">
-          Nos <span style="color:var(--accent)">avantages</span>
+          {{ 'home.advantages.titleLine' | translate }} <span style="color:var(--accent)">{{ 'home.advantages.titleAccent' | translate }}</span>
         </h2>
         <div class="avantages-underline">
           <span class="seg-1"></span><span class="seg-2"></span>
@@ -358,9 +356,9 @@
             <div class="avantage-icon">
               <i class="fa-solid {{ a.icone }}"></i>
             </div>
-            <h5 class="fw-bold mb-2">{{ a.titre }}</h5>
+            <h5 class="fw-bold mb-2">{{ a.titre | translate }}</h5>
             <p class="small mb-0" style="color:#6B7480;line-height:1.6;">
-              {{ a.description }}
+              {{ a.description | translate }}
             </p>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 import { forkJoin, of, Subscription } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { CartService } from '../services/cart.service';
@@ -60,8 +61,16 @@ export class HomeComponent implements OnInit, OnDestroy {
     public catalogueService: CatalogueService,
     private categoriesSiteService: CategoriesSiteService,
     private categoriesCaisseService: CategoriesCaisseService,
-    private router: Router
+    private router: Router,
+    private translate: TranslateService
   ) {}
+
+  /** `cat.titre` porte une CLÉ de traduction (voir categorySections ci-dessous) : un pipe
+   *  `| translate` n'est pas utilisable dans une expression d'action `(click)="..."` (Angular
+   *  l'interdit) — on traduit donc ici avant de transmettre le libellé affiché au panier/comparateur. */
+  traduire(cle: string): string {
+    return this.translate.instant(cle);
+  }
 
   /** Noms de catégories présents À LA FOIS dans la taxonomie "Documents" (sur site) et dans celle
    *  des fournitures caisse — normalisés. Un produit de ce type n'apparaît alors QUE dans le
@@ -83,23 +92,25 @@ export class HomeComponent implements OnInit, OnDestroy {
   private heroGalleryTimer?: ReturnType<typeof setInterval>;
   private heroTouchStartX = 0;
 
+  // `label` porte une CLÉ de traduction (voir home.component.html, pipe `| translate`) plutôt
+  // que le texte final — même principe que categorySections/pourquoiNous/avantages ci-dessous.
   heroGalleryImages: HeroGalleryImage[] = [
-    { image: 'assets/images/hero.jpg', gradient: 'linear-gradient(150deg, #8B5CF6 0%, #6D28D9 100%)', label: 'Fournitures scolaires' },
-    { image: 'assets/images/img.jpg',      gradient: 'linear-gradient(150deg, #F59E0B 0%, #B45309 100%)', label: 'Cahiers & papeterie' },
-    { image: 'assets/images/img1.jpg',       gradient: 'linear-gradient(150deg, #0EA5E9 0%, #0369A1 100%)', label: 'Stylos' },
-    { image: 'assets/images/img2.jpg',    gradient: 'linear-gradient(150deg, #EC4899 0%, #9D174D 100%)', label: 'Cartables' },
-    { image: 'assets/images/img3.jpg',gradient: 'linear-gradient(150deg, #64748B 0%, #334155 100%)', label: 'Calculatrices' },
-    { image: 'assets/images/img4.jpg',       gradient: 'linear-gradient(150deg, #1B2430 0%, #0D1218 100%)', label: 'Livres' },
-    { image: 'assets/images/hero4.jpg',    gradient: 'linear-gradient(150deg, #8C2433 0%, #6E1726 100%)', label: 'Documents numériques' },
-    { image: 'assets/images/hero5.jpg',          gradient: 'linear-gradient(150deg, #0F3B4C 0%, #164E63 100%)', label: 'PDF & e-books' },
-    { image: 'assets/images/hero6.jpg',    gradient: 'linear-gradient(150deg, #14532D 0%, #166534 100%)', label: 'Templates' },
+    { image: 'assets/images/hero.jpg', gradient: 'linear-gradient(150deg, #8B5CF6 0%, #6D28D9 100%)', label: 'home.hero.gallery.supplies' },
+    { image: 'assets/images/img.jpg',      gradient: 'linear-gradient(150deg, #F59E0B 0%, #B45309 100%)', label: 'home.hero.gallery.notebooks' },
+    { image: 'assets/images/img1.jpg',       gradient: 'linear-gradient(150deg, #0EA5E9 0%, #0369A1 100%)', label: 'home.hero.gallery.pens' },
+    { image: 'assets/images/img2.jpg',    gradient: 'linear-gradient(150deg, #EC4899 0%, #9D174D 100%)', label: 'home.hero.gallery.bags' },
+    { image: 'assets/images/img3.jpg',gradient: 'linear-gradient(150deg, #64748B 0%, #334155 100%)', label: 'home.hero.gallery.calculators' },
+    { image: 'assets/images/img4.jpg',       gradient: 'linear-gradient(150deg, #1B2430 0%, #0D1218 100%)', label: 'home.hero.gallery.books' },
+    { image: 'assets/images/hero4.jpg',    gradient: 'linear-gradient(150deg, #8C2433 0%, #6E1726 100%)', label: 'home.hero.gallery.digitalDocs' },
+    { image: 'assets/images/hero5.jpg',          gradient: 'linear-gradient(150deg, #0F3B4C 0%, #164E63 100%)', label: 'home.hero.gallery.ebooks' },
+    { image: 'assets/images/hero6.jpg',    gradient: 'linear-gradient(150deg, #14532D 0%, #166534 100%)', label: 'home.hero.gallery.templates' },
   ];
 
   heroStats: HeroStat[] = [
-    { emoji: '📚', valeur: '500+',  label: 'Produits' },
-    { emoji: '📄', valeur: '300+',  label: 'Documents' },
-    { emoji: '👨‍🎓', valeur: '2500+', label: 'Clients' },
-    { emoji: '⭐', valeur: '98%',   label: 'Satisfaction' },
+    { emoji: '📚', valeur: '500+',  label: 'home.hero.stats.products' },
+    { emoji: '📄', valeur: '300+',  label: 'home.hero.stats.documents' },
+    { emoji: '👨‍🎓', valeur: '2500+', label: 'home.hero.stats.clients' },
+    { emoji: '⭐', valeur: '98%',   label: 'home.hero.stats.satisfaction' },
   ];
 
   get heroImgSecondaire1(): number {
@@ -110,83 +121,85 @@ export class HomeComponent implements OnInit, OnDestroy {
     return (this.heroImgActif + 2) % this.heroGalleryImages.length;
   }
 
+  // `titre`/`description`/`ctaLabel`/`carouselTitre` portent des CLÉS de traduction (voir
+  // home.component.html, pipe `| translate`), jamais le texte final directement.
   categorySections: CategorieSection[] = [
     {
       key: 'fournitures',
-      titre: 'Fournitures scolaires',
-      description: 'Tout le matériel qu\'il vous faut pour vos études : cartables, papeterie et outils de précision.',
+      titre: 'home.categories.supplies.title',
+      description: 'home.categories.supplies.description',
       icone: 'fa-backpack',
       image: 'assets/images/scolair.jpg',
       gradient: 'linear-gradient(160deg, #8B5CF6 0%, #7C3AED 45%, #5B21B6 100%)',
       lottiePath: 'assets/images/Back.json',
-      ctaLabel: 'Voir la boutique',
+      ctaLabel: 'home.categories.supplies.cta',
       lien: '/boutique',
-      carouselTitre: 'Nos meilleures fournitures',
+      carouselTitre: 'home.categories.supplies.carousel',
       queryParams: { domaine: 'fournitures' }
     },
     {
       key: 'documents',
-      titre: 'Documents universitaires',
-      description: 'Cours, polycopiés, examens corrigés et annales numériques prêts à télécharger.',
+      titre: 'home.categories.documents.title',
+      description: 'home.categories.documents.description',
       icone: 'fa-book-open',
       image: 'assets/images/d.jpg',
       gradient: 'linear-gradient(160deg, #232B36 0%, #1B2430 50%, #0D1218 100%)',
       lottiePath: 'assets/images/Document.json',
-      ctaLabel: 'Voir les documents',
+      ctaLabel: 'home.categories.documents.cta',
       lien: '/boutique',
-      carouselTitre: 'Documents les plus populaires',
+      carouselTitre: 'home.categories.documents.carousel',
       queryParams: { domaine: 'documents' }
     },
     {
       key: 'documents',
-      titre: 'Documents payants',
-      description: 'Cours et annales premium rédigés par des enseignants et étudiants confirmés.',
+      titre: 'home.categories.paidDocs.title',
+      description: 'home.categories.paidDocs.description',
       icone: 'fa-file-invoice',
       image: 'assets/images/d.jpg',
       gradient: 'linear-gradient(160deg, #B45309 0%, #92400E 50%, #78350F 100%)',
       lottiePath: 'assets/images/Document.json',
-      ctaLabel: 'Voir les documents payants',
+      ctaLabel: 'home.categories.paidDocs.cta',
       lien: '/boutique',
-      carouselTitre: 'Documents payants les plus demandés',
+      carouselTitre: 'home.categories.paidDocs.carousel',
       queryParams: { domaine: 'documents', payant: '1' }
     },
     {
       key: 'documents',
-      titre: 'Documents gratuits',
-      description: 'Une sélection de documents numériques téléchargeables gratuitement, sans engagement.',
+      titre: 'home.categories.freeDocs.title',
+      description: 'home.categories.freeDocs.description',
       icone: 'fa-file',
       image: 'assets/images/d.jpg',
       gradient: 'linear-gradient(160deg, #16A34A 0%, #15803D 50%, #14532D 100%)',
       lottiePath: 'assets/images/Document.json',
-      ctaLabel: 'Voir les documents gratuits',
+      ctaLabel: 'home.categories.freeDocs.cta',
       lien: '/boutique',
-      carouselTitre: 'Documents gratuits à télécharger',
+      carouselTitre: 'home.categories.freeDocs.carousel',
       queryParams: { domaine: 'documents', gratuit: '1' }
     },
     {
       key: 'fournitures',
-      titre: 'Soutenance',
-      description: 'Tout le nécessaire pour réussir votre soutenance : reliure, clé USB, tenue et accessoires.',
+      titre: 'home.categories.soutenance.title',
+      description: 'home.categories.soutenance.description',
       icone: 'fa-graduation-cap',
       image: 'assets/images/scolair.jpg',
       gradient: 'linear-gradient(160deg, #0EA5E9 0%, #0369A1 50%, #0C4A6E 100%)',
       lottiePath: 'assets/images/Back.json',
-      ctaLabel: 'Voir la soutenance',
+      ctaLabel: 'home.categories.soutenance.cta',
       lien: '/boutique',
-      carouselTitre: 'Essentiels pour votre soutenance',
+      carouselTitre: 'home.categories.soutenance.carousel',
       queryParams: { domaine: 'fournitures', categorie: 'Soutenance' }
     },
     {
       key: 'fournitures',
-      titre: 'Jeux',
-      description: 'Jeux éducatifs et de société pour apprendre autrement, entre pauses et révisions.',
+      titre: 'home.categories.games.title',
+      description: 'home.categories.games.description',
       icone: 'fa-dice',
       image: 'assets/images/scolair.jpg',
       gradient: 'linear-gradient(160deg, #EC4899 0%, #BE185D 50%, #831843 100%)',
       lottiePath: 'assets/images/Back.json',
-      ctaLabel: 'Voir les jeux',
+      ctaLabel: 'home.categories.games.cta',
       lien: '/boutique',
-      carouselTitre: 'Jeux les plus populaires',
+      carouselTitre: 'home.categories.games.carousel',
       queryParams: { domaine: 'fournitures', categorie: 'Jeux' }
     }
   ];
@@ -292,20 +305,21 @@ export class HomeComponent implements OnInit, OnDestroy {
     return item.id;
   }
 
+  // `titre`/`description` portent des clés de traduction (voir home.component.html).
   pourquoiNous: Avantage[] = [
-    { icone: 'fa-book-open-reader', titre: 'Sélection rigoureuse', description: 'Documents et fournitures choisis pour accompagner votre réussite universitaire.' },
-    { icone: 'fa-bolt', titre: 'Commande rapide', description: 'Boutique fluide, panier intelligent, paiement en quelques clics.' },
-    { icone: 'fa-shield-halved', titre: 'Achat en confiance', description: 'Paiement sécurisé et suivi de commande transparent à chaque étape.' },
-    { icone: 'fa-headset', titre: 'Support réactif', description: 'Une équipe disponible pour vous accompagner avant et après l\'achat.' }
+    { icone: 'fa-book-open-reader', titre: 'home.why.items.selection.title', description: 'home.why.items.selection.description' },
+    { icone: 'fa-bolt', titre: 'home.why.items.fast.title', description: 'home.why.items.fast.description' },
+    { icone: 'fa-shield-halved', titre: 'home.why.items.trust.title', description: 'home.why.items.trust.description' },
+    { icone: 'fa-headset', titre: 'home.why.items.support.title', description: 'home.why.items.support.description' }
   ];
 
   avantages: Avantage[] = [
-    { icone: 'fa-shield-halved', titre: 'Paiement sécurisé', description: 'Vos transactions sont 100 % sécurisées.' },
-    { icone: 'fa-truck-fast', titre: 'Livraison rapide', description: 'Livraison gratuite à partir de 100 DT.' },
-    { icone: 'fa-headset', titre: 'Support 24/7', description: 'Notre équipe est disponible à tout moment.' },
-    { icone: 'fa-award', titre: 'Garantie qualité', description: 'Produits authentiques et de qualité.' },
-    { icone: 'fa-arrow-rotate-left', titre: 'Retours faciles', description: 'Retour gratuit sous 14 jours.' },
-    { icone: 'fa-wallet', titre: 'Paiement à la livraison', description: 'Paiement lors de la réception.' }
+    { icone: 'fa-shield-halved', titre: 'home.advantages.items.securePayment.title', description: 'home.advantages.items.securePayment.description' },
+    { icone: 'fa-truck-fast', titre: 'home.advantages.items.fastDelivery.title', description: 'home.advantages.items.fastDelivery.description' },
+    { icone: 'fa-headset', titre: 'home.advantages.items.support247.title', description: 'home.advantages.items.support247.description' },
+    { icone: 'fa-award', titre: 'home.advantages.items.quality.title', description: 'home.advantages.items.quality.description' },
+    { icone: 'fa-arrow-rotate-left', titre: 'home.advantages.items.easyReturns.title', description: 'home.advantages.items.easyReturns.description' },
+    { icone: 'fa-wallet', titre: 'home.advantages.items.cod.title', description: 'home.advantages.items.cod.description' }
   ];
 
   ngOnInit(): void {

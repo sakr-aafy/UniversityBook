@@ -254,5 +254,203 @@
       "title": "Unable to verify this payment",
       "backHome": "Back to home"
     }
+  },
+  "home": {
+    "hero": {
+      "badge": "Online shop",
+      "titleLine": "Everything you need to",
+      "titleAccent": "succeed in your studies",
+      "description": "Discover our collection of quality school supplies and digital documents. Order easily and enjoy a fast, modern and secure shopping experience.",
+      "ctaShop": "Discover the shop",
+      "ctaDocs": "Explore documents",
+      "gallery": {
+        "supplies": "School supplies",
+        "notebooks": "Notebooks & stationery",
+        "pens": "Pens",
+        "bags": "Backpacks",
+        "calculators": "Calculators",
+        "books": "Books",
+        "digitalDocs": "Digital documents",
+        "ebooks": "PDF & e-books",
+        "templates": "Templates"
+      },
+      "stats": {
+        "products": "Products",
+        "documents": "Documents",
+        "clients": "Customers",
+        "satisfaction": "Satisfaction"
+      }
+    },
+    "categories": {
+      "supplies": {
+        "title": "School supplies",
+        "description": "Everything you need for your studies: backpacks, stationery and precision tools.",
+        "cta": "Visit the shop",
+        "carousel": "Our best supplies"
+      },
+      "documents": {
+        "title": "University documents",
+        "description": "Lectures, handouts, solved exams and digital archives ready to download.",
+        "cta": "View documents",
+        "carousel": "Most popular documents"
+      },
+      "paidDocs": {
+        "title": "Paid documents",
+        "description": "Premium lectures and archives written by teachers and top-performing students.",
+        "cta": "View paid documents",
+        "carousel": "Most requested paid documents"
+      },
+      "freeDocs": {
+        "title": "Free documents",
+        "description": "A selection of digital documents free to download, no strings attached.",
+        "cta": "View free documents",
+        "carousel": "Free documents to download"
+      },
+      "soutenance": {
+        "title": "Thesis defense",
+        "description": "Everything you need for your thesis defense: binding, USB drive, outfit and accessories.",
+        "cta": "View thesis defense supplies",
+        "carousel": "Thesis defense essentials"
+      },
+      "games": {
+        "title": "Games",
+        "description": "Educational and board games to learn differently, between breaks and revisions.",
+        "cta": "View games",
+        "carousel": "Most popular games"
+      }
+    },
+    "sectionCommon": {
+      "seeAll": "See all",
+      "emptyCarousel": "New products coming soon in this category.",
+      "addToCart": "Add",
+      "savings": "Save"
+    },
+    "why": {
+      "titleLine": "Why choose",
+      "titleAccent": "University Book",
+      "description": "We support Tunisian students with a rigorous selection of supplies and digital documents, a fast platform and trustworthy service, from the first click to delivery.",
+      "items": {
+        "selection": { "title": "Rigorous selection", "description": "Documents and supplies chosen to support your academic success." },
+        "fast": { "title": "Fast ordering", "description": "Smooth shop, smart cart, checkout in a few clicks." },
+        "trust": { "title": "Confident shopping", "description": "Secure payment and transparent order tracking at every step." },
+        "support": { "title": "Responsive support", "description": "A team available to assist you before and after your purchase." }
+      }
+    },
+    "promo": {
+      "titleLine": "Our",
+      "titleAccent": "Deals",
+      "badge": "Limited offer",
+      "title": "Special offers on school supplies",
+      "description": "Enjoy exclusive discounts on a selection of products.",
+      "cta": "Grab the deals",
+      "upTo": "Up to"
+    },
+    "cta": {
+      "badge": "New here?",
+      "titleLine": "Ready to",
+      "titleAccent": "get started",
+      "description": "Create your account now for quick access to your favorites and a better shopping experience.",
+      "createAccount": "Create an account",
+      "login": "Sign in"
+    },
+    "advantages": {
+      "titleLine": "Our",
+      "titleAccent": "advantages",
+      "items": {
+        "securePayment": { "title": "Secure payment", "description": "Your transactions are 100% secure." },
+        "fastDelivery": { "title": "Fast delivery", "description": "Free delivery from 100 DT." },
+        "support247": { "title": "24/7 support", "description": "Our team is available at all times." },
+        "quality": { "title": "Quality guarantee", "description": "Authentic, quality products." },
+        "easyReturns": { "title": "Easy returns", "description": "Free returns within 14 days." },
+        "cod": { "title": "Cash on delivery", "description": "Pay upon receipt." }
+      }
+    }
+  },
+  "boutique": {
+    "hero": {
+      "title": "Everything you need for your studies and your digital documents"
+    },
+    "controlbar": {
+      "searchPlaceholder": "Search for a product, category, subcategory…",
+      "sortBy": "Sort by",
+      "resultSingular": "result",
+      "resultPlural": "results",
+      "filtersMobile": "Filters"
+    },
+    "sort": {
+      "defaultAsc": "Alphabetical (A → Z)",
+      "defaultDesc": "Alphabetical (Z → A)",
+      "recent": "Most recent",
+      "popular": "Most popular",
+      "priceAsc": "Price: low to high",
+      "priceDesc": "Price: high to low"
+    },
+    "tabs": {
+      "documents": "Documents",
+      "supplies": "School supplies"
+    },
+    "all": "All",
+    "empty": {
+      "title": "No results found",
+      "text": "No document matches your search criteria.",
+      "reset": "Reset filters"
+    },
+    "promo": {
+      "eyebrow": "Limited-time offer",
+      "title": "Up to -20% on past papers & solved exams",
+      "text": "Prepare for your exams in the best conditions with our selection of solved exams on sale.",
+      "cta": "Discover"
+    },
+    "recommended": "Recommended products",
+    "cartPill": "Cart",
+    "card": {
+      "new": "New",
+      "free": "Free",
+      "inStock": "In stock",
+      "outOfStock": "Out of stock",
+      "unavailable": "Product currently unavailable",
+      "piece": "unit",
+      "pack": "pack",
+      "packOf": "pack of",
+      "savings": "Save",
+      "reviews": "reviews",
+      "viewProduct": "View product",
+      "addToCart": "Add to cart",
+      "download": "Download",
+      "compare": "Compare"
+    },
+    "filters": {
+      "title": "Filters",
+      "reset": "Reset",
+      "category": "Category",
+      "subcategoryHintSingular": "subcategory",
+      "subcategoryHintPlural": "subcategories",
+      "subcategoryHintSuffix": "— see above the products",
+      "documentType": "Document type",
+      "supplyType": "Supply type",
+      "price": "Price",
+      "min": "Min",
+      "max": "Max",
+      "availability": "Availability",
+      "inStock": "In stock",
+      "outOfStock": "Out of stock",
+      "offers": "Deals",
+      "promoOnly": "Deals only",
+      "freeDocsOnly": "Free documents only",
+      "freeItemsOnly": "Free items only",
+      "apply": "Filter"
+    },
+    "cart": {
+      "title": "My cart",
+      "empty": "Your cart is empty.",
+      "emptyHint": "Add documents to get started.",
+      "perUnit": "/ unit",
+      "itemCount": "Number of items",
+      "subtotal": "Subtotal",
+      "total": "Total",
+      "viewCart": "View cart",
+      "checkout": "Checkout",
+      "continueShopping": "Continue shopping"
+    }
   }
 }

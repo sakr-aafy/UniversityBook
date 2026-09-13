@@ -254,5 +254,203 @@
       "title": "Impossible de vérifier ce paiement",
       "backHome": "Retour à l'accueil"
     }
+  },
+  "home": {
+    "hero": {
+      "badge": "Boutique en ligne",
+      "titleLine": "Tout ce dont vous avez besoin pour",
+      "titleAccent": "réussir vos études",
+      "description": "Découvrez notre collection de fournitures scolaires et de documents numériques de qualité. Commandez facilement et profitez d'une expérience d'achat rapide, moderne et sécurisée.",
+      "ctaShop": "Découvrir la boutique",
+      "ctaDocs": "Explorer les documents",
+      "gallery": {
+        "supplies": "Fournitures scolaires",
+        "notebooks": "Cahiers & papeterie",
+        "pens": "Stylos",
+        "bags": "Cartables",
+        "calculators": "Calculatrices",
+        "books": "Livres",
+        "digitalDocs": "Documents numériques",
+        "ebooks": "PDF & e-books",
+        "templates": "Templates"
+      },
+      "stats": {
+        "products": "Produits",
+        "documents": "Documents",
+        "clients": "Clients",
+        "satisfaction": "Satisfaction"
+      }
+    },
+    "categories": {
+      "supplies": {
+        "title": "Fournitures scolaires",
+        "description": "Tout le matériel qu'il vous faut pour vos études : cartables, papeterie et outils de précision.",
+        "cta": "Voir la boutique",
+        "carousel": "Nos meilleures fournitures"
+      },
+      "documents": {
+        "title": "Documents universitaires",
+        "description": "Cours, polycopiés, examens corrigés et annales numériques prêts à télécharger.",
+        "cta": "Voir les documents",
+        "carousel": "Documents les plus populaires"
+      },
+      "paidDocs": {
+        "title": "Documents payants",
+        "description": "Cours et annales premium rédigés par des enseignants et étudiants confirmés.",
+        "cta": "Voir les documents payants",
+        "carousel": "Documents payants les plus demandés"
+      },
+      "freeDocs": {
+        "title": "Documents gratuits",
+        "description": "Une sélection de documents numériques téléchargeables gratuitement, sans engagement.",
+        "cta": "Voir les documents gratuits",
+        "carousel": "Documents gratuits à télécharger"
+      },
+      "soutenance": {
+        "title": "Soutenance",
+        "description": "Tout le nécessaire pour réussir votre soutenance : reliure, clé USB, tenue et accessoires.",
+        "cta": "Voir la soutenance",
+        "carousel": "Essentiels pour votre soutenance"
+      },
+      "games": {
+        "title": "Jeux",
+        "description": "Jeux éducatifs et de société pour apprendre autrement, entre pauses et révisions.",
+        "cta": "Voir les jeux",
+        "carousel": "Jeux les plus populaires"
+      }
+    },
+    "sectionCommon": {
+      "seeAll": "Voir tout",
+      "emptyCarousel": "Bientôt de nouveaux produits dans cette catégorie.",
+      "addToCart": "Ajouter",
+      "savings": "Économisez"
+    },
+    "why": {
+      "titleLine": "Pourquoi choisir",
+      "titleAccent": "University Book",
+      "description": "Nous accompagnons les étudiants tunisiens avec une sélection rigoureuse de fournitures et de documents numériques, une plateforme rapide et un service de confiance, du premier clic à la réception.",
+      "items": {
+        "selection": { "title": "Sélection rigoureuse", "description": "Documents et fournitures choisis pour accompagner votre réussite universitaire." },
+        "fast": { "title": "Commande rapide", "description": "Boutique fluide, panier intelligent, paiement en quelques clics." },
+        "trust": { "title": "Achat en confiance", "description": "Paiement sécurisé et suivi de commande transparent à chaque étape." },
+        "support": { "title": "Support réactif", "description": "Une équipe disponible pour vous accompagner avant et après l'achat." }
+      }
+    },
+    "promo": {
+      "titleLine": "Nos",
+      "titleAccent": "Promos",
+      "badge": "Offre limitée",
+      "title": "Offres spéciales sur les fournitures scolaires",
+      "description": "Profitez de réductions exclusives sur une sélection de produits.",
+      "cta": "Profiter des offres",
+      "upTo": "Jusqu'à"
+    },
+    "cta": {
+      "badge": "Nouveau ici ?",
+      "titleLine": "Prêt à",
+      "titleAccent": "commencer",
+      "description": "Créez votre compte maintenant pour un accès rapide à vos favoris et une meilleure expérience d'achat.",
+      "createAccount": "Créer un compte",
+      "login": "Se connecter"
+    },
+    "advantages": {
+      "titleLine": "Nos",
+      "titleAccent": "avantages",
+      "items": {
+        "securePayment": { "title": "Paiement sécurisé", "description": "Vos transactions sont 100 % sécurisées." },
+        "fastDelivery": { "title": "Livraison rapide", "description": "Livraison gratuite à partir de 100 DT." },
+        "support247": { "title": "Support 24/7", "description": "Notre équipe est disponible à tout moment." },
+        "quality": { "title": "Garantie qualité", "description": "Produits authentiques et de qualité." },
+        "easyReturns": { "title": "Retours faciles", "description": "Retour gratuit sous 14 jours." },
+        "cod": { "title": "Paiement à la livraison", "description": "Paiement lors de la réception." }
+      }
+    }
+  },
+  "boutique": {
+    "hero": {
+      "title": "Tout ce dont vous avez besoin pour vos études et vos documents numériques"
+    },
+    "controlbar": {
+      "searchPlaceholder": "Rechercher un produit, une catégorie, une sous-catégorie…",
+      "sortBy": "Trier par",
+      "resultSingular": "résultat",
+      "resultPlural": "résultats",
+      "filtersMobile": "Filtres"
+    },
+    "sort": {
+      "defaultAsc": "Alphabétique (A → Z)",
+      "defaultDesc": "Alphabétique (Z → A)",
+      "recent": "Plus récents",
+      "popular": "Plus populaires",
+      "priceAsc": "Prix croissant",
+      "priceDesc": "Prix décroissant"
+    },
+    "tabs": {
+      "documents": "Documents",
+      "supplies": "Fournitures scolaires"
+    },
+    "all": "Tous",
+    "empty": {
+      "title": "Aucun résultat trouvé",
+      "text": "Aucun document ne correspond à vos critères de recherche.",
+      "reset": "Réinitialiser les filtres"
+    },
+    "promo": {
+      "eyebrow": "Offre à durée limitée",
+      "title": "Jusqu'à -20% sur les annales & examens corrigés",
+      "text": "Préparez vos partiels dans les meilleures conditions grâce à notre sélection d'examens corrigés en promotion.",
+      "cta": "Découvrir"
+    },
+    "recommended": "Produits recommandés",
+    "cartPill": "Panier",
+    "card": {
+      "new": "Nouveau",
+      "free": "Gratuit",
+      "inStock": "En stock",
+      "outOfStock": "Hors stock",
+      "unavailable": "Produit indisponible pour le moment",
+      "piece": "pièce",
+      "pack": "pack",
+      "packOf": "pack de",
+      "savings": "Économisez",
+      "reviews": "avis",
+      "viewProduct": "Voir le produit",
+      "addToCart": "Ajouter au panier",
+      "download": "Télécharger",
+      "compare": "Comparer"
+    },
+    "filters": {
+      "title": "Filtres",
+      "reset": "Réinitialiser",
+      "category": "Catégorie",
+      "subcategoryHintSingular": "sous-catégorie",
+      "subcategoryHintPlural": "sous-catégories",
+      "subcategoryHintSuffix": "— voir au-dessus des produits",
+      "documentType": "Type de document",
+      "supplyType": "Type de fourniture",
+      "price": "Prix",
+      "min": "Min",
+      "max": "Max",
+      "availability": "Disponibilité",
+      "inStock": "En stock",
+      "outOfStock": "Hors stock",
+      "offers": "Offres",
+      "promoOnly": "Promotions uniquement",
+      "freeDocsOnly": "Documents gratuits uniquement",
+      "freeItemsOnly": "Articles gratuits uniquement",
+      "apply": "Filtrer"
+    },
+    "cart": {
+      "title": "Mon panier",
+      "empty": "Votre panier est vide.",
+      "emptyHint": "Ajoutez des documents pour commencer.",
+      "perUnit": "/ unité",
+      "itemCount": "Nombre d'articles",
+      "subtotal": "Sous-total",
+      "total": "Total",
+      "viewCart": "Voir le panier",
+      "checkout": "Commander",
+      "continueShopping": "Continuer les achats"
+    }
   }
 }

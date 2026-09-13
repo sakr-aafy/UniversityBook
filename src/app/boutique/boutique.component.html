@@ -10,7 +10,7 @@
   <div class="boutique-hero-overlay"></div>
   <div class="boutique-hero-content">
     <h1 class="boutique-hero-titre">
-      Tout ce dont vous avez besoin pour vos études et vos documents numériques
+      {{ 'boutique.hero.title' | translate }}
     </h1>
   </div>
 </section>
@@ -26,7 +26,7 @@
       <div class="ub-field ub-search-field flex-grow-1">
         <i class="fa-solid fa-magnifying-glass ub-field-icon"></i>
         <input class="ub-field-input" type="text" autocomplete="off"
-               placeholder="Rechercher un produit, une catégorie, une sous-catégorie…"
+               [placeholder]="'boutique.controlbar.searchPlaceholder' | translate"
                [(ngModel)]="recherche" name="recherche" (ngModelChange)="onRechercheChange()"
                (focus)="onRechercheFocus()" (blur)="onRechercheBlur()">
         <button *ngIf="recherche" (click)="recherche=''; onRechercheChange()"
@@ -55,10 +55,10 @@
 
       <!-- Tri -->
       <div class="d-flex align-items-center gap-2">
-        <span class="small fw-semibold" style="color:#6B7480; white-space:nowrap;">Trier par</span>
+        <span class="small fw-semibold" style="color:#6B7480; white-space:nowrap;">{{ 'boutique.controlbar.sortBy' | translate }}</span>
         <select class="ub-select"
                 [(ngModel)]="triActif" name="tri" (change)="onTriChange()">
-          <option *ngFor="let o of options" [value]="o.val">{{ o.label }}</option>
+          <option *ngFor="let o of options" [value]="o.val">{{ o.label | translate }}</option>
         </select>
       </div>
 
@@ -66,13 +66,13 @@
 
       <!-- Compteur résultats -->
       <span class="small ms-auto" style="color:#8A929C; white-space:nowrap;">
-        <strong style="color:#1B2430;">{{ produitsFiltres.length }}</strong> résultat{{ produitsFiltres.length > 1 ? 's' : '' }}
+        <strong style="color:#1B2430;">{{ produitsFiltres.length }}</strong> {{ (produitsFiltres.length > 1 ? 'boutique.controlbar.resultPlural' : 'boutique.controlbar.resultSingular') | translate }}
       </span>
 
       <!-- Bouton filtres mobile -->
       <button class="ub-btn-filtre-mobile d-lg-none" (click)="toggleFiltres()">
         <i class="fa-solid fa-sliders"></i>
-        Filtres
+        {{ 'boutique.controlbar.filtersMobile' | translate }}
       </button>
 
     </div>
@@ -88,10 +88,10 @@
     <!-- ── Onglets de domaine ── -->
     <div class="ub-domaine-tabs ub-anim-fade-up">
       <button class="ub-domaine-tab" [class.active]="vueActive === 'documents'" (click)="changerVue('documents')">
-        <span class="ub-domaine-emoji">📚</span> Documents
+        <span class="ub-domaine-emoji">📚</span> {{ 'boutique.tabs.documents' | translate }}
       </button>
       <button class="ub-domaine-tab" [class.active]="vueActive === 'fournitures'" (click)="changerVue('fournitures')">
-        <span class="ub-domaine-emoji">🎒</span> Fournitures scolaires
+        <span class="ub-domaine-emoji">🎒</span> {{ 'boutique.tabs.supplies' | translate }}
       </button>
     </div>
 
@@ -150,7 +150,7 @@
         <div class="souscat-bar ub-anim-fade-up" *ngIf="sousCategoriesActives.length > 0">
           <button type="button" class="souscat-chip" [class.active]="!sousCategorieActive"
                   (click)="filtrerSousCategorie('')">
-            Tous <span class="souscat-chip-count">{{ compteCategorieActive }}</span>
+            {{ 'boutique.all' | translate }} <span class="souscat-chip-count">{{ compteCategorieActive }}</span>
           </button>
           <button type="button" *ngFor="let sc of sousCategoriesActives; trackBy: trackByStr"
                   class="souscat-chip" [class.active]="sousCategorieActive === sc"
@@ -188,12 +188,12 @@
           <div class="ub-empty-icon">
             <i class="fa-solid fa-magnifying-glass"></i>
           </div>
-          <h5 class="font-spectral fw-bold mb-2">Aucun résultat trouvé</h5>
+          <h5 class="font-spectral fw-bold mb-2">{{ 'boutique.empty.title' | translate }}</h5>
           <p class="mb-4 small" style="color:#6B7480; max-width:360px; margin:0 auto;">
-            Aucun document ne correspond à vos critères de recherche.
+            {{ 'boutique.empty.text' | translate }}
           </p>
           <button (click)="reinitialiser()" class="btn btn-accent px-4 py-2 rounded-pill fw-semibold">
-            Réinitialiser les filtres
+            {{ 'boutique.empty.reset' | translate }}
           </button>
         </div>
 
@@ -224,13 +224,13 @@
         <!-- ── Bannière promotions ── -->
         <div class="promo-banner ub-anim-fade-up">
           <div class="promo-banner-content">
-            <span class="promo-eyebrow"><i class="fa-solid fa-bolt me-2"></i>Offre à durée limitée</span>
-            <h3 class="promo-title font-spectral">Jusqu'à -20% sur les annales &amp; examens corrigés</h3>
+            <span class="promo-eyebrow"><i class="fa-solid fa-bolt me-2"></i>{{ 'boutique.promo.eyebrow' | translate }}</span>
+            <h3 class="promo-title font-spectral">{{ 'boutique.promo.title' | translate }}</h3>
             <p class="promo-desc">
-              Préparez vos partiels dans les meilleures conditions grâce à notre sélection d'examens corrigés en promotion.
+              {{ 'boutique.promo.text' | translate }}
             </p>
             <button (click)="decouvrirPromo()" class="btn btn-light-promo">
-              Découvrir
+              {{ 'boutique.promo.cta' | translate }}
               <i class="fa-solid fa-arrow-right ms-2"></i>
             </button>
           </div>
@@ -244,7 +244,7 @@
           <div class="d-flex align-items-center justify-content-between mb-4">
             <h3 class="font-spectral fw-bold mb-0" style="font-size:22px;">
               <i class="fa-solid fa-star me-2" style="color:#F5B301; font-size:18px;"></i>
-              Produits recommandés
+              {{ 'boutique.recommended' | translate }}
             </h3>
           </div>
           <div class="recommandes-carousel">
@@ -294,7 +294,7 @@
     <span *ngIf="(cartService.count) as n" class="ub-fab-badge" [class.ub-badge-pulse]="panierBump">{{ n }}</span>
   </span>
   <span class="ub-fab-pill-texte">
-    <span class="ub-fab-pill-titre">Panier <span *ngIf="cartService.count as n">({{ n }})</span></span>
+    <span class="ub-fab-pill-titre">{{ 'boutique.cartPill' | translate }} <span *ngIf="cartService.count as n">({{ n }})</span></span>
     <span class="ub-fab-pill-total" *ngIf="cartService.count > 0">{{ formatPrix(cartService.total) }}</span>
   </span>
 </button>
@@ -330,7 +330,7 @@
       <!-- Badges -->
       <div class="produit-badges">
         <span *ngIf="p.nouveaute" class="produit-badge badge-nouveau">
-          <i class="fa-solid fa-sparkles"></i> Nouveau
+          <i class="fa-solid fa-sparkles"></i> {{ 'boutique.card.new' | translate }}
         </span>
         <span *ngIf="pourcentagePromo(p) > 0" class="produit-badge badge-promo">
           -{{ pourcentagePromo(p) }}%
@@ -341,7 +341,7 @@
               [class.badge-premium]="p.badge === 'Premium'">
           {{ p.badge }}
         </span>
-        <span *ngIf="p.domaine === 'documents' && p.gratuit && p.badge !== 'Gratuit'" class="produit-badge badge-gratuit">Gratuit</span>
+        <span *ngIf="p.domaine === 'documents' && p.gratuit && p.badge !== 'Gratuit'" class="produit-badge badge-gratuit">{{ 'boutique.card.free' | translate }}</span>
         <!-- Réservé à l'admin connecté : information de gestion interne, jamais montrée aux clients. -->
         <span *ngIf="estAdmin && p.stock !== undefined && p.stock > 0 && p.stock <= 5" class="produit-badge badge-stock-faible">
           Stock faible ({{ p.stock }})
@@ -382,7 +382,7 @@
       <!-- Action rapide (survol) : comparateur -->
       <div class="produit-actions-hover">
         <button (click)="toggleComparaison(p); $event.stopPropagation()" class="produit-action-btn"
-                [class.active]="estEnComparaison(p.id)" title="Comparer">
+                [class.active]="estEnComparaison(p.id)" [title]="'boutique.card.compare' | translate">
           <i class="fa-solid fa-code-compare"></i>
         </button>
       </div>
@@ -407,7 +407,7 @@
         <span class="produit-etoiles">
           <i class="fa-solid fa-star" *ngFor="let n of [1,2,3,4,5]" [class.vide]="n > p.note"></i>
         </span>
-        <span class="produit-avis-count">{{ p.note }} ({{ p.nombreAvis }} avis)</span>
+        <span class="produit-avis-count">{{ p.note }} ({{ p.nombreAvis }} {{ 'boutique.card.reviews' | translate }})</span>
       </div>
 
       <div class="d-flex align-items-center justify-content-between produit-meta">
@@ -417,7 +417,7 @@
         <!-- Deux états seulement : « En stock » (disponible) ou « Hors stock » — jamais « Rupture de stock ». -->
         <span class="produit-dispo" [class.rupture]="p.disponible === false">
           <i class="fa-solid" [class.fa-circle-check]="p.disponible !== false" [class.fa-circle-xmark]="p.disponible === false"></i>
-          {{ p.disponible === false ? 'Hors stock' : 'En stock' }}
+          {{ (p.disponible === false ? 'boutique.card.outOfStock' : 'boutique.card.inStock') | translate }}
         </span>
       </div>
 
@@ -428,9 +428,9 @@
           <span *ngIf="p.ancienPrix && uniteDe(p) === 'piece'" class="produit-ancien-prix">{{ formatPrix(p.ancienPrix) }}</span>
           <div class="produit-prix" [class.gratuit]="p.gratuit">{{ formatPrix(prixUnitaire(p)) }}</div>
           <span class="produit-prix-unite" *ngIf="aPack(p)">
-            /&nbsp;{{ uniteDe(p) === 'pack' ? (p.packNbPieces ? 'pack de ' + p.packNbPieces : 'pack') : 'pièce' }}
+            /&nbsp;{{ uniteDe(p) === 'pack' ? (p.packNbPieces ? (('boutique.card.packOf' | translate) + ' ' + p.packNbPieces) : ('boutique.card.pack' | translate)) : ('boutique.card.piece' | translate) }}
           </span>
-          <span *ngIf="economie(p) > 0 && uniteDe(p) === 'piece'" class="produit-economie">Économisez {{ formatPrix(economie(p)) }}</span>
+          <span *ngIf="economie(p) > 0 && uniteDe(p) === 'piece'" class="produit-economie">{{ 'boutique.card.savings' | translate }} {{ formatPrix(economie(p)) }}</span>
         </div>
 
         <!-- Choix Pièce / Pack — sur toute fourniture ayant un prix ; le bouton Pack n'est actif
@@ -438,13 +438,13 @@
         <div class="produit-unite" *ngIf="montreUnite(p)" (click)="$event.stopPropagation()">
           <button type="button" class="produit-unite-btn" [class.active]="uniteDe(p) === 'piece'"
                   (click)="choisirUnite(p, 'piece', $event)">
-            <i class="fa-solid fa-cube"></i> Pièce
+            <i class="fa-solid fa-cube"></i> {{ 'boutique.card.piece' | translate }}
           </button>
           <button type="button" class="produit-unite-btn" [class.active]="uniteDe(p) === 'pack'"
                   [disabled]="!packDisponible(p)"
                   [title]="packDisponible(p) ? '' : 'Vente au pack indisponible (nombre de pièces/pack non défini)'"
                   (click)="choisirUnite(p, 'pack', $event)">
-            <i class="fa-solid fa-boxes-stacked"></i> Pack<ng-container *ngIf="p.packNbPieces">&nbsp;({{ p.packNbPieces }})</ng-container>
+            <i class="fa-solid fa-boxes-stacked"></i> {{ 'boutique.card.pack' | translate }}<ng-container *ngIf="p.packNbPieces">&nbsp;({{ p.packNbPieces }})</ng-container>
           </button>
         </div>
       </div>
@@ -454,22 +454,22 @@
       <div class="d-flex align-items-center gap-2 pt-3">
         <button (click)="voirDetail(p); $event.stopPropagation()"
                 class="produit-btn-voir"
-                title="Voir le produit" aria-label="Voir le produit">
+                [title]="'boutique.card.viewProduct' | translate" [attr.aria-label]="'boutique.card.viewProduct' | translate">
           <i class="fa-regular fa-eye"></i>
         </button>
         <button *ngIf="!(p.domaine === 'documents' && p.gratuit)"
                 (click)="ajouterPanier(p); $event.stopPropagation()"
                 [disabled]="p.disponible === false"
-                [title]="p.disponible === false ? 'Produit indisponible pour le moment' : 'Ajouter au panier'"
+                [title]="(p.disponible === false ? 'boutique.card.unavailable' : 'boutique.card.addToCart') | translate"
                 class="produit-btn-ajouter d-flex align-items-center justify-content-center gap-2 ub-ripple">
           <i class="fa-solid fa-cart-plus"></i>
-          Ajouter au panier
+          {{ 'boutique.card.addToCart' | translate }}
         </button>
         <button *ngIf="p.domaine === 'documents' && p.gratuit"
                 (click)="telechargerGratuitement(p); $event.stopPropagation()"
                 class="produit-btn-ajouter d-flex align-items-center justify-content-center gap-2 ub-ripple">
           <i class="fa-solid fa-download"></i>
-          Télécharger
+          {{ 'boutique.card.download' | translate }}
         </button>
       </div>
     </div>
@@ -486,10 +486,10 @@
   <div class="d-flex align-items-center justify-content-between mb-3">
     <span class="filtres-titre">
       <i class="fa-solid fa-sliders me-2"></i>
-      Filtres
+      {{ 'boutique.filters.title' | translate }}
     </span>
     <button (click)="reinitialiser()" class="ub-btn-reset">
-      Réinitialiser
+      {{ 'boutique.filters.reset' | translate }}
     </button>
   </div>
 
@@ -497,7 +497,7 @@
        vueActive, seule cette condition les cachait pour les Fournitures scolaires) -->
   <details class="filtre-accordion" open *ngIf="categories.length > 0">
     <summary class="filtre-accordion-titre">
-      Catégorie <i class="fa-solid fa-chevron-down filtre-accordion-chevron"></i>
+      {{ 'boutique.filters.category' | translate }} <i class="fa-solid fa-chevron-down filtre-accordion-chevron"></i>
     </summary>
     <div class="filtre-accordion-body">
       <div class="filtre-cat-liste">
@@ -517,7 +517,7 @@
            la grille produits (voir .souscat-bar dans produits-col), au plus près des résultats. -->
       <p *ngIf="sousCategoriesActives.length > 0" class="filtre-souscat-hint">
         <i class="fa-solid fa-arrow-right"></i>
-        {{ sousCategoriesActives.length }} sous-catégorie<span *ngIf="sousCategoriesActives.length > 1">s</span> — voir au-dessus des produits
+        {{ sousCategoriesActives.length }} {{ (sousCategoriesActives.length > 1 ? 'boutique.filters.subcategoryHintPlural' : 'boutique.filters.subcategoryHintSingular') | translate }} {{ 'boutique.filters.subcategoryHintSuffix' | translate }}
       </p>
     </div>
   </details>
@@ -525,7 +525,7 @@
   <!-- Type de produit (dynamique selon le domaine actif) -->
   <details class="filtre-accordion" open>
     <summary class="filtre-accordion-titre">
-      {{ vueActive === 'documents' ? 'Type de document' : 'Type de fourniture' }}
+      {{ (vueActive === 'documents' ? 'boutique.filters.documentType' : 'boutique.filters.supplyType') | translate }}
       <i class="fa-solid fa-chevron-down filtre-accordion-chevron"></i>
     </summary>
     <div class="filtre-accordion-body">
@@ -543,17 +543,17 @@
   <!-- Prix -->
   <details class="filtre-accordion" open>
     <summary class="filtre-accordion-titre">
-      Prix <i class="fa-solid fa-chevron-down filtre-accordion-chevron"></i>
+      {{ 'boutique.filters.price' | translate }} <i class="fa-solid fa-chevron-down filtre-accordion-chevron"></i>
     </summary>
     <div class="filtre-accordion-body">
       <div class="d-flex align-items-center gap-2">
         <div class="ub-field ub-field-sm">
-          <input type="number" min="0" class="ub-field-input" placeholder="Min"
+          <input type="number" min="0" class="ub-field-input" [placeholder]="'boutique.filters.min' | translate"
                  [(ngModel)]="prixMin" name="prixMin" (ngModelChange)="onPrixChange()">
         </div>
         <span class="small" style="color:#B0B7BF;">—</span>
         <div class="ub-field ub-field-sm">
-          <input type="number" min="0" class="ub-field-input" placeholder="Max"
+          <input type="number" min="0" class="ub-field-input" [placeholder]="'boutique.filters.max' | translate"
                  [(ngModel)]="prixMax" name="prixMax" (ngModelChange)="onPrixChange()">
         </div>
       </div>
@@ -563,15 +563,15 @@
   <!-- Disponibilité -->
   <details class="filtre-accordion" open>
     <summary class="filtre-accordion-titre">
-      Disponibilité <i class="fa-solid fa-chevron-down filtre-accordion-chevron"></i>
+      {{ 'boutique.filters.availability' | translate }} <i class="fa-solid fa-chevron-down filtre-accordion-chevron"></i>
     </summary>
     <div class="filtre-accordion-body">
       <div class="d-flex flex-wrap gap-2">
         <button class="filtre-chip" [class.active]="filtreDisponibilite==='stock'" (click)="filtrerDisponibilite('stock')">
-          <i class="fa-solid fa-circle-check me-1"></i>En stock
+          <i class="fa-solid fa-circle-check me-1"></i>{{ 'boutique.filters.inStock' | translate }}
         </button>
         <button class="filtre-chip" [class.active]="filtreDisponibilite==='rupture'" (click)="filtrerDisponibilite('rupture')">
-          <i class="fa-solid fa-circle-xmark me-1"></i>Hors stock
+          <i class="fa-solid fa-circle-xmark me-1"></i>{{ 'boutique.filters.outOfStock' | translate }}
         </button>
       </div>
     </div>
@@ -580,24 +580,24 @@
   <!-- Promotions / Gratuit -->
   <details class="filtre-accordion" open>
     <summary class="filtre-accordion-titre">
-      Offres <i class="fa-solid fa-chevron-down filtre-accordion-chevron"></i>
+      {{ 'boutique.filters.offers' | translate }} <i class="fa-solid fa-chevron-down filtre-accordion-chevron"></i>
     </summary>
     <div class="filtre-accordion-body d-flex flex-column gap-1">
       <label class="d-flex align-items-center gap-3 py-2" style="cursor:pointer;">
         <input type="checkbox" class="ub-check" [(ngModel)]="filtrePromotion" name="filtrePromotion" (ngModelChange)="onFiltrePromotionChange()">
-        <span class="small" style="color:#3C444E; font-weight:500;">Promotions uniquement</span>
+        <span class="small" style="color:#3C444E; font-weight:500;">{{ 'boutique.filters.promoOnly' | translate }}</span>
       </label>
       <label class="d-flex align-items-center gap-3 py-2" style="cursor:pointer;">
         <input type="checkbox" class="ub-check" [(ngModel)]="filtreGratuit" name="filtreGratuit" (ngModelChange)="onFiltreGratuitChange()">
         <span class="small" style="color:#3C444E; font-weight:500;">
-          {{ vueActive === 'documents' ? 'Documents gratuits uniquement' : 'Articles gratuits uniquement' }}
+          {{ (vueActive === 'documents' ? 'boutique.filters.freeDocsOnly' : 'boutique.filters.freeItemsOnly') | translate }}
         </span>
       </label>
     </div>
   </details>
 
   <button class="ub-btn-filtrer d-lg-none" (click)="appliquerFiltres()">
-    <i class="fa-solid fa-check me-2"></i>Filtrer
+    <i class="fa-solid fa-check me-2"></i>{{ 'boutique.filters.apply' | translate }}
   </button>
 
 </ng-template>
@@ -611,7 +611,7 @@
   <div class="panier-header">
     <span class="panier-titre">
       <i class="fa-solid fa-cart-shopping me-2"></i>
-      Mon panier
+      {{ 'boutique.cart.title' | translate }}
       <span class="panier-count-badge" *ngIf="(cartService.count) > 0">{{ cartService.count }}</span>
     </span>
   </div>
@@ -624,8 +624,8 @@
       <div class="panier-vide-icon">
         <i class="fa-solid fa-cart-shopping"></i>
       </div>
-      <p class="small mb-0" style="color:#8A929C;">Votre panier est vide.</p>
-      <p class="small" style="color:#B7BEC6;">Ajoutez des documents pour commencer.</p>
+      <p class="small mb-0" style="color:#8A929C;">{{ 'boutique.cart.empty' | translate }}</p>
+      <p class="small" style="color:#B7BEC6;">{{ 'boutique.cart.emptyHint' | translate }}</p>
     </div>
 
     <!-- Articles -->
@@ -640,7 +640,7 @@
           <div class="d-flex align-items-center gap-2 mt-1 flex-wrap">
             <span class="panier-item-cat">{{ item.categorie }}</span>
             <span *ngIf="item.variante" class="panier-item-cat" style="background:#EFF6FF;color:#2563EB;">{{ item.variante }}</span>
-            <span class="panier-item-unitaire">{{ formatPrix(item.prix) }} / unité</span>
+            <span class="panier-item-unitaire">{{ formatPrix(item.prix) }} {{ 'boutique.cart.perUnit' | translate }}</span>
           </div>
           <div class="d-flex align-items-center justify-content-between mt-2">
             <div class="panier-qty">
@@ -664,30 +664,30 @@
     <!-- Résumé -->
     <div *ngIf="items.length > 0" class="panier-resume">
       <div class="panier-resume-ligne">
-        <span>Nombre d'articles</span>
+        <span>{{ 'boutique.cart.itemCount' | translate }}</span>
         <span>{{ cartService.count }}</span>
       </div>
       <div class="panier-resume-ligne">
-        <span>Sous-total</span>
+        <span>{{ 'boutique.cart.subtotal' | translate }}</span>
         <span>{{ formatPrix(cartService.sousTotal) }}</span>
       </div>
       <div class="panier-resume-total">
-        <span>Total</span>
+        <span>{{ 'boutique.cart.total' | translate }}</span>
         <span>{{ formatPrix(cartService.total) }}</span>
       </div>
 
       <div class="panier-actions">
         <a routerLink="/panier" (click)="fermerPanier()"
            class="btn btn-outline-dark-ub w-100 py-2 rounded-pill fw-semibold">
-          Voir le panier
+          {{ 'boutique.cart.viewCart' | translate }}
         </a>
         <a routerLink="/panier" [queryParams]="{ checkout: 1 }" (click)="fermerPanier()"
            class="btn btn-accent w-100 py-3 rounded-pill fw-semibold d-flex align-items-center justify-content-center gap-2 ub-ripple">
           <i class="fa-solid fa-lock"></i>
-          Commander
+          {{ 'boutique.cart.checkout' | translate }}
         </a>
         <button (click)="fermerPanier()" class="ub-lien-panier-complet">
-          Continuer les achats
+          {{ 'boutique.cart.continueShopping' | translate }}
         </button>
       </div>
     </div>

@@ -233,13 +233,14 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
 
   // 'defaut' = tri alphabétique A → Z (ordre d'affichage par défaut de la Boutique, voir le
   // switch dans produitsFiltres) — placé en premier pour être l'option sélectionnée à l'arrivée.
+  // `label` porte une clé de traduction (voir boutique.component.html, pipe `| translate`).
   options = [
-    { val: 'defaut',     label: 'Alphabétique (A → Z)' },
-    { val: 'alpha-desc', label: 'Alphabétique (Z → A)' },
-    { val: 'recent',     label: 'Plus récents'         },
-    { val: 'populaire',  label: 'Plus populaires'      },
-    { val: 'prix-asc',   label: 'Prix croissant'       },
-    { val: 'prix-desc',  label: 'Prix décroissant'     },
+    { val: 'defaut',     label: 'boutique.sort.defaultAsc' },
+    { val: 'alpha-desc', label: 'boutique.sort.defaultDesc' },
+    { val: 'recent',     label: 'boutique.sort.recent'      },
+    { val: 'populaire',  label: 'boutique.sort.popular'     },
+    { val: 'prix-asc',   label: 'boutique.sort.priceAsc'    },
+    { val: 'prix-desc',  label: 'boutique.sort.priceDesc'   },
   ];
 
   /** Comparaison alphabétique FR : insensible à la casse et aux accents ("École" ~ "ecole"),
@@ -479,17 +480,13 @@ export class BoutiqueComponent implements OnInit, OnDestroy {
     return this.vueActive === 'documents' ? 'Documents' : 'Fournitures scolaires';
   }
 
-  /** Vue « Documents Gratuits » (lien du Header : domaine=documents + filtre gratuit, ou case
-   *  « Documents gratuits uniquement » de la barre latérale) : les cartes y sont affichées SANS
-   *  photo — demande explicite, seule l'image est retirée (repli icône + couleur conservé). */
-  get vueDocumentsGratuits(): boolean {
-    return this.vueActive === 'documents' && this.filtreGratuit;
-  }
-
-  /** Affiche-t-on la (les) photo(s) réelle(s) du produit sur sa carte ? Non en vue
-   *  « Documents Gratuits » (voir vueDocumentsGratuits) — le repli icône prend alors le relais. */
+  /** Affiche-t-on la (les) photo(s) réelle(s) du produit sur sa carte ? Oui dès qu'une image est
+   *  disponible, quelle que soit la vue (y compris « Documents Gratuits », qui masquait
+   *  auparavant systématiquement la photo — retiré à la demande, la couverture réelle du
+   *  document doit maintenant y être visible comme partout ailleurs). Repli icône + couleur
+   *  seulement si le produit n'a vraiment aucune image. */
   imagesVisibles(p: Produit): boolean {
-    return !this.vueDocumentsGratuits && !!(p.images && p.images.length > 0);
+    return !!(p.images && p.images.length > 0);
   }
 
   filtrerType(t: string): void {
