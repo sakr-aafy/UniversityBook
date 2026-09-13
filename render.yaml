@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: university-book
+    runtime: static
+    buildCommand: npm run build
+    staticPublishPath: ./dist/frontweb
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
